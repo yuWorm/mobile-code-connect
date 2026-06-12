@@ -984,6 +984,6 @@ mod tests {
             .unwrap()
             .as_nanos();
         let id = NEXT_TEMP_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        std::env::temp_dir().join(format!("quic-test-agentd-{suffix}-{id}"))
+        std::env::temp_dir().join(format!("mobilecode-connect-agentd-{suffix}-{id}"))
     }
 }

@@ -3,38 +3,38 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BIN_DIR="$ROOT_DIR/target/debug"
-STATE_DIR="${QUIC_TEST_STATE_DIR:-${TMPDIR:-/tmp}/quic-test-dev-stack}"
+STATE_DIR="${MOBILECODE_CONNECT_TEST_STATE_DIR:-${QUIC_TEST_STATE_DIR:-${TMPDIR:-/tmp}/mobilecode-connect-dev-stack}}"
 LOG_DIR="$STATE_DIR/logs"
 
-TOKEN_SECRET="${QUIC_TEST_TOKEN_SECRET:-dev-secret}"
-ADMIN_SUBJECT="${QUIC_TEST_ADMIN_SUBJECT:-admin@example.com}"
-CONTROL_ADMIN_EMAIL="${QUIC_TEST_CONTROL_ADMIN_EMAIL:-}"
-CONTROL_ADMIN_PASSWORD="${QUIC_TEST_CONTROL_ADMIN_PASSWORD:-}"
-CONTROL_ADMIN_DISPLAY_NAME="${QUIC_TEST_CONTROL_ADMIN_DISPLAY_NAME:-Admin}"
-RELAY_CONTROL_REGISTER="${QUIC_TEST_RELAY_CONTROL_REGISTER:-0}"
-RELAY_ID="${QUIC_TEST_RELAY_ID:-relay_dev_001}"
-RELAY_CAPACITY_STREAMS="${QUIC_TEST_RELAY_CAPACITY_STREAMS:-128}"
-RELAY_HEARTBEAT_INTERVAL_SEC="${QUIC_TEST_RELAY_HEARTBEAT_INTERVAL_SEC:-30}"
-DEVICE_ID="${QUIC_TEST_DEVICE_ID:-pc_001}"
-CLIENT_ID="${QUIC_TEST_CLIENT_ID:-mobile_001}"
-SERVICE_ID="${QUIC_TEST_SERVICE_ID:-svc_echo}"
-HOST="${QUIC_TEST_HOST:-127.0.0.1}"
+TOKEN_SECRET="${MOBILECODE_CONNECT_TEST_TOKEN_SECRET:-${QUIC_TEST_TOKEN_SECRET:-dev-secret}}"
+ADMIN_SUBJECT="${MOBILECODE_CONNECT_TEST_ADMIN_SUBJECT:-${QUIC_TEST_ADMIN_SUBJECT:-admin@example.com}}"
+CONTROL_ADMIN_EMAIL="${MOBILECODE_CONNECT_TEST_CONTROL_ADMIN_EMAIL:-${QUIC_TEST_CONTROL_ADMIN_EMAIL:-}}"
+CONTROL_ADMIN_PASSWORD="${MOBILECODE_CONNECT_TEST_CONTROL_ADMIN_PASSWORD:-${QUIC_TEST_CONTROL_ADMIN_PASSWORD:-}}"
+CONTROL_ADMIN_DISPLAY_NAME="${MOBILECODE_CONNECT_TEST_CONTROL_ADMIN_DISPLAY_NAME:-${QUIC_TEST_CONTROL_ADMIN_DISPLAY_NAME:-Admin}}"
+RELAY_CONTROL_REGISTER="${MOBILECODE_CONNECT_TEST_RELAY_CONTROL_REGISTER:-${QUIC_TEST_RELAY_CONTROL_REGISTER:-0}}"
+RELAY_ID="${MOBILECODE_CONNECT_TEST_RELAY_ID:-${QUIC_TEST_RELAY_ID:-relay_dev_001}}"
+RELAY_CAPACITY_STREAMS="${MOBILECODE_CONNECT_TEST_RELAY_CAPACITY_STREAMS:-${QUIC_TEST_RELAY_CAPACITY_STREAMS:-128}}"
+RELAY_HEARTBEAT_INTERVAL_SEC="${MOBILECODE_CONNECT_TEST_RELAY_HEARTBEAT_INTERVAL_SEC:-${QUIC_TEST_RELAY_HEARTBEAT_INTERVAL_SEC:-30}}"
+DEVICE_ID="${MOBILECODE_CONNECT_TEST_DEVICE_ID:-${QUIC_TEST_DEVICE_ID:-pc_001}}"
+CLIENT_ID="${MOBILECODE_CONNECT_TEST_CLIENT_ID:-${QUIC_TEST_CLIENT_ID:-mobile_001}}"
+SERVICE_ID="${MOBILECODE_CONNECT_TEST_SERVICE_ID:-${QUIC_TEST_SERVICE_ID:-svc_echo}}"
+HOST="${MOBILECODE_CONNECT_TEST_HOST:-${QUIC_TEST_HOST:-127.0.0.1}}"
 
-CONTROL_PORT="${QUIC_TEST_CONTROL_PORT:-4242}"
-RELAY_PORT="${QUIC_TEST_RELAY_PORT:-4443}"
-RELAY_ADMIN_PORT="${QUIC_TEST_RELAY_ADMIN_PORT:-9090}"
-PUNCH_PORT="${QUIC_TEST_PUNCH_PORT:-3478}"
-ECHO_PORT="${QUIC_TEST_ECHO_PORT:-13000}"
-LOCAL_PORT="${QUIC_TEST_LOCAL_PORT:-18080}"
-WAIT_TIMEOUT="${QUIC_TEST_WAIT_TIMEOUT:-20}"
-TUNNEL_PATH="${QUIC_TEST_PATH:-p2p}"
+CONTROL_PORT="${MOBILECODE_CONNECT_TEST_CONTROL_PORT:-${QUIC_TEST_CONTROL_PORT:-4242}}"
+RELAY_PORT="${MOBILECODE_CONNECT_TEST_RELAY_PORT:-${QUIC_TEST_RELAY_PORT:-4443}}"
+RELAY_ADMIN_PORT="${MOBILECODE_CONNECT_TEST_RELAY_ADMIN_PORT:-${QUIC_TEST_RELAY_ADMIN_PORT:-9090}}"
+PUNCH_PORT="${MOBILECODE_CONNECT_TEST_PUNCH_PORT:-${QUIC_TEST_PUNCH_PORT:-3478}}"
+ECHO_PORT="${MOBILECODE_CONNECT_TEST_ECHO_PORT:-${QUIC_TEST_ECHO_PORT:-13000}}"
+LOCAL_PORT="${MOBILECODE_CONNECT_TEST_LOCAL_PORT:-${QUIC_TEST_LOCAL_PORT:-18080}}"
+WAIT_TIMEOUT="${MOBILECODE_CONNECT_TEST_WAIT_TIMEOUT:-${QUIC_TEST_WAIT_TIMEOUT:-20}}"
+TUNNEL_PATH="${MOBILECODE_CONNECT_TEST_PATH:-${QUIC_TEST_PATH:-p2p}}"
 
 CONTROL_URL="http://$HOST:$CONTROL_PORT"
 RELAY_ADDR="$HOST:$RELAY_PORT"
 RELAY_ADMIN_ADDR="$HOST:$RELAY_ADMIN_PORT"
 PUNCH_ADDR="$HOST:$PUNCH_PORT"
 RELAY_CERT="$STATE_DIR/relay.der"
-CONTROL_STATE_DB="${QUIC_TEST_CONTROL_STATE_DB:-$STATE_DIR/control-state.sqlite}"
+CONTROL_STATE_DB="${MOBILECODE_CONNECT_TEST_CONTROL_STATE_DB:-${QUIC_TEST_CONTROL_STATE_DB:-$STATE_DIR/control-state.sqlite}}"
 
 log() {
   printf '[dev-stack] %s\n' "$*"
@@ -79,14 +79,15 @@ Convenience:
   ./scripts/dev-stack.sh stop
   ./scripts/dev-stack.sh clean
 
-Ports can be overridden with QUIC_TEST_* env vars, for example:
-  QUIC_TEST_LOCAL_PORT=18081 ./scripts/dev-stack.sh start-mobile
+Ports can be overridden with MOBILECODE_CONNECT_TEST_* env vars, for example:
+  MOBILECODE_CONNECT_TEST_LOCAL_PORT=18081 ./scripts/dev-stack.sh start-mobile
+Legacy QUIC_TEST_* env vars are accepted as fallback aliases.
 
 To force a Relay session for the admin panel:
-  QUIC_TEST_PATH=fallback ./scripts/dev-stack.sh start-all
+  MOBILECODE_CONNECT_TEST_PATH=fallback ./scripts/dev-stack.sh start-all
 
 To print a Control Admin token for the current dev secret:
-  QUIC_TEST_ADMIN_SUBJECT=admin@example.com ./scripts/dev-stack.sh admin-token
+  MOBILECODE_CONNECT_TEST_ADMIN_SUBJECT=admin@example.com ./scripts/dev-stack.sh admin-token
 
 Admin helpers call mobile-cli admin with the local Control URL and an admin token:
   ./scripts/dev-stack.sh admin-users --limit 20
@@ -94,15 +95,15 @@ Admin helpers call mobile-cli admin with the local Control URL and an admin toke
   wraps: mobile-cli admin users, mobile-cli admin usage, mobile-cli admin device-access, mobile-cli admin create-user, mobile-cli admin grant-device-access
 
 To print a Relay registration token for the current dev relay id:
-  QUIC_TEST_RELAY_ID=relay_dev_001 ./scripts/dev-stack.sh relay-token
+  MOBILECODE_CONNECT_TEST_RELAY_ID=relay_dev_001 ./scripts/dev-stack.sh relay-token
 
 To bootstrap a persistent Control Admin user on startup:
-  QUIC_TEST_CONTROL_ADMIN_EMAIL=admin@example.com \\
-  QUIC_TEST_CONTROL_ADMIN_PASSWORD=admin-password-123 \\
+  MOBILECODE_CONNECT_TEST_CONTROL_ADMIN_EMAIL=admin@example.com \\
+  MOBILECODE_CONNECT_TEST_CONTROL_ADMIN_PASSWORD=admin-password-123 \\
   ./scripts/dev-stack.sh start-control
 
 To make relayd register itself into Control and report session usage:
-  QUIC_TEST_RELAY_CONTROL_REGISTER=1 ./scripts/dev-stack.sh start-all
+  MOBILECODE_CONNECT_TEST_RELAY_CONTROL_REGISTER=1 ./scripts/dev-stack.sh start-all
 
 Logs and pid files:
   $STATE_DIR
@@ -112,7 +113,7 @@ EOF
 validate_path() {
   case "$TUNNEL_PATH" in
     p2p | fallback) ;;
-    *) die "QUIC_TEST_PATH must be p2p or fallback" ;;
+    *) die "MOBILECODE_CONNECT_TEST_PATH must be p2p or fallback" ;;
   esac
 }
 
@@ -279,7 +280,7 @@ class Handler(socketserver.BaseRequestHandler):
         if data == b"hello":
             self.request.sendall(b"world")
         elif data.startswith(b"GET "):
-            body = b"quic-test-forward-ok\n"
+            body = b"mobilecode-connect-forward-ok\n"
             response = (
                 b"HTTP/1.1 200 OK\r\n"
                 b"Content-Type: text/plain; charset=utf-8\r\n"
@@ -353,7 +354,7 @@ start_control() {
   )
   if [[ -n "$CONTROL_ADMIN_EMAIL" || -n "$CONTROL_ADMIN_PASSWORD" ]]; then
     [[ -n "$CONTROL_ADMIN_EMAIL" && -n "$CONTROL_ADMIN_PASSWORD" ]] || \
-      die "QUIC_TEST_CONTROL_ADMIN_EMAIL and QUIC_TEST_CONTROL_ADMIN_PASSWORD must be set together"
+      die "MOBILECODE_CONNECT_TEST_CONTROL_ADMIN_EMAIL and MOBILECODE_CONNECT_TEST_CONTROL_ADMIN_PASSWORD must be set together"
     control_args+=(
       --bootstrap-admin-email "$CONTROL_ADMIN_EMAIL"
       --bootstrap-admin-password "$CONTROL_ADMIN_PASSWORD"
@@ -383,8 +384,8 @@ print_relay_token() {
 }
 
 admin_token_value() {
-  if [[ -n "${QUIC_TEST_ADMIN_TOKEN:-}" ]]; then
-    printf '%s\n' "$QUIC_TEST_ADMIN_TOKEN"
+  if [[ -n "${MOBILECODE_CONNECT_TEST_ADMIN_TOKEN:-${QUIC_TEST_ADMIN_TOKEN:-}}" ]]; then
+    printf '%s\n' "${MOBILECODE_CONNECT_TEST_ADMIN_TOKEN:-${QUIC_TEST_ADMIN_TOKEN:-}}"
     return 0
   fi
   print_admin_token
@@ -504,11 +505,11 @@ print(b"".join(chunks).decode("utf-8", errors="replace"))
 PY
 )"
 
-  if [[ "$response" != *"HTTP/1.1 200 OK"* || "$response" != *"quic-test-forward-ok"* ]]; then
+  if [[ "$response" != *"HTTP/1.1 200 OK"* || "$response" != *"mobilecode-connect-forward-ok"* ]]; then
     die "unexpected HTTP response from forwarded service: $response"
   fi
 
-  log "HTTP forward check passed: http://$HOST:$LOCAL_PORT -> quic-test-forward-ok"
+  log "HTTP forward check passed: http://$HOST:$LOCAL_PORT -> mobilecode-connect-forward-ok"
 }
 
 assert_admin_session_visible() {

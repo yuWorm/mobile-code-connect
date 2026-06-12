@@ -36,7 +36,7 @@ fn e2e_smoke_script_documents_full_cli_stack() {
         "--state-db",
         "assert_admin_session_visible",
         "assert_http_forward_response",
-        "quic-test-forward-ok",
+        "mobilecode-connect-forward-ok",
         "run_case p2p",
         "run_case fallback",
     ] {
@@ -78,13 +78,13 @@ fn dev_stack_script_documents_manual_start_order() {
         "check",
         "stop",
         "run-all",
-        "QUIC_TEST_PATH",
-        "QUIC_TEST_CONTROL_STATE_DB",
-        "QUIC_TEST_CONTROL_ADMIN_EMAIL",
-        "QUIC_TEST_CONTROL_ADMIN_PASSWORD",
+        "MOBILECODE_CONNECT_TEST_PATH",
+        "MOBILECODE_CONNECT_TEST_CONTROL_STATE_DB",
+        "MOBILECODE_CONNECT_TEST_CONTROL_ADMIN_EMAIL",
+        "MOBILECODE_CONNECT_TEST_CONTROL_ADMIN_PASSWORD",
         "--bootstrap-admin-email",
         "--bootstrap-admin-password",
-        "QUIC_TEST_RELAY_CONTROL_REGISTER",
+        "MOBILECODE_CONNECT_TEST_RELAY_CONTROL_REGISTER",
         "--control-url",
         "--control-token",
         "--relay-id",
@@ -96,7 +96,7 @@ fn dev_stack_script_documents_manual_start_order() {
         "nohup",
         "assert_http_forward_response",
         "assert_admin_session_visible",
-        "quic-test-forward-ok",
+        "mobilecode-connect-forward-ok",
         "wait_for_tcp",
         "mobile-cli forwarding",
         "stop_port_owner_if_expected",
@@ -122,7 +122,7 @@ fn dev_stack_script_documents_manual_start_order() {
         "mobile-cli admin grant-device-access",
         "--print-admin-token",
         "--print-relay-token",
-        "QUIC_TEST_ADMIN_SUBJECT",
+        "MOBILECODE_CONNECT_TEST_ADMIN_SUBJECT",
         "Ctrl-C",
         "--state-db",
     ] {
@@ -193,15 +193,15 @@ fn production_check_documents_release_readiness() {
         "scripts/package-mobile-android.sh --dry-run",
         "--gradle-task assembleRelease",
         "--aar-output-dir target/mobile-package-dry-run/android/aar",
-        "QUIC_PROD_CHECK_MOBILE_PACKAGE",
-        "QUIC_PROD_CHECK_IOS_PACKAGE",
-        "QUIC_PROD_CHECK_ANDROID_PACKAGE",
-        "QUIC_PROD_CHECK_DEVICE_SIGNOFF",
+        "MOBILECODE_CONNECT_PROD_CHECK_MOBILE_PACKAGE",
+        "MOBILECODE_CONNECT_PROD_CHECK_IOS_PACKAGE",
+        "MOBILECODE_CONNECT_PROD_CHECK_ANDROID_PACKAGE",
+        "MOBILECODE_CONNECT_PROD_CHECK_DEVICE_SIGNOFF",
         "docs/mobile-device-acceptance.md",
-        "QUIC_PROD_CHECK_FULL",
-        "QUIC_PROD_CHECK_E2E",
-        "QUIC_TUNNEL_STRICT_AUTH",
-        "QUIC_TEST_TOKEN_SECRET",
+        "MOBILECODE_CONNECT_PROD_CHECK_FULL",
+        "MOBILECODE_CONNECT_PROD_CHECK_E2E",
+        "MOBILECODE_CONNECT_STRICT_AUTH",
+        "MOBILECODE_CONNECT_TEST_TOKEN_SECRET",
         "./scripts/e2e-smoke.sh",
         "production-readiness.md",
     ] {
@@ -232,8 +232,8 @@ fn production_check_documents_release_readiness() {
         "Keychain",
         "Android Keystore",
         "MobileCodeConnectMobileGrantSecureStore",
-        "QUIC_PROD_CHECK_MOBILE_PACKAGE=1",
-        "QUIC_PROD_CHECK_DEVICE_SIGNOFF=1",
+        "MOBILECODE_CONNECT_PROD_CHECK_MOBILE_PACKAGE=1",
+        "MOBILECODE_CONNECT_PROD_CHECK_DEVICE_SIGNOFF=1",
         "mobile-device-acceptance.md",
         "Operations",
         "Observability",
@@ -242,7 +242,8 @@ fn production_check_documents_release_readiness() {
         "Backup",
         "Rollback",
         "scripts/production-check.sh",
-        "QUIC_TUNNEL_STRICT_AUTH=true",
+        "MOBILECODE_CONNECT_STRICT_AUTH=true",
+        "Legacy `QUIC_TUNNEL_*`",
         "dev-secret",
     ] {
         assert!(checklist.contains(expected), "missing {expected}");
@@ -264,7 +265,7 @@ fn production_check_documents_release_readiness() {
         "direct fallback",
         "public IP",
         "LocalNetworkAndDomain",
-        "QUIC_PROD_CHECK_DEVICE_SIGNOFF",
+        "MOBILECODE_CONNECT_PROD_CHECK_DEVICE_SIGNOFF",
     ] {
         assert!(mobile_acceptance.contains(expected), "missing {expected}");
     }
@@ -311,6 +312,40 @@ fn relay_installer_no_service_dry_run_skips_systemd_and_prints_manual_start() {
     assert!(!stdout.contains("QUIC_TUNNEL_RELAY_ADVERTISE_ADMIN_ADDR"));
     assert!(!stdout.contains("write systemd unit"));
     assert!(!stdout.contains("systemctl enable"));
+}
+
+#[test]
+fn relay_installer_dry_run_uses_mobilecode_connect_defaults() {
+    let workspace = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let relay_installer_path = workspace.join("scripts/install-relayd.sh");
+
+    let output = Command::new("bash")
+        .arg(&relay_installer_path)
+        .arg("--dry-run")
+        .arg("--control-url")
+        .arg("127.0.0.1:4242")
+        .arg("--bootstrap-id")
+        .arg("rb_001")
+        .arg("--bootstrap-token")
+        .arg("shown-once")
+        .arg("--relayd-url")
+        .arg("127.0.0.1:4242/relayd")
+        .output()
+        .expect("install-relayd dry-run should execute");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(
+        output.status.success(),
+        "install-relayd dry-run failed\nstdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    assert!(stdout.contains("/etc/mobilecode-connect/relayd.env"));
+    assert!(stdout.contains("mobilecode-connect-relayd.service"));
+    assert!(stdout.contains("systemctl enable --now mobilecode-connect-relayd"));
 }
 
 #[test]
@@ -362,10 +397,10 @@ fn oauth_server_login_docs_are_current() {
     let combined = format!("{readme}\n{production}");
 
     for expected in [
-        "QUIC_TUNNEL_PUBLIC_URL",
-        "QUIC_TUNNEL_GITHUB_CLIENT_ID",
-        "QUIC_TUNNEL_GITHUB_CLIENT_SECRET",
-        "QUIC_TUNNEL_GITHUB_REDIRECT_URL",
+        "MOBILECODE_CONNECT_PUBLIC_URL",
+        "MOBILECODE_CONNECT_GITHUB_CLIENT_ID",
+        "MOBILECODE_CONNECT_GITHUB_CLIENT_SECRET",
+        "MOBILECODE_CONNECT_GITHUB_REDIRECT_URL",
         "system curl",
         "agentd login",
         "agentd login --device-code",

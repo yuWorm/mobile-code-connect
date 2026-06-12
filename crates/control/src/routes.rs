@@ -250,7 +250,9 @@ async fn relayd_binary() -> impl IntoResponse {
 }
 
 fn relayd_binary_path() -> Option<PathBuf> {
-    if let Ok(path) = std::env::var("QUIC_TUNNEL_RELAYD_BINARY") {
+    if let Ok(path) = std::env::var("MOBILECODE_CONNECT_RELAYD_BINARY")
+        .or_else(|_| std::env::var("QUIC_TUNNEL_RELAYD_BINARY"))
+    {
         let path = PathBuf::from(path);
         if path.is_file() {
             return Some(path);

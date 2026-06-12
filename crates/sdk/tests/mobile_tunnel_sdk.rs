@@ -225,7 +225,7 @@ fn browser_proxy_config_defaults_include_mobile_safe_timeouts() {
 
     assert_eq!(config.bind_host, "127.0.0.1");
     assert_eq!(config.local_port, 0);
-    assert_eq!(config.domain_suffix, ".qtunnel.local");
+    assert_eq!(config.domain_suffix, ".mobilecode-connect.local");
     assert_eq!(config.max_connections, 256);
     assert_eq!(
         config.direct_fallback_policy,

@@ -17,11 +17,11 @@ use mobilecode_connect_sdk::{
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let control_url = env_or(
-        "QUIC_TUNNEL_CONTROL_URL",
+        "MOBILECODE_CONNECT_CONTROL_URL",
         "http://127.0.0.1:8080".to_string(),
     );
     let state_dir = PathBuf::from(env_or(
-        "QUIC_TUNNEL_SDK_STATE_DIR",
+        "MOBILECODE_CONNECT_SDK_STATE_DIR",
         "target/sdk-live-workflow".to_string(),
     ));
     let sdk = MobileCodeConnectSdk::builder()
@@ -33,7 +33,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("control_url={control_url}");
     println!("state_dir={}", state_dir.display());
 
-    if env_flag("QUIC_TUNNEL_SDK_LIVE_RUN") != Some(true) {
+    if env_flag("MOBILECODE_CONNECT_SDK_LIVE_RUN") != Some(true) {
         print_dry_run_help();
         return Ok(());
     }
@@ -41,17 +41,33 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let token = ensure_user_token(&sdk).await?;
     let user_id = token.user_id.clone();
 
-    let client_id = ClientId::new(env_or("QUIC_TUNNEL_SDK_CLIENT_ID", "phone_001".to_string()));
-    let device_id = DeviceId::new(env_or("QUIC_TUNNEL_SDK_DEVICE_ID", "pc_001".to_string()));
-    let device_name = env_or("QUIC_TUNNEL_SDK_DEVICE_NAME", "Office PC".to_string());
-    let service_id = ServiceId::new(env_or("QUIC_TUNNEL_SDK_SERVICE_ID", "svc_web".to_string()));
-    let service_host = env_or("QUIC_TUNNEL_SDK_SERVICE_HOST", "127.0.0.1".to_string());
-    let service_port = env_or("QUIC_TUNNEL_SDK_SERVICE_PORT", "3000".to_string()).parse::<u16>()?;
+    let client_id = ClientId::new(env_or(
+        "MOBILECODE_CONNECT_SDK_CLIENT_ID",
+        "phone_001".to_string(),
+    ));
+    let device_id = DeviceId::new(env_or(
+        "MOBILECODE_CONNECT_SDK_DEVICE_ID",
+        "pc_001".to_string(),
+    ));
+    let device_name = env_or(
+        "MOBILECODE_CONNECT_SDK_DEVICE_NAME",
+        "Office PC".to_string(),
+    );
+    let service_id = ServiceId::new(env_or(
+        "MOBILECODE_CONNECT_SDK_SERVICE_ID",
+        "svc_web".to_string(),
+    ));
+    let service_host = env_or(
+        "MOBILECODE_CONNECT_SDK_SERVICE_HOST",
+        "127.0.0.1".to_string(),
+    );
+    let service_port =
+        env_or("MOBILECODE_CONNECT_SDK_SERVICE_PORT", "3000".to_string()).parse::<u16>()?;
 
     let controller = sdk
         .ensure_controller(RegisterControllerInput {
             client_id: client_id.clone(),
-            name: env_or("QUIC_TUNNEL_SDK_CLIENT_NAME", "Phone".to_string()),
+            name: env_or("MOBILECODE_CONNECT_SDK_CLIENT_NAME", "Phone".to_string()),
         })
         .await?;
     println!("registered controller={}", controller.client_id);
@@ -70,7 +86,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             services: vec![Service {
                 service_id: service_id.clone(),
                 device_id: device_id.clone(),
-                name: env_or("QUIC_TUNNEL_SDK_SERVICE_NAME", service_id.to_string()),
+                name: env_or(
+                    "MOBILECODE_CONNECT_SDK_SERVICE_NAME",
+                    service_id.to_string(),
+                ),
                 protocol: ServiceProtocol::Tcp,
                 target_host: service_host,
                 target_port: service_port,
@@ -109,15 +128,15 @@ async fn ensure_user_token(
         return Ok(token);
     }
 
-    let email = required_env("QUIC_TUNNEL_SDK_EMAIL")?;
-    let password = required_env("QUIC_TUNNEL_SDK_PASSWORD")?;
-    let token = if env_flag("QUIC_TUNNEL_SDK_REGISTER") == Some(true) {
+    let email = required_env("MOBILECODE_CONNECT_SDK_EMAIL")?;
+    let password = required_env("MOBILECODE_CONNECT_SDK_PASSWORD")?;
+    let token = if env_flag("MOBILECODE_CONNECT_SDK_REGISTER") == Some(true) {
         sdk.ensure_register_fresh(
             RegisterInput {
                 email,
                 password,
                 display_name: env_or(
-                    "QUIC_TUNNEL_SDK_DISPLAY_NAME",
+                    "MOBILECODE_CONNECT_SDK_DISPLAY_NAME",
                     "SDK Example User".to_string(),
                 ),
             },
@@ -141,13 +160,13 @@ async fn ensure_server_credential(
         device_id,
         device_name,
         server_public_key: env_or(
-            "QUIC_TUNNEL_SDK_SERVER_PUBLIC_KEY",
+            "MOBILECODE_CONNECT_SDK_SERVER_PUBLIC_KEY",
             "sdk-live-workflow-public-key".to_string(),
         ),
     };
     let server_auth = sdk.server_auth()?;
 
-    if env_flag("QUIC_TUNNEL_SDK_BROWSER_SERVER_LOGIN") == Some(true) {
+    if env_flag("MOBILECODE_CONNECT_SDK_BROWSER_SERVER_LOGIN") == Some(true) {
         return match sdk.ensure_browser_server_login(input).await? {
             EnsureBrowserServerLogin::Existing(credential) => {
                 println!(
@@ -158,7 +177,7 @@ async fn ensure_server_credential(
             }
             EnsureBrowserServerLogin::Pending(pending) => {
                 println!("open server auth url: {}", pending.auth_url);
-                let auth_code = match env_var("QUIC_TUNNEL_SDK_SERVER_AUTH_CODE") {
+                let auth_code = match env_var("MOBILECODE_CONNECT_SDK_SERVER_AUTH_CODE") {
                     Some(code) => code,
                     None => prompt("Server auth code: ")?,
                 };
@@ -199,8 +218,14 @@ fn now_epoch_sec() -> Result<u64, Box<dyn std::error::Error>> {
 fn env_var(name: &str) -> Option<String> {
     env::var(name)
         .ok()
+        .or_else(|| legacy_env_name(name).and_then(|legacy| env::var(legacy).ok()))
         .map(|value| value.trim().to_string())
         .filter(|value| !value.is_empty())
+}
+
+fn legacy_env_name(name: &str) -> Option<String> {
+    name.strip_prefix("MOBILECODE_CONNECT")
+        .map(|suffix| format!("QUIC_TUNNEL{suffix}"))
 }
 
 fn env_or(name: &str, fallback: String) -> String {
@@ -229,9 +254,9 @@ fn prompt(label: &str) -> Result<String, Box<dyn std::error::Error>> {
 
 fn print_dry_run_help() {
     println!("dry_run=true");
-    println!("set QUIC_TUNNEL_SDK_LIVE_RUN=1 to call the control server");
-    println!("required for first login: QUIC_TUNNEL_SDK_EMAIL and QUIC_TUNNEL_SDK_PASSWORD");
-    println!("set QUIC_TUNNEL_SDK_REGISTER=1 to create the user before saving the token");
+    println!("set MOBILECODE_CONNECT_SDK_LIVE_RUN=1 to call the control server");
+    println!("required for first login: MOBILECODE_CONNECT_SDK_EMAIL and MOBILECODE_CONNECT_SDK_PASSWORD");
+    println!("set MOBILECODE_CONNECT_SDK_REGISTER=1 to create the user before saving the token");
     println!("device-code server login is used by default");
-    println!("set QUIC_TUNNEL_SDK_BROWSER_SERVER_LOGIN=1 to use browser server login");
+    println!("set MOBILECODE_CONNECT_SDK_BROWSER_SERVER_LOGIN=1 to use browser server login");
 }

@@ -189,13 +189,14 @@ browserProxyRouteHttpUrl(browserProxyDeviceServiceRoute(device_id, service_id), 
 For example:
 
 ```text
-http://s-svc-5fweb-5f3000.d-pc-5f001.qtunnel.local/
+http://s-svc-5fweb-5f3000.d-pc-5f001.mobilecode-connect.local/
 ```
 
 `browserProxyDeviceServiceRoute(...)` returns a descriptor whose kind is
 `DeviceService` and whose host is DNS-safe and reversible. The lower-level
-`browserProxyHostForService(...)` helper remains available, and the legacy
-`<service_id>.<device_id>.qtunnel.local` shape is still accepted for
+`browserProxyHostForService(...)` helper remains available, and legacy
+`.qtunnel.local` hosts and the `<service_id>.<device_id>.qtunnel.local` shape
+are still accepted for
 compatibility. Treat these synthetic URLs as device-service URLs only. Control
 server and server-agent APIs should keep using their normal control URL; ordinary
 public or LAN website URLs should keep their normal host and will use the proxy's
@@ -223,8 +224,8 @@ chunk framing. Ambiguous `Transfer-Encoding: chunked` plus `Content-Length`
 requests are rejected before opening a tunnel stream. The proxy uses bounded
 buffered reads for HTTP heads and
 request bodies, and keeps HTTPS `CONNECT` on the raw tunnel copy path.
-`startBrowserProxy()` uses `127.0.0.1:0`, `.qtunnel.local`, and a 256-connection
-limit by default. It also applies mobile-safe timeouts: 10 seconds to receive an
+`startBrowserProxy()` uses `127.0.0.1:0`, `.mobilecode-connect.local`, and a
+256-connection limit by default. It also applies mobile-safe timeouts: 10 seconds to receive an
 HTTP request head, 10 seconds to connect direct-network targets, 15 seconds to
 open a tunnel stream, and 120 seconds of idle time for raw `CONNECT` tunnels.
 The proxy only binds loopback addresses such as `127.0.0.1`, `::1`, or
@@ -234,9 +235,9 @@ embedded browser, not for other devices on the network. Use
 `browserProxyHostWithSuffix(...)` when the app needs a fixed bind port, a
 different synthetic domain suffix, a lower connection limit, or different
 timeouts. It does not MITM TLS and it is not a VPN or system-wide proxy.
-By default, requests for non-qtunnel hosts are routed directly from the mobile
-SDK proxy to the normal network target only when the host is a domain name or a
-loopback/private/link-local IP literal. That lets a WebView global proxy load
+By default, requests for non-synthetic hosts are routed directly from the
+mobile SDK proxy to the normal network target only when the host is a domain
+name or a loopback/private/link-local IP literal. That lets a WebView global proxy load
 normal websites and local-network resources without opening direct dialing to
 all public IP literals. This default is `LocalNetworkAndDomain`. Apps that need
 a wider or tighter embedded-browser boundary can set `direct_fallback_policy` /
@@ -343,10 +344,10 @@ SDK examples can be compiled and run directly from the workspace:
 ```bash
 cargo run -p mobilecode_connect_sdk --example sdk_mock_workflow
 
-QUIC_TUNNEL_SDK_LIVE_RUN=1 \
-QUIC_TUNNEL_CONTROL_URL=http://127.0.0.1:8080 \
-QUIC_TUNNEL_SDK_EMAIL=member@example.com \
-QUIC_TUNNEL_SDK_PASSWORD=password-123 \
+MOBILECODE_CONNECT_SDK_LIVE_RUN=1 \
+MOBILECODE_CONNECT_CONTROL_URL=http://127.0.0.1:8080 \
+MOBILECODE_CONNECT_SDK_EMAIL=member@example.com \
+MOBILECODE_CONNECT_SDK_PASSWORD=password-123 \
 cargo run -p mobilecode_connect_sdk --example sdk_live_workflow
 ```
 
@@ -396,10 +397,10 @@ POST /usage/relay-sessions
 GitHub OAuth can be enabled on `control-server` with:
 
 ```bash
-QUIC_TUNNEL_PUBLIC_URL=https://control.example.com
-QUIC_TUNNEL_GITHUB_CLIENT_ID=<github-client-id>
-QUIC_TUNNEL_GITHUB_CLIENT_SECRET=<github-client-secret>
-QUIC_TUNNEL_GITHUB_REDIRECT_URL=https://control.example.com/auth/oauth/github/callback
+MOBILECODE_CONNECT_PUBLIC_URL=https://control.example.com
+MOBILECODE_CONNECT_GITHUB_CLIENT_ID=<github-client-id>
+MOBILECODE_CONNECT_GITHUB_CLIENT_SECRET=<github-client-secret>
+MOBILECODE_CONNECT_GITHUB_REDIRECT_URL=https://control.example.com/auth/oauth/github/callback
 ```
 
 The GitHub OAuth HTTP client uses the system curl binary at runtime, so
@@ -627,13 +628,13 @@ control-server \
   --token-secret dev-secret \
   --relay-addr 127.0.0.1:4443 \
   --punch-addr 127.0.0.1:3478 \
-  --state-db /tmp/quic-test-control.sqlite \
+  --state-db /tmp/mobilecode-connect-control.sqlite \
   --bootstrap-admin-email admin@example.com \
   --bootstrap-admin-password admin-password-123
 ```
 
-The same can be configured with `QUIC_TUNNEL_ADMIN_EMAIL` and
-`QUIC_TUNNEL_ADMIN_PASSWORD`. The admin user is stored in Control state and can
+The same can be configured with `MOBILECODE_CONNECT_ADMIN_EMAIL` and
+`MOBILECODE_CONNECT_ADMIN_PASSWORD`. The admin user is stored in Control state and can
 log in through `/auth/login`; its returned Control token carries the `admin`
 role.
 
@@ -682,8 +683,9 @@ control-server \
   --strict-auth
 ```
 
-`QUIC_TUNNEL_STRICT_AUTH=true` can also be used. The local smoke scripts keep
-strict auth disabled so their placeholder-token flow continues to work.
+`MOBILECODE_CONNECT_STRICT_AUTH=true` can also be used. Legacy `QUIC_TUNNEL_*`
+environment variables remain accepted as fallback aliases. The local smoke
+scripts keep strict auth disabled so their placeholder-token flow continues to work.
 
 The Control server also serves a zero-build admin page:
 
@@ -783,7 +785,7 @@ control-server \
   --token-secret dev-secret \
   --relay-addr 127.0.0.1:4443 \
   --punch-addr 127.0.0.1:3478 \
-  --state-db /tmp/quic-test-control.sqlite
+  --state-db /tmp/mobilecode-connect-control.sqlite
 ```
 
 The current model separates:
@@ -924,7 +926,7 @@ For manual browser/curl testing, keep the stack in the foreground and stop it
 with Ctrl-C:
 
 ```bash
-QUIC_TEST_PATH=fallback ./scripts/dev-stack.sh run-all
+MOBILECODE_CONNECT_TEST_PATH=fallback ./scripts/dev-stack.sh run-all
 ```
 
 The background stack starts Echo, Relay, Punch, Control, Agent, and Mobile in
@@ -949,7 +951,10 @@ Print a matching admin token for the local stack:
 
 With Control running, the dev stack can also call the admin CLI directly. These
 helpers generate the local admin token automatically, unless
-`QUIC_TEST_ADMIN_TOKEN` is already set:
+`MOBILECODE_CONNECT_TEST_ADMIN_TOKEN` is already set:
+
+Dev stack knobs use `MOBILECODE_CONNECT_TEST_*`; legacy `QUIC_TEST_*` names are
+accepted as fallback aliases.
 
 ```bash
 ./scripts/dev-stack.sh admin-users --limit 20
@@ -979,15 +984,15 @@ Or start Control with a persistent admin login for the simple Control Admin
 page:
 
 ```bash
-QUIC_TEST_CONTROL_ADMIN_EMAIL=admin@example.com \
-QUIC_TEST_CONTROL_ADMIN_PASSWORD=admin-password-123 \
+MOBILECODE_CONNECT_TEST_CONTROL_ADMIN_EMAIL=admin@example.com \
+MOBILECODE_CONNECT_TEST_CONTROL_ADMIN_PASSWORD=admin-password-123 \
 ./scripts/dev-stack.sh start-control
 ```
 
 Control state is persisted by default under the dev stack state directory:
 
 ```text
-${TMPDIR:-/tmp}/quic-test-dev-stack/control-state.sqlite
+${TMPDIR:-/tmp}/mobilecode-connect-dev-stack/control-state.sqlite
 ```
 
 Control-owned Relay management uses the Control Admin page as the normal
@@ -1011,13 +1016,13 @@ listener bound to loopback.
 To force Relay fallback and make Relay session stats visible in Control Admin:
 
 ```bash
-QUIC_TEST_PATH=fallback ./scripts/dev-stack.sh start-all
+MOBILECODE_CONNECT_TEST_PATH=fallback ./scripts/dev-stack.sh start-all
 ```
 
 To exercise Relay self-registration into the Control Relay pool:
 
 ```bash
-QUIC_TEST_RELAY_CONTROL_REGISTER=1 ./scripts/dev-stack.sh start-all
+MOBILECODE_CONNECT_TEST_RELAY_CONTROL_REGISTER=1 ./scripts/dev-stack.sh start-all
 ```
 
 When Relay self-registration is enabled, the dev stack prints a dedicated
@@ -1026,8 +1031,8 @@ Relay control token with `./scripts/dev-stack.sh relay-token` and passes it to
 report every 30 seconds by default. Override it with:
 
 ```bash
-QUIC_TEST_RELAY_CONTROL_REGISTER=1 \
-QUIC_TEST_RELAY_HEARTBEAT_INTERVAL_SEC=10 \
+MOBILECODE_CONNECT_TEST_RELAY_CONTROL_REGISTER=1 \
+MOBILECODE_CONNECT_TEST_RELAY_HEARTBEAT_INTERVAL_SEC=10 \
 ./scripts/dev-stack.sh start-all
 ```
 
@@ -1063,7 +1068,7 @@ cargo run -p control-server -- \
   --token-secret dev-secret \
   --relay-addr 127.0.0.1:4443 \
   --punch-addr 127.0.0.1:3478 \
-  --state-db /tmp/quic-test-control.sqlite
+  --state-db /tmp/mobilecode-connect-control.sqlite
 ```
 
 Optionally start `relayd` after Control is running and let it register itself

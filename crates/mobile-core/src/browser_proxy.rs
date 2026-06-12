@@ -30,6 +30,8 @@ const DEFAULT_REQUEST_HEAD_TIMEOUT: Duration = Duration::from_secs(10);
 const DEFAULT_CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 const DEFAULT_TUNNEL_OPEN_TIMEOUT: Duration = Duration::from_secs(15);
 const DEFAULT_IDLE_TIMEOUT: Duration = Duration::from_secs(120);
+pub const DEFAULT_BROWSER_PROXY_DOMAIN_SUFFIX: &str = ".mobilecode-connect.local";
+pub const LEGACY_BROWSER_PROXY_DOMAIN_SUFFIX: &str = ".qtunnel.local";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BrowserProxyTarget {
@@ -213,7 +215,7 @@ impl Default for BrowserProxyConfig {
         Self {
             bind_host: "127.0.0.1".to_string(),
             local_port: 0,
-            domain_suffix: ".qtunnel.local".to_string(),
+            domain_suffix: DEFAULT_BROWSER_PROXY_DOMAIN_SUFFIX.to_string(),
             max_connections: DEFAULT_MAX_BROWSER_PROXY_CONNECTIONS,
             direct_fallback_policy: BrowserProxyDirectFallbackPolicy::LocalNetworkAndDomain,
             request_head_timeout: DEFAULT_REQUEST_HEAD_TIMEOUT,
@@ -271,7 +273,7 @@ fn validate_loopback_bind_host(bind_host: &str) -> Result<(), BrowserProxyError>
 fn validate_domain_suffix(suffix: &str) -> Result<(), BrowserProxyError> {
     if !suffix.starts_with('.') || suffix.len() <= 1 || suffix.ends_with('.') {
         return Err(BrowserProxyError::InvalidConfig {
-            reason: "domain_suffix must look like .qtunnel.local".to_string(),
+            reason: format!("domain_suffix must look like {DEFAULT_BROWSER_PROXY_DOMAIN_SUFFIX}"),
         });
     }
     Ok(())
@@ -426,8 +428,12 @@ pub struct BrowserProxyUrlClassification {
     pub target: Option<BrowserProxyTarget>,
 }
 
+pub fn parse_browser_proxy_host(host: &str) -> Option<BrowserProxyTarget> {
+    parse_browser_proxy_host_with_compatible_suffixes(host, DEFAULT_BROWSER_PROXY_DOMAIN_SUFFIX)
+}
+
 pub fn parse_qtunnel_host(host: &str) -> Option<BrowserProxyTarget> {
-    parse_qtunnel_host_with_suffix(host, ".qtunnel.local")
+    parse_browser_proxy_host(host)
 }
 
 pub fn classify_browser_proxy_url(
@@ -438,7 +444,9 @@ pub fn classify_browser_proxy_url(
     validate_domain_suffix(domain_suffix)?;
     let parsed = parse_absolute_url(url)?;
 
-    if let Some(target) = parse_qtunnel_host_with_suffix(&parsed.host, domain_suffix) {
+    if let Some(target) =
+        parse_browser_proxy_host_with_compatible_suffixes(&parsed.host, domain_suffix)
+    {
         return Ok(BrowserProxyUrlClassification {
             kind: BrowserProxyUrlKind::DeviceService,
             host: parsed.host,
@@ -475,7 +483,18 @@ pub fn browser_proxy_host(
     ))
 }
 
-fn parse_qtunnel_host_with_suffix(host: &str, suffix: &str) -> Option<BrowserProxyTarget> {
+fn parse_browser_proxy_host_with_compatible_suffixes(
+    host: &str,
+    suffix: &str,
+) -> Option<BrowserProxyTarget> {
+    parse_browser_proxy_host_with_suffix(host, suffix).or_else(|| {
+        (suffix == DEFAULT_BROWSER_PROXY_DOMAIN_SUFFIX)
+            .then(|| parse_browser_proxy_host_with_suffix(host, LEGACY_BROWSER_PROXY_DOMAIN_SUFFIX))
+            .flatten()
+    })
+}
+
+fn parse_browser_proxy_host_with_suffix(host: &str, suffix: &str) -> Option<BrowserProxyTarget> {
     let host = host
         .split_once(':')
         .map(|(host, _)| host)
@@ -711,53 +730,54 @@ async fn handle_browser_connection(
             body_kind: request_body_kind(&request_parts.head)?,
         })
     };
-    let (mut remote_stream, route): (BoxedStream, ProxyConnectionRoute) =
-        if let Some(target) = parse_qtunnel_host_with_suffix(&request.host, &domain_suffix) {
-            let forward_request = OpenForwardRequest {
-                device_id: target.device_id,
-                service_id: target.service_id,
-                local_port: 0,
-            };
-            match timeout(
-                config.tunnel_open_timeout,
-                connector.open_stream(&forward_request),
-            )
-            .await
-            {
-                Ok(result) => {
-                    let stream = result?;
-                    config.stats.tunnel_connection();
-                    (stream, ProxyConnectionRoute::Tunnel)
-                }
-                Err(_) => {
-                    config.stats.tunnel_open_timeout();
-                    write_gateway_timeout_response(&mut browser_stream).await;
-                    return Ok(());
-                }
+    let (mut remote_stream, route): (BoxedStream, ProxyConnectionRoute) = if let Some(target) =
+        parse_browser_proxy_host_with_compatible_suffixes(&request.host, &domain_suffix)
+    {
+        let forward_request = OpenForwardRequest {
+            device_id: target.device_id,
+            service_id: target.service_id,
+            local_port: 0,
+        };
+        match timeout(
+            config.tunnel_open_timeout,
+            connector.open_stream(&forward_request),
+        )
+        .await
+        {
+            Ok(result) => {
+                let stream = result?;
+                config.stats.tunnel_connection();
+                (stream, ProxyConnectionRoute::Tunnel)
             }
-        } else {
-            if !direct_fallback_allowed(&request.host, config.direct_fallback_policy) {
-                config.stats.forbidden_direct_connection();
-                write_direct_fallback_forbidden_response(&mut browser_stream).await;
+            Err(_) => {
+                config.stats.tunnel_open_timeout();
+                write_gateway_timeout_response(&mut browser_stream).await;
                 return Ok(());
             }
-            let direct_stream = match timeout(
-                config.direct_connect_timeout,
-                TcpStream::connect(request.direct_addr()),
-            )
-            .await
-            {
-                Ok(Ok(stream)) => stream,
-                Ok(Err(_)) | Err(_) => {
-                    config.stats.direct_connect_failure();
-                    write_gateway_timeout_response(&mut browser_stream).await;
-                    return Ok(());
-                }
-            };
-            direct_stream.set_nodelay(true)?;
-            config.stats.direct_connection();
-            (Box::new(direct_stream), ProxyConnectionRoute::Direct)
+        }
+    } else {
+        if !direct_fallback_allowed(&request.host, config.direct_fallback_policy) {
+            config.stats.forbidden_direct_connection();
+            write_direct_fallback_forbidden_response(&mut browser_stream).await;
+            return Ok(());
+        }
+        let direct_stream = match timeout(
+            config.direct_connect_timeout,
+            TcpStream::connect(request.direct_addr()),
+        )
+        .await
+        {
+            Ok(Ok(stream)) => stream,
+            Ok(Err(_)) | Err(_) => {
+                config.stats.direct_connect_failure();
+                write_gateway_timeout_response(&mut browser_stream).await;
+                return Ok(());
+            }
         };
+        direct_stream.set_nodelay(true)?;
+        config.stats.direct_connection();
+        (Box::new(direct_stream), ProxyConnectionRoute::Direct)
+    };
 
     if request.method.eq_ignore_ascii_case("CONNECT") {
         browser_stream
@@ -1534,6 +1554,6 @@ pub enum BrowserProxyError {
     InvalidRequest { reason: String },
     #[error("invalid browser proxy config: {reason}")]
     InvalidConfig { reason: String },
-    #[error("unsupported qtunnel host: {host}")]
+    #[error("unsupported browser proxy host: {host}")]
     UnsupportedHost { host: String },
 }

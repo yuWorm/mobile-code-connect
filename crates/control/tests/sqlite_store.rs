@@ -25,7 +25,7 @@ fn temp_db_path(test_name: &str) -> PathBuf {
         .duration_since(UNIX_EPOCH)
         .unwrap()
         .as_nanos();
-    path.push(format!("quic-test-{test_name}-{nanos}.sqlite"));
+    path.push(format!("mobilecode-connect-{test_name}-{nanos}.sqlite"));
     path
 }
 

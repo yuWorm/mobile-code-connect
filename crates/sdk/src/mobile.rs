@@ -8,7 +8,7 @@ use mobilecode_connect_mobile_core::{
         BrowserProxyDirectFallbackPolicy as CoreBrowserProxyDirectFallbackPolicy,
         BrowserProxyStats as CoreBrowserProxyStats, BrowserProxyTarget,
         BrowserProxyUrlClassification as CoreBrowserProxyUrlClassification,
-        BrowserProxyUrlKind as CoreBrowserProxyUrlKind,
+        BrowserProxyUrlKind as CoreBrowserProxyUrlKind, DEFAULT_BROWSER_PROXY_DOMAIN_SUFFIX,
     },
     client::{ControlP2pOrRelayClientConfig, OpenServiceRequest, TunnelClient},
     config::TunnelConfig,
@@ -75,7 +75,7 @@ impl Default for BrowserProxyConfig {
         Self {
             bind_host: "127.0.0.1".to_string(),
             local_port: 0,
-            domain_suffix: ".qtunnel.local".to_string(),
+            domain_suffix: DEFAULT_BROWSER_PROXY_DOMAIN_SUFFIX.to_string(),
             max_connections: 256,
             direct_fallback_policy: BrowserProxyDirectFallbackPolicy::LocalNetworkAndDomain,
             request_head_timeout: Duration::from_secs(10),
@@ -478,7 +478,11 @@ impl MobileTunnelSdk {
         device_id: DeviceId,
         service_id: ServiceId,
     ) -> Result<BrowserProxyRoute, SdkError> {
-        browser_proxy_device_service_route_with_suffix(device_id, service_id, ".qtunnel.local")
+        browser_proxy_device_service_route_with_suffix(
+            device_id,
+            service_id,
+            DEFAULT_BROWSER_PROXY_DOMAIN_SUFFIX,
+        )
     }
 
     pub fn classify_browser_proxy_url(
@@ -600,9 +604,13 @@ pub fn classify_browser_proxy_url_with_defaults(
     url: impl AsRef<str>,
     control_server_url: impl AsRef<str>,
 ) -> Result<BrowserProxyUrlClassification, SdkError> {
-    classify_browser_proxy_url(url.as_ref(), control_server_url.as_ref(), ".qtunnel.local")
-        .map(BrowserProxyUrlClassification::from)
-        .map_err(SdkError::from)
+    classify_browser_proxy_url(
+        url.as_ref(),
+        control_server_url.as_ref(),
+        DEFAULT_BROWSER_PROXY_DOMAIN_SUFFIX,
+    )
+    .map(BrowserProxyUrlClassification::from)
+    .map_err(SdkError::from)
 }
 
 pub fn classify_browser_proxy_url_with_domain_suffix(

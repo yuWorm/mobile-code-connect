@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BIN_DIR="$ROOT_DIR/target/debug"
-TMP_ROOT="${TMPDIR:-/tmp}/quic-tunnel-smoke-$$"
+TMP_ROOT="${TMPDIR:-/tmp}/mobilecode-connect-smoke-$$"
 TOKEN_SECRET="dev-secret"
 DEVICE_ID="pc_001"
 CLIENT_ID="mobile_001"
@@ -118,7 +118,7 @@ class Handler(socketserver.BaseRequestHandler):
         if data == b"hello":
             self.request.sendall(b"world")
         elif data.startswith(b"GET "):
-            body = b"quic-test-forward-ok\n"
+            body = b"mobilecode-connect-forward-ok\n"
             response = (
                 b"HTTP/1.1 200 OK\r\n"
                 b"Content-Type: text/plain; charset=utf-8\r\n"
@@ -190,7 +190,7 @@ print(b"".join(chunks).decode("utf-8", errors="replace"))
 PY
 )"
 
-  if [[ "$response" != *"HTTP/1.1 200 OK"* || "$response" != *"quic-test-forward-ok"* ]]; then
+  if [[ "$response" != *"HTTP/1.1 200 OK"* || "$response" != *"mobilecode-connect-forward-ok"* ]]; then
     log "unexpected HTTP response from forwarded service: $response"
     return 1
   fi

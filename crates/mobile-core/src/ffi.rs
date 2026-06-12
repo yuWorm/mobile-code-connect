@@ -18,7 +18,7 @@ use crate::{
         browser_proxy_host, classify_browser_proxy_url, BrowserProxy, BrowserProxyConfig,
         BrowserProxyDirectFallbackPolicy, BrowserProxyHandle, BrowserProxyStats,
         BrowserProxyStatsHandle, BrowserProxyTarget, BrowserProxyUrlClassification,
-        BrowserProxyUrlKind,
+        BrowserProxyUrlKind, DEFAULT_BROWSER_PROXY_DOMAIN_SUFFIX,
     },
     client::{ControlP2pOrRelayClientConfig, OpenServiceRequest, TunnelClient},
     config::TunnelConfig,
@@ -621,7 +621,7 @@ impl Default for FfiBrowserProxyConfig {
         Self {
             bind_host: "127.0.0.1".to_string(),
             local_port: 0,
-            domain_suffix: ".qtunnel.local".to_string(),
+            domain_suffix: DEFAULT_BROWSER_PROXY_DOMAIN_SUFFIX.to_string(),
             max_connections: 256,
             direct_fallback_policy: FfiBrowserProxyDirectFallbackPolicy::LocalNetworkAndDomain,
             request_head_timeout_ms: 10_000,
@@ -678,7 +678,11 @@ pub fn browser_proxy_host_for_service(
     device_id: String,
     service_id: String,
 ) -> Result<String, FfiMobileError> {
-    browser_proxy_host_with_suffix(device_id, service_id, ".qtunnel.local".to_string())
+    browser_proxy_host_with_suffix(
+        device_id,
+        service_id,
+        DEFAULT_BROWSER_PROXY_DOMAIN_SUFFIX.to_string(),
+    )
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, uniffi::Enum)]
@@ -723,7 +727,7 @@ pub fn browser_proxy_device_service_route(
     browser_proxy_device_service_route_with_suffix(
         device_id,
         service_id,
-        ".qtunnel.local".to_string(),
+        DEFAULT_BROWSER_PROXY_DOMAIN_SUFFIX.to_string(),
     )
 }
 
@@ -788,7 +792,11 @@ pub fn browser_proxy_classify_url_with_defaults(
     url: String,
     control_server_url: String,
 ) -> Result<FfiBrowserProxyUrlClassification, FfiMobileError> {
-    browser_proxy_classify_url(url, control_server_url, ".qtunnel.local".to_string())
+    browser_proxy_classify_url(
+        url,
+        control_server_url,
+        DEFAULT_BROWSER_PROXY_DOMAIN_SUFFIX.to_string(),
+    )
 }
 
 #[uniffi::export]
@@ -1355,7 +1363,7 @@ mod tests {
 
         assert_eq!(config.bind_host, "127.0.0.1");
         assert_eq!(config.local_port, 0);
-        assert_eq!(config.domain_suffix, ".qtunnel.local");
+        assert_eq!(config.domain_suffix, ".mobilecode-connect.local");
         assert_eq!(config.max_connections, 256);
         assert_eq!(
             config.direct_fallback_policy,
@@ -1577,7 +1585,7 @@ mod tests {
             .start_browser_proxy_with_config(FfiBrowserProxyConfig {
                 bind_host: "127.0.0.1".to_string(),
                 local_port: 0,
-                domain_suffix: ".qtunnel.test".to_string(),
+                domain_suffix: ".mobilecode-connect.test".to_string(),
                 max_connections: 64,
                 direct_fallback_policy: FfiBrowserProxyDirectFallbackPolicy::LocalNetworkAndDomain,
                 request_head_timeout_ms: 1_000,
@@ -1598,16 +1606,16 @@ mod tests {
         assert_eq!(
             browser_proxy_host_for_service("pc_001".to_string(), "svc_web_3000".to_string())
                 .expect("host generated"),
-            "s-svc-5fweb-5f3000.d-pc-5f001.qtunnel.local"
+            "s-svc-5fweb-5f3000.d-pc-5f001.mobilecode-connect.local"
         );
         assert_eq!(
             browser_proxy_host_with_suffix(
                 "pc_001".to_string(),
                 "svc_web_3000".to_string(),
-                ".qtunnel.test".to_string(),
+                ".mobilecode-connect.test".to_string(),
             )
             .expect("host generated"),
-            "s-svc-5fweb-5f3000.d-pc-5f001.qtunnel.test"
+            "s-svc-5fweb-5f3000.d-pc-5f001.mobilecode-connect.test"
         );
         let error = browser_proxy_host_with_suffix(
             "pc_001".to_string(),
@@ -1628,18 +1636,21 @@ mod tests {
         assert_eq!(route.device_id, "pc_001");
         assert_eq!(route.service_id, "svc_web_3000");
         assert_eq!(route.scheme, "http");
-        assert_eq!(route.host, "s-svc-5fweb-5f3000.d-pc-5f001.qtunnel.local");
+        assert_eq!(
+            route.host,
+            "s-svc-5fweb-5f3000.d-pc-5f001.mobilecode-connect.local"
+        );
         assert_eq!(
             route.origin(),
-            "http://s-svc-5fweb-5f3000.d-pc-5f001.qtunnel.local"
+            "http://s-svc-5fweb-5f3000.d-pc-5f001.mobilecode-connect.local"
         );
         assert_eq!(
             route.http_url("/status?q=1".to_string()),
-            "http://s-svc-5fweb-5f3000.d-pc-5f001.qtunnel.local/status?q=1"
+            "http://s-svc-5fweb-5f3000.d-pc-5f001.mobilecode-connect.local/status?q=1"
         );
         assert_eq!(
             route.http_url("status".to_string()),
-            "http://s-svc-5fweb-5f3000.d-pc-5f001.qtunnel.local/status"
+            "http://s-svc-5fweb-5f3000.d-pc-5f001.mobilecode-connect.local/status"
         );
     }
 
@@ -1651,11 +1662,11 @@ mod tests {
 
         assert_eq!(
             browser_proxy_route_origin(route.clone()),
-            "http://s-svc-5fweb-5f3000.d-pc-5f001.qtunnel.local"
+            "http://s-svc-5fweb-5f3000.d-pc-5f001.mobilecode-connect.local"
         );
         assert_eq!(
             browser_proxy_route_http_url(route, "status?q=1".to_string()),
-            "http://s-svc-5fweb-5f3000.d-pc-5f001.qtunnel.local/status?q=1"
+            "http://s-svc-5fweb-5f3000.d-pc-5f001.mobilecode-connect.local/status?q=1"
         );
     }
 

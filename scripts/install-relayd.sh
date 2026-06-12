@@ -19,9 +19,9 @@ relayd_sha256=""
 install_dir="/usr/local/bin"
 install_dir_default=1
 systemd_dir="/etc/systemd/system"
-env_file="/etc/quic-tunnel/relayd.env"
+env_file="/etc/mobilecode-connect/relayd.env"
 env_file_default=1
-service_name="quic-tunnel-relayd"
+service_name="mobilecode-connect-relayd"
 bind_addr="0.0.0.0:4443"
 debug_admin_listen=""
 dry_run=0
@@ -48,9 +48,9 @@ print_manual_relayd_command() {
   local quoted_env_file
   quoted_env_file="$(shell_quote "$env_file")"
   if [[ -n "$debug_admin_listen" ]]; then
-    printf "env QUIC_TUNNEL_RELAY_ENV=%s sh -c 'set -a; . \"\$QUIC_TUNNEL_RELAY_ENV\"; set +a; exec \"\$QUIC_TUNNEL_RELAY_BIN\" --bind \"\$QUIC_TUNNEL_RELAY_BIND\" --debug-admin-listen \"\$QUIC_TUNNEL_RELAY_DEBUG_ADMIN_LISTEN\" --token-secret \"\$QUIC_TUNNEL_RELAY_TOKEN_SECRET\" --control-url \"\$QUIC_TUNNEL_RELAY_CONTROL_URL\" --control-token \"\$QUIC_TUNNEL_RELAY_CONTROL_TOKEN\" --relay-id \"\$QUIC_TUNNEL_RELAY_ID\" --advertise-addr \"\$QUIC_TUNNEL_RELAY_ADVERTISE_ADDR\" --capacity-streams \"\$QUIC_TUNNEL_RELAY_CAPACITY_STREAMS\" --heartbeat-interval-sec \"\$QUIC_TUNNEL_RELAY_HEARTBEAT_INTERVAL_SEC\"'\n" "$quoted_env_file"
+    printf "env MOBILECODE_CONNECT_RELAY_ENV=%s sh -c 'set -a; . \"\$MOBILECODE_CONNECT_RELAY_ENV\"; set +a; exec \"\$MOBILECODE_CONNECT_RELAY_BIN\" --bind \"\$MOBILECODE_CONNECT_RELAY_BIND\" --debug-admin-listen \"\$MOBILECODE_CONNECT_RELAY_DEBUG_ADMIN_LISTEN\" --token-secret \"\$MOBILECODE_CONNECT_RELAY_TOKEN_SECRET\" --control-url \"\$MOBILECODE_CONNECT_RELAY_CONTROL_URL\" --control-token \"\$MOBILECODE_CONNECT_RELAY_CONTROL_TOKEN\" --relay-id \"\$MOBILECODE_CONNECT_RELAY_ID\" --advertise-addr \"\$MOBILECODE_CONNECT_RELAY_ADVERTISE_ADDR\" --capacity-streams \"\$MOBILECODE_CONNECT_RELAY_CAPACITY_STREAMS\" --heartbeat-interval-sec \"\$MOBILECODE_CONNECT_RELAY_HEARTBEAT_INTERVAL_SEC\"'\n" "$quoted_env_file"
   else
-    printf "env QUIC_TUNNEL_RELAY_ENV=%s sh -c 'set -a; . \"\$QUIC_TUNNEL_RELAY_ENV\"; set +a; exec \"\$QUIC_TUNNEL_RELAY_BIN\" --bind \"\$QUIC_TUNNEL_RELAY_BIND\" --token-secret \"\$QUIC_TUNNEL_RELAY_TOKEN_SECRET\" --control-url \"\$QUIC_TUNNEL_RELAY_CONTROL_URL\" --control-token \"\$QUIC_TUNNEL_RELAY_CONTROL_TOKEN\" --relay-id \"\$QUIC_TUNNEL_RELAY_ID\" --advertise-addr \"\$QUIC_TUNNEL_RELAY_ADVERTISE_ADDR\" --capacity-streams \"\$QUIC_TUNNEL_RELAY_CAPACITY_STREAMS\" --heartbeat-interval-sec \"\$QUIC_TUNNEL_RELAY_HEARTBEAT_INTERVAL_SEC\"'\n" "$quoted_env_file"
+    printf "env MOBILECODE_CONNECT_RELAY_ENV=%s sh -c 'set -a; . \"\$MOBILECODE_CONNECT_RELAY_ENV\"; set +a; exec \"\$MOBILECODE_CONNECT_RELAY_BIN\" --bind \"\$MOBILECODE_CONNECT_RELAY_BIND\" --token-secret \"\$MOBILECODE_CONNECT_RELAY_TOKEN_SECRET\" --control-url \"\$MOBILECODE_CONNECT_RELAY_CONTROL_URL\" --control-token \"\$MOBILECODE_CONNECT_RELAY_CONTROL_TOKEN\" --relay-id \"\$MOBILECODE_CONNECT_RELAY_ID\" --advertise-addr \"\$MOBILECODE_CONNECT_RELAY_ADVERTISE_ADDR\" --capacity-streams \"\$MOBILECODE_CONNECT_RELAY_CAPACITY_STREAMS\" --heartbeat-interval-sec \"\$MOBILECODE_CONNECT_RELAY_HEARTBEAT_INTERVAL_SEC\"'\n" "$quoted_env_file"
   fi
 }
 
@@ -129,8 +129,8 @@ Options:
   --relayd-sha256 HEX     Optional SHA-256 checksum for --relayd-url.
   --install-dir DIR       Binary install directory. Default: /usr/local/bin
   --systemd-dir DIR       systemd unit directory. Default: /etc/systemd/system
-  --env-file PATH         Environment file path. Default: /etc/quic-tunnel/relayd.env
-  --service-name NAME     systemd service name. Default: quic-tunnel-relayd
+  --env-file PATH         Environment file path. Default: /etc/mobilecode-connect/relayd.env
+  --service-name NAME     systemd service name. Default: mobilecode-connect-relayd
   --bind ADDR             Relay listen address. Default: 0.0.0.0:4443
   --debug-admin-listen ADDR
                           Optional local Relay admin debug listener. Disabled by default.
@@ -159,14 +159,14 @@ if [[ "$no_service" == "1" ]] && ! is_root; then
     if [[ -n "${HOME:-}" ]]; then
       install_dir="$HOME/.local/bin"
     else
-      install_dir=".quic-tunnel/bin"
+      install_dir=".mobilecode-connect/bin"
     fi
   fi
   if [[ "$env_file_default" == "1" ]]; then
     if [[ -n "${HOME:-}" ]]; then
-      env_file="${XDG_CONFIG_HOME:-$HOME/.config}/quic-tunnel/relayd.env"
+      env_file="${XDG_CONFIG_HOME:-$HOME/.config}/mobilecode-connect/relayd.env"
     else
-      env_file=".quic-tunnel/relayd.env"
+      env_file=".mobilecode-connect/relayd.env"
     fi
   fi
 fi
@@ -297,21 +297,28 @@ def normalize_control_url(value):
         return value
     return "http://" + value
 
-values = {
-    "QUIC_TUNNEL_RELAY_BIN": os.environ["RELAYD_PATH"],
-    "QUIC_TUNNEL_RELAY_BIND": os.environ["BIND_ADDR"],
-    "QUIC_TUNNEL_RELAY_TOKEN_SECRET": data["token_secret"],
-    "QUIC_TUNNEL_RELAY_CONTROL_URL": normalize_control_url(data["control_url"]),
-    "QUIC_TUNNEL_RELAY_CONTROL_TOKEN": data["control_token"],
-    "QUIC_TUNNEL_RELAY_ID": data["relay_id"],
-    "QUIC_TUNNEL_RELAY_ADVERTISE_ADDR": data["relay_addr"],
-    "QUIC_TUNNEL_RELAY_CAPACITY_STREAMS": str(data["capacity_streams"]),
-    "QUIC_TUNNEL_RELAY_HEARTBEAT_INTERVAL_SEC": str(data["heartbeat_interval_sec"]),
+canonical_values = {
+    "MOBILECODE_CONNECT_RELAY_BIN": os.environ["RELAYD_PATH"],
+    "MOBILECODE_CONNECT_RELAY_BIND": os.environ["BIND_ADDR"],
+    "MOBILECODE_CONNECT_RELAY_TOKEN_SECRET": data["token_secret"],
+    "MOBILECODE_CONNECT_RELAY_CONTROL_URL": normalize_control_url(data["control_url"]),
+    "MOBILECODE_CONNECT_RELAY_CONTROL_TOKEN": data["control_token"],
+    "MOBILECODE_CONNECT_RELAY_ID": data["relay_id"],
+    "MOBILECODE_CONNECT_RELAY_ADVERTISE_ADDR": data["relay_addr"],
+    "MOBILECODE_CONNECT_RELAY_CAPACITY_STREAMS": str(data["capacity_streams"]),
+    "MOBILECODE_CONNECT_RELAY_HEARTBEAT_INTERVAL_SEC": str(data["heartbeat_interval_sec"]),
 }
 if os.environ["DEBUG_ADMIN_LISTEN"]:
-    values["QUIC_TUNNEL_RELAY_DEBUG_ADMIN_LISTEN"] = os.environ["DEBUG_ADMIN_LISTEN"]
+    canonical_values["MOBILECODE_CONNECT_RELAY_DEBUG_ADMIN_LISTEN"] = os.environ["DEBUG_ADMIN_LISTEN"]
+
+legacy_values = {
+    key.replace("MOBILECODE_CONNECT_", "QUIC_TUNNEL_"): value
+    for key, value in canonical_values.items()
+}
 with open(target, "w", encoding="utf-8") as file:
-    for key, value in values.items():
+    for key, value in canonical_values.items():
+        file.write(f"{key}={shlex.quote(value)}\n")
+    for key, value in legacy_values.items():
         file.write(f"{key}={shlex.quote(value)}\n")
 PY
 chmod 0600 "$env_file"
@@ -332,7 +339,7 @@ Wants=network-online.target
 
 [Service]
 EnvironmentFile=$env_file
-ExecStart=/bin/sh -c 'set -- "\$QUIC_TUNNEL_RELAY_BIN" --bind "\$QUIC_TUNNEL_RELAY_BIND" --token-secret "\$QUIC_TUNNEL_RELAY_TOKEN_SECRET" --control-url "\$QUIC_TUNNEL_RELAY_CONTROL_URL" --control-token "\$QUIC_TUNNEL_RELAY_CONTROL_TOKEN" --relay-id "\$QUIC_TUNNEL_RELAY_ID" --advertise-addr "\$QUIC_TUNNEL_RELAY_ADVERTISE_ADDR" --capacity-streams "\$QUIC_TUNNEL_RELAY_CAPACITY_STREAMS" --heartbeat-interval-sec "\$QUIC_TUNNEL_RELAY_HEARTBEAT_INTERVAL_SEC"; if [ -n "\${QUIC_TUNNEL_RELAY_DEBUG_ADMIN_LISTEN:-}" ]; then set -- "\$@" --debug-admin-listen "\$QUIC_TUNNEL_RELAY_DEBUG_ADMIN_LISTEN"; fi; exec "\$@"'
+ExecStart=/bin/sh -c 'set -- "\$MOBILECODE_CONNECT_RELAY_BIN" --bind "\$MOBILECODE_CONNECT_RELAY_BIND" --token-secret "\$MOBILECODE_CONNECT_RELAY_TOKEN_SECRET" --control-url "\$MOBILECODE_CONNECT_RELAY_CONTROL_URL" --control-token "\$MOBILECODE_CONNECT_RELAY_CONTROL_TOKEN" --relay-id "\$MOBILECODE_CONNECT_RELAY_ID" --advertise-addr "\$MOBILECODE_CONNECT_RELAY_ADVERTISE_ADDR" --capacity-streams "\$MOBILECODE_CONNECT_RELAY_CAPACITY_STREAMS" --heartbeat-interval-sec "\$MOBILECODE_CONNECT_RELAY_HEARTBEAT_INTERVAL_SEC"; if [ -n "\${MOBILECODE_CONNECT_RELAY_DEBUG_ADMIN_LISTEN:-}" ]; then set -- "\$@" --debug-admin-listen "\$MOBILECODE_CONNECT_RELAY_DEBUG_ADMIN_LISTEN"; fi; exec "\$@"'
 Restart=always
 RestartSec=5
 

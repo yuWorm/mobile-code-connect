@@ -374,5 +374,7 @@ fn unique_temp_path(name: &str) -> std::path::PathBuf {
         .unwrap()
         .as_nanos();
     let id = NEXT_TEMP_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-    std::env::temp_dir().join(format!("quic-test-agent-mobile-grant-{suffix}-{id}-{name}"))
+    std::env::temp_dir().join(format!(
+        "mobilecode-connect-agent-mobile-grant-{suffix}-{id}-{name}"
+    ))
 }

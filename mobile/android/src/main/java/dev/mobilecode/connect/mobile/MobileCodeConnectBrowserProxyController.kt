@@ -24,7 +24,7 @@ class MobileCodeConnectBrowserProxyController(
         fun makeBrowserProxyConfig(
             bindHost: String = "127.0.0.1",
             localPort: UShort = 0u,
-            domainSuffix: String = ".qtunnel.local",
+            domainSuffix: String = ".mobilecode-connect.local",
             maxConnections: ULong = 256u,
             directFallbackPolicy: FfiBrowserProxyDirectFallbackPolicy = FfiBrowserProxyDirectFallbackPolicy.LOCAL_NETWORK_AND_DOMAIN,
             requestHeadTimeoutMs: ULong = 10_000u,

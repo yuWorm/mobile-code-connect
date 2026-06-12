@@ -21,13 +21,13 @@ tests by default so it can run in restricted development sandboxes.
 Use heavier gates before deployment:
 
 ```bash
-QUIC_PROD_CHECK_FULL=1 ./scripts/production-check.sh
-QUIC_PROD_CHECK_E2E=1 ./scripts/production-check.sh
-QUIC_PROD_CHECK_MOBILE_PACKAGE=1 ./scripts/production-check.sh
-QUIC_PROD_CHECK_DEVICE_SIGNOFF=1 ./scripts/production-check.sh
-QUIC_PROD_CHECK_REQUIRE_RUNTIME_ENV=1 \
-QUIC_TUNNEL_STRICT_AUTH=true \
-QUIC_TEST_TOKEN_SECRET="<production-secret>" \
+MOBILECODE_CONNECT_PROD_CHECK_FULL=1 ./scripts/production-check.sh
+MOBILECODE_CONNECT_PROD_CHECK_E2E=1 ./scripts/production-check.sh
+MOBILECODE_CONNECT_PROD_CHECK_MOBILE_PACKAGE=1 ./scripts/production-check.sh
+MOBILECODE_CONNECT_PROD_CHECK_DEVICE_SIGNOFF=1 ./scripts/production-check.sh
+MOBILECODE_CONNECT_PROD_CHECK_REQUIRE_RUNTIME_ENV=1 \
+MOBILECODE_CONNECT_STRICT_AUTH=true \
+MOBILECODE_CONNECT_TEST_TOKEN_SECRET="<production-secret>" \
 ./scripts/production-check.sh
 ```
 
@@ -35,7 +35,9 @@ Do not deploy if any gate fails.
 
 ## Security
 
-- Run Control with `QUIC_TUNNEL_STRICT_AUTH=true` or `--strict-auth`.
+- Run Control with `MOBILECODE_CONNECT_STRICT_AUTH=true` or `--strict-auth`.
+  Legacy `QUIC_TUNNEL_*`, `QUIC_TEST_*`, and `QUIC_PROD_CHECK_*` names remain
+  accepted as fallback aliases where those settings existed before the rename.
 - Treat Control `/admin` as the Relay and system management surface. Put it
   behind authenticated access, private networking, or an operator VPN.
 - Do not expose a standalone Relay Admin endpoint in production. `relayd`
@@ -51,9 +53,9 @@ Do not deploy if any gate fails.
 
 - Bootstrap a persistent admin account before exposing the service.
 - Configure GitHub OAuth before enabling public login:
-  `QUIC_TUNNEL_PUBLIC_URL`, `QUIC_TUNNEL_GITHUB_CLIENT_ID`,
-  `QUIC_TUNNEL_GITHUB_CLIENT_SECRET`, and optional
-  `QUIC_TUNNEL_GITHUB_REDIRECT_URL`.
+  `MOBILECODE_CONNECT_PUBLIC_URL`, `MOBILECODE_CONNECT_GITHUB_CLIENT_ID`,
+  `MOBILECODE_CONNECT_GITHUB_CLIENT_SECRET`, and optional
+  `MOBILECODE_CONNECT_GITHUB_REDIRECT_URL`.
 - Confirm the system curl binary is installed on Control hosts; the GitHub OAuth
   client uses `curl` for token exchange and GitHub API calls.
 - Verify user login through `GET /auth/oauth/github/start` and
@@ -120,9 +122,10 @@ Do not deploy if any gate fails.
   before packaging iOS or Android artifacts.
 - Package iOS and Android release artifacts with `scripts/package-mobile-ios.sh`
   and `scripts/package-mobile-android.sh`; use dry-run only for planning, not
-  as release evidence. Set `QUIC_PROD_CHECK_MOBILE_PACKAGE=1`, or the narrower
-  `QUIC_PROD_CHECK_IOS_PACKAGE=1` / `QUIC_PROD_CHECK_ANDROID_PACKAGE=1`, before
-  release to make `scripts/production-check.sh` run the real package builds.
+  as release evidence. Set `MOBILECODE_CONNECT_PROD_CHECK_MOBILE_PACKAGE=1`, or
+  the narrower `MOBILECODE_CONNECT_PROD_CHECK_IOS_PACKAGE=1` /
+  `MOBILECODE_CONNECT_PROD_CHECK_ANDROID_PACKAGE=1`, before release to make
+  `scripts/production-check.sh` run the real package builds.
 - Store mobile grant credentials with `MobileCodeConnectMobileGrantSecureStore`.
   The iOS wrapper stores credential JSON in Keychain; the Android wrapper
   encrypts the credential with an Android Keystore AES-GCM key before writing
@@ -130,8 +133,9 @@ Do not deploy if any gate fails.
 - Verify mobile grant pairing, `FfiMobileTunnel.startWithMobileGrant(...)`,
   browser proxy routing, WebView proxy application, and P2P-to-Relay fallback on
   physical iOS and Android devices before release. Record that evidence using
-  `docs/mobile-device-acceptance.md`; set `QUIC_PROD_CHECK_DEVICE_SIGNOFF=1`
-  to require a signoff file during the release gate.
+  `docs/mobile-device-acceptance.md`; set
+  `MOBILECODE_CONNECT_PROD_CHECK_DEVICE_SIGNOFF=1` to require a signoff file
+  during the release gate.
 - Confirm mobile grant revocation behavior in staging. Current revocation is
   enforced when new grant sessions are requested; long-lived already-open
   streams require a separate active-stream termination policy if immediate

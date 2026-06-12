@@ -2,8 +2,8 @@
 
 Use this checklist for release-candidate validation on physical iOS and Android
 devices. Record evidence in `docs/mobile-device-acceptance-signoff.md`, then run
-`QUIC_PROD_CHECK_DEVICE_SIGNOFF=1 ./scripts/production-check.sh` to enforce that
-the signoff exists.
+`MOBILECODE_CONNECT_PROD_CHECK_DEVICE_SIGNOFF=1 ./scripts/production-check.sh`
+to enforce that the signoff exists.
 
 ## Build Inputs
 

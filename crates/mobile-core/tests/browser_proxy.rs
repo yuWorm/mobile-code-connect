@@ -3,9 +3,9 @@ use std::{future, sync::Arc};
 use async_trait::async_trait;
 use mobilecode_connect_mobile_core::{
     browser_proxy::{
-        browser_proxy_host, classify_browser_proxy_url, parse_qtunnel_host, BrowserProxy,
-        BrowserProxyConfig, BrowserProxyDirectFallbackPolicy, BrowserProxyStats,
-        BrowserProxyTarget, BrowserProxyUrlKind,
+        browser_proxy_host, classify_browser_proxy_url, parse_browser_proxy_host,
+        parse_qtunnel_host, BrowserProxy, BrowserProxyConfig, BrowserProxyDirectFallbackPolicy,
+        BrowserProxyStats, BrowserProxyTarget, BrowserProxyUrlKind,
     },
     forward::{
         BoxedStream, ForwardError, MemoryStreamConnector, OpenForwardRequest, StreamConnector,
@@ -18,7 +18,28 @@ use tokio::{
 };
 
 #[test]
-fn parses_qtunnel_proxy_hosts() {
+fn browser_proxy_defaults_to_mobilecode_connect_domain_suffix() {
+    assert_eq!(
+        BrowserProxyConfig::default().domain_suffix,
+        ".mobilecode-connect.local"
+    );
+}
+
+#[test]
+fn parses_mobilecode_connect_and_legacy_proxy_hosts() {
+    let current = parse_browser_proxy_host("svc_web_3000.pc_001.mobilecode-connect.local").unwrap();
+    assert_eq!(current.device_id.as_str(), "pc_001");
+    assert_eq!(current.service_id.as_str(), "svc_web_3000");
+
+    let legacy = parse_browser_proxy_host("svc_web_3000.pc_001.qtunnel.local").unwrap();
+    assert_eq!(legacy, current);
+
+    assert!(parse_browser_proxy_host("svc_web_3000.mobilecode-connect.local").is_none());
+    assert!(parse_browser_proxy_host("svc_web_3000.pc_001.example.com").is_none());
+}
+
+#[test]
+fn parses_legacy_qtunnel_proxy_hosts() {
     let target = parse_qtunnel_host("svc_web_3000.pc_001.qtunnel.local").unwrap();
 
     assert_eq!(target.device_id.as_str(), "pc_001");
@@ -34,17 +55,20 @@ fn browser_proxy_host_generates_dns_safe_reversible_hosts() {
             device_id: "pc_001".into(),
             service_id: "svc_web_3000".into(),
         },
-        ".qtunnel.local",
+        ".mobilecode-connect.local",
     )
     .unwrap();
 
-    assert_eq!(host, "s-svc-5fweb-5f3000.d-pc-5f001.qtunnel.local");
+    assert_eq!(
+        host,
+        "s-svc-5fweb-5f3000.d-pc-5f001.mobilecode-connect.local"
+    );
     assert!(host
-        .trim_end_matches(".qtunnel.local")
+        .trim_end_matches(".mobilecode-connect.local")
         .chars()
         .all(|ch| ch.is_ascii_lowercase() || ch.is_ascii_digit() || ch == '-' || ch == '.'));
 
-    let target = parse_qtunnel_host(&host).unwrap();
+    let target = parse_browser_proxy_host(&host).unwrap();
     assert_eq!(target.device_id.as_str(), "pc_001");
     assert_eq!(target.service_id.as_str(), "svc_web_3000");
 }
@@ -56,14 +80,14 @@ fn classifies_browser_proxy_urls_for_device_control_and_direct_targets() {
             device_id: "pc_001".into(),
             service_id: "svc_web_3000".into(),
         },
-        ".qtunnel.local",
+        ".mobilecode-connect.local",
     )
     .unwrap();
 
     let device = classify_browser_proxy_url(
         &format!("http://{synthetic_host}/status?q=1"),
         "https://control.example.test/api",
-        ".qtunnel.local",
+        ".mobilecode-connect.local",
     )
     .unwrap();
     assert_eq!(device.kind, BrowserProxyUrlKind::DeviceService);
@@ -75,7 +99,7 @@ fn classifies_browser_proxy_urls_for_device_control_and_direct_targets() {
     let control = classify_browser_proxy_url(
         "https://control.example.test/devices",
         "https://control.example.test/api",
-        ".qtunnel.local",
+        ".mobilecode-connect.local",
     )
     .unwrap();
     assert_eq!(control.kind, BrowserProxyUrlKind::ControlServer);
@@ -85,7 +109,7 @@ fn classifies_browser_proxy_urls_for_device_control_and_direct_targets() {
     let direct = classify_browser_proxy_url(
         "https://example.com/assets/app.js",
         "https://control.example.test/api",
-        ".qtunnel.local",
+        ".mobilecode-connect.local",
     )
     .unwrap();
     assert_eq!(direct.kind, BrowserProxyUrlKind::DirectNetwork);
@@ -129,8 +153,8 @@ async fn browser_proxy_rejects_connections_over_the_configured_limit() {
         .unwrap();
     first
         .write_all(
-            b"CONNECT svc_web_3000.pc_001.qtunnel.local:443 HTTP/1.1\r\n\
-              Host: svc_web_3000.pc_001.qtunnel.local:443\r\n\
+            b"CONNECT svc_web_3000.pc_001.mobilecode-connect.local:443 HTTP/1.1\r\n\
+              Host: svc_web_3000.pc_001.mobilecode-connect.local:443\r\n\
               \r\n",
         )
         .await
@@ -146,8 +170,8 @@ async fn browser_proxy_rejects_connections_over_the_configured_limit() {
         .unwrap();
     second
         .write_all(
-            b"GET http://svc_api.pc_001.qtunnel.local/ HTTP/1.1\r\n\
-              Host: svc_api.pc_001.qtunnel.local\r\n\
+            b"GET http://svc_api.pc_001.mobilecode-connect.local/ HTTP/1.1\r\n\
+              Host: svc_api.pc_001.mobilecode-connect.local\r\n\
               \r\n",
         )
         .await
@@ -212,8 +236,8 @@ async fn browser_proxy_returns_gateway_timeout_when_tunnel_open_times_out() {
 
     browser
         .write_all(
-            b"GET http://svc_api.pc_001.qtunnel.local/ HTTP/1.1\r\n\
-              Host: svc_api.pc_001.qtunnel.local\r\n\
+            b"GET http://svc_api.pc_001.mobilecode-connect.local/ HTTP/1.1\r\n\
+              Host: svc_api.pc_001.mobilecode-connect.local\r\n\
               \r\n",
         )
         .await
@@ -246,8 +270,8 @@ async fn browser_proxy_closes_idle_connect_tunnels() {
 
     browser
         .write_all(
-            b"CONNECT svc_web_3000.pc_001.qtunnel.local:443 HTTP/1.1\r\n\
-              Host: svc_web_3000.pc_001.qtunnel.local:443\r\n\
+            b"CONNECT svc_web_3000.pc_001.mobilecode-connect.local:443 HTTP/1.1\r\n\
+              Host: svc_web_3000.pc_001.mobilecode-connect.local:443\r\n\
               \r\n",
         )
         .await
@@ -284,8 +308,8 @@ async fn browser_proxy_rewrites_absolute_form_http_requests_to_origin_form() {
 
     browser
         .write_all(
-            b"GET http://svc_web_3000.pc_001.qtunnel.local/path?q=1 HTTP/1.1\r\n\
-              Host: svc_web_3000.pc_001.qtunnel.local\r\n\
+            b"GET http://svc_web_3000.pc_001.mobilecode-connect.local/path?q=1 HTTP/1.1\r\n\
+              Host: svc_web_3000.pc_001.mobilecode-connect.local\r\n\
               User-Agent: test\r\n\
               \r\n",
         )
@@ -297,7 +321,7 @@ async fn browser_proxy_rewrites_absolute_form_http_requests_to_origin_form() {
     let read = remote.read(&mut forwarded).await.unwrap();
     let forwarded = String::from_utf8_lossy(&forwarded[..read]);
     assert!(forwarded.starts_with("GET /path?q=1 HTTP/1.1\r\n"));
-    assert!(forwarded.contains("Host: svc_web_3000.pc_001.qtunnel.local\r\n"));
+    assert!(forwarded.contains("Host: svc_web_3000.pc_001.mobilecode-connect.local\r\n"));
 
     remote
         .write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nok")
@@ -334,7 +358,7 @@ async fn browser_proxy_accepts_dns_safe_encoded_hosts() {
             device_id: "pc_001".into(),
             service_id: "svc_web_3000".into(),
         },
-        ".qtunnel.local",
+        ".mobilecode-connect.local",
     )
     .unwrap();
     let mut browser = TcpStream::connect(("127.0.0.1", proxy.local_port()))
@@ -357,7 +381,7 @@ async fn browser_proxy_accepts_dns_safe_encoded_hosts() {
 }
 
 #[tokio::test]
-async fn browser_proxy_directly_forwards_non_qtunnel_http_without_opening_tunnel_stream() {
+async fn browser_proxy_directly_forwards_non_synthetic_http_without_opening_tunnel_stream() {
     let connector = Arc::new(MemoryStreamConnector::default());
     let direct_listener = TcpListener::bind(("127.0.0.1", 0)).await.unwrap();
     let direct_port = direct_listener.local_addr().unwrap().port();
@@ -409,7 +433,7 @@ async fn browser_proxy_directly_forwards_non_qtunnel_http_without_opening_tunnel
 }
 
 #[tokio::test]
-async fn browser_proxy_directly_tunnels_non_qtunnel_connect_without_opening_tunnel_stream() {
+async fn browser_proxy_directly_tunnels_non_synthetic_connect_without_opening_tunnel_stream() {
     let connector = Arc::new(MemoryStreamConnector::default());
     let direct_listener = TcpListener::bind(("127.0.0.1", 0)).await.unwrap();
     let direct_port = direct_listener.local_addr().unwrap().port();
@@ -626,8 +650,8 @@ async fn browser_proxy_counts_tunnel_connections() {
 
     browser
         .write_all(
-            b"GET http://svc_api.pc_001.qtunnel.local/status HTTP/1.1\r\n\
-              Host: svc_api.pc_001.qtunnel.local\r\n\
+            b"GET http://svc_api.pc_001.mobilecode-connect.local/status HTTP/1.1\r\n\
+              Host: svc_api.pc_001.mobilecode-connect.local\r\n\
               \r\n",
         )
         .await
@@ -670,7 +694,7 @@ async fn browser_proxy_uses_configured_domain_suffix() {
     let connector = Arc::new(MemoryStreamConnector::default());
     let proxy = BrowserProxy::bind(
         BrowserProxyConfig {
-            domain_suffix: ".qtunnel.test".to_string(),
+            domain_suffix: ".mobilecode-connect.test".to_string(),
             ..BrowserProxyConfig::default()
         },
         connector.clone(),
@@ -683,8 +707,8 @@ async fn browser_proxy_uses_configured_domain_suffix() {
 
     browser
         .write_all(
-            b"GET http://svc_web_3000.pc_001.qtunnel.test/ HTTP/1.1\r\n\
-              Host: svc_web_3000.pc_001.qtunnel.test\r\n\
+            b"GET http://svc_web_3000.pc_001.mobilecode-connect.test/ HTTP/1.1\r\n\
+              Host: svc_web_3000.pc_001.mobilecode-connect.test\r\n\
               \r\n",
         )
         .await
@@ -729,8 +753,8 @@ async fn browser_proxy_preserves_request_body_already_read_with_headers() {
 
     browser
         .write_all(
-            b"POST http://svc_api.pc_001.qtunnel.local/upload HTTP/1.1\r\n\
-              Host: svc_api.pc_001.qtunnel.local\r\n\
+            b"POST http://svc_api.pc_001.mobilecode-connect.local/upload HTTP/1.1\r\n\
+              Host: svc_api.pc_001.mobilecode-connect.local\r\n\
               Content-Length: 5\r\n\
               \r\n\
               abc\xffz",
@@ -742,9 +766,9 @@ async fn browser_proxy_preserves_request_body_already_read_with_headers() {
     let mut forwarded = vec![0_u8; 160];
     let read = remote.read(&mut forwarded).await.unwrap();
     let forwarded = &forwarded[..read];
-    assert!(
-        forwarded.starts_with(b"POST /upload HTTP/1.1\r\nHost: svc_api.pc_001.qtunnel.local\r\n")
-    );
+    assert!(forwarded.starts_with(
+        b"POST /upload HTTP/1.1\r\nHost: svc_api.pc_001.mobilecode-connect.local\r\n"
+    ));
     assert!(forwarded.ends_with(b"abc\xffz"));
 
     proxy.shutdown().await.unwrap();
@@ -762,8 +786,8 @@ async fn browser_proxy_forces_connection_close_on_plain_http_requests() {
 
     browser
         .write_all(
-            b"GET http://svc_web_3000.pc_001.qtunnel.local/path HTTP/1.1\r\n\
-              Host: svc_web_3000.pc_001.qtunnel.local\r\n\
+            b"GET http://svc_web_3000.pc_001.mobilecode-connect.local/path HTTP/1.1\r\n\
+              Host: svc_web_3000.pc_001.mobilecode-connect.local\r\n\
               Connection: keep-alive\r\n\
               Proxy-Connection: keep-alive\r\n\
               \r\n",
@@ -800,12 +824,12 @@ async fn browser_proxy_does_not_forward_pipelined_http_request_to_first_remote_s
 
     browser
         .write_all(
-            b"GET http://svc_web_3000.pc_001.qtunnel.local/one HTTP/1.1\r\n\
-              Host: svc_web_3000.pc_001.qtunnel.local\r\n\
+            b"GET http://svc_web_3000.pc_001.mobilecode-connect.local/one HTTP/1.1\r\n\
+              Host: svc_web_3000.pc_001.mobilecode-connect.local\r\n\
               Connection: keep-alive\r\n\
               \r\n\
-              GET http://svc_api.pc_001.qtunnel.local/two HTTP/1.1\r\n\
-              Host: svc_api.pc_001.qtunnel.local\r\n\
+              GET http://svc_api.pc_001.mobilecode-connect.local/two HTTP/1.1\r\n\
+              Host: svc_api.pc_001.mobilecode-connect.local\r\n\
               \r\n",
         )
         .await
@@ -816,7 +840,7 @@ async fn browser_proxy_does_not_forward_pipelined_http_request_to_first_remote_s
     let forwarded = String::from_utf8_lossy(&forwarded);
     assert!(forwarded.starts_with("GET /one HTTP/1.1\r\n"));
     assert!(!forwarded.contains("/two"));
-    assert!(!forwarded.contains("svc_api.pc_001.qtunnel.local"));
+    assert!(!forwarded.contains("svc_api.pc_001.mobilecode-connect.local"));
 
     proxy.shutdown().await.unwrap();
 }
@@ -833,12 +857,12 @@ async fn browser_proxy_forwards_only_declared_content_length_body() {
 
     browser
         .write_all(
-            b"POST http://svc_api.pc_001.qtunnel.local/upload HTTP/1.1\r\n\
-              Host: svc_api.pc_001.qtunnel.local\r\n\
+            b"POST http://svc_api.pc_001.mobilecode-connect.local/upload HTTP/1.1\r\n\
+              Host: svc_api.pc_001.mobilecode-connect.local\r\n\
               Content-Length: 5\r\n\
               \r\n\
-              abcdeGET http://svc_api.pc_001.qtunnel.local/next HTTP/1.1\r\n\
-              Host: svc_api.pc_001.qtunnel.local\r\n\
+              abcdeGET http://svc_api.pc_001.mobilecode-connect.local/next HTTP/1.1\r\n\
+              Host: svc_api.pc_001.mobilecode-connect.local\r\n\
               \r\n",
         )
         .await
@@ -869,8 +893,8 @@ async fn browser_proxy_forwards_declared_request_body_written_after_headers() {
 
     browser
         .write_all(
-            b"POST http://svc_api.pc_001.qtunnel.local/upload HTTP/1.1\r\n\
-              Host: svc_api.pc_001.qtunnel.local\r\n\
+            b"POST http://svc_api.pc_001.mobilecode-connect.local/upload HTTP/1.1\r\n\
+              Host: svc_api.pc_001.mobilecode-connect.local\r\n\
               Content-Length: 7\r\n\
               \r\n\
               abc",
@@ -905,13 +929,13 @@ async fn browser_proxy_forwards_chunked_request_body_without_pipelined_bytes() {
 
     browser
         .write_all(
-            b"POST http://svc_api.pc_001.qtunnel.local/upload HTTP/1.1\r\n\
-              Host: svc_api.pc_001.qtunnel.local\r\n\
+            b"POST http://svc_api.pc_001.mobilecode-connect.local/upload HTTP/1.1\r\n\
+              Host: svc_api.pc_001.mobilecode-connect.local\r\n\
               Transfer-Encoding: chunked\r\n\
               \r\n\
               4\r\nWiki\r\n5\r\npedia\r\n0\r\n\r\n\
-              GET http://svc_api.pc_001.qtunnel.local/next HTTP/1.1\r\n\
-              Host: svc_api.pc_001.qtunnel.local\r\n\
+              GET http://svc_api.pc_001.mobilecode-connect.local/next HTTP/1.1\r\n\
+              Host: svc_api.pc_001.mobilecode-connect.local\r\n\
               \r\n",
         )
         .await
@@ -920,7 +944,7 @@ async fn browser_proxy_forwards_chunked_request_body_without_pipelined_bytes() {
     let mut remote = connector.accept().await.unwrap();
     let forwarded = read_forwarded_request(&mut remote).await;
     assert!(forwarded.starts_with(
-        b"POST /upload HTTP/1.1\r\nHost: svc_api.pc_001.qtunnel.local\r\nTransfer-Encoding: chunked\r\n"
+        b"POST /upload HTTP/1.1\r\nHost: svc_api.pc_001.mobilecode-connect.local\r\nTransfer-Encoding: chunked\r\n"
     ));
     assert!(forwarded.ends_with(b"4\r\nWiki\r\n5\r\npedia\r\n0\r\n\r\n"));
     assert!(!String::from_utf8_lossy(&forwarded).contains("/next"));
@@ -940,8 +964,8 @@ async fn browser_proxy_forwards_chunked_body_written_after_headers() {
 
     browser
         .write_all(
-            b"POST http://svc_api.pc_001.qtunnel.local/upload HTTP/1.1\r\n\
-              Host: svc_api.pc_001.qtunnel.local\r\n\
+            b"POST http://svc_api.pc_001.mobilecode-connect.local/upload HTTP/1.1\r\n\
+              Host: svc_api.pc_001.mobilecode-connect.local\r\n\
               Transfer-Encoding: chunked\r\n\
               \r\n\
               3\r\nabc\r\n",
@@ -954,7 +978,7 @@ async fn browser_proxy_forwards_chunked_body_written_after_headers() {
 
     let forwarded = read_forwarded_request(&mut remote).await;
     assert!(forwarded.starts_with(
-        b"POST /upload HTTP/1.1\r\nHost: svc_api.pc_001.qtunnel.local\r\nTransfer-Encoding: chunked\r\n"
+        b"POST /upload HTTP/1.1\r\nHost: svc_api.pc_001.mobilecode-connect.local\r\nTransfer-Encoding: chunked\r\n"
     ));
     assert!(forwarded.ends_with(b"3\r\nabc\r\n2\r\nde\r\n0\r\n\r\n"));
 
@@ -973,8 +997,8 @@ async fn browser_proxy_forwards_chunked_body_with_split_chunk_lines() {
 
     browser
         .write_all(
-            b"POST http://svc_api.pc_001.qtunnel.local/upload HTTP/1.1\r\n\
-              Host: svc_api.pc_001.qtunnel.local\r\n\
+            b"POST http://svc_api.pc_001.mobilecode-connect.local/upload HTTP/1.1\r\n\
+              Host: svc_api.pc_001.mobilecode-connect.local\r\n\
               Transfer-Encoding: chunked\r\n\
               \r\n\
               A",
@@ -990,7 +1014,7 @@ async fn browser_proxy_forwards_chunked_body_with_split_chunk_lines() {
 
     let forwarded = read_forwarded_request(&mut remote).await;
     assert!(forwarded.starts_with(
-        b"POST /upload HTTP/1.1\r\nHost: svc_api.pc_001.qtunnel.local\r\nTransfer-Encoding: chunked\r\n"
+        b"POST /upload HTTP/1.1\r\nHost: svc_api.pc_001.mobilecode-connect.local\r\nTransfer-Encoding: chunked\r\n"
     ));
     assert!(forwarded.ends_with(b"A\r\n0123456789\r\n0\r\nTrailer: yes\r\n\r\n"));
 
@@ -1009,8 +1033,8 @@ async fn browser_proxy_rejects_chunked_request_with_content_length() {
 
     browser
         .write_all(
-            b"POST http://svc_api.pc_001.qtunnel.local/upload HTTP/1.1\r\n\
-              Host: svc_api.pc_001.qtunnel.local\r\n\
+            b"POST http://svc_api.pc_001.mobilecode-connect.local/upload HTTP/1.1\r\n\
+              Host: svc_api.pc_001.mobilecode-connect.local\r\n\
               Transfer-Encoding: chunked\r\n\
               Content-Length: 4\r\n\
               \r\n\
@@ -1038,8 +1062,8 @@ async fn browser_proxy_connect_establishes_a_raw_tunnel() {
 
     browser
         .write_all(
-            b"CONNECT svc_web_3000.pc_001.qtunnel.local:443 HTTP/1.1\r\n\
-              Host: svc_web_3000.pc_001.qtunnel.local:443\r\n\
+            b"CONNECT svc_web_3000.pc_001.mobilecode-connect.local:443 HTTP/1.1\r\n\
+              Host: svc_web_3000.pc_001.mobilecode-connect.local:443\r\n\
               \r\n",
         )
         .await

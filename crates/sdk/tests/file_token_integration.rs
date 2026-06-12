@@ -111,6 +111,6 @@ fn unique_temp_dir() -> std::path::PathBuf {
         .as_nanos();
     let id = NEXT_TEMP_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     std::env::temp_dir().join(format!(
-        "quic-test-sdk-file-token-integration-{suffix}-{id}"
+        "mobilecode-connect-sdk-file-token-integration-{suffix}-{id}"
     ))
 }

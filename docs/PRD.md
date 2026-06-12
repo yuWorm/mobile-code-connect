@@ -1047,7 +1047,7 @@ POST /sessions/{session_id}/close
 使用 Cargo workspace：
 
 ```text
-quic-tunnel/
+mobilecode-connect/
   Cargo.toml
   crates/
     protocol/

@@ -23,19 +23,35 @@ enabled() {
   [[ "$value" == "1" || "$value" == "true" || "$value" == "yes" ]]
 }
 
+env_value() {
+  local canonical="$1"
+  local legacy="$2"
+  if [[ -n "${!canonical:-}" ]]; then
+    printf '%s\n' "${!canonical}"
+  else
+    printf '%s\n' "${!legacy:-}"
+  fi
+}
+
+enabled_env() {
+  enabled "$(env_value "$1" "$2")"
+}
+
 check_runtime_env() {
-  if ! enabled "${QUIC_PROD_CHECK_REQUIRE_RUNTIME_ENV:-0}"; then
-    log "runtime env gate skipped; set QUIC_PROD_CHECK_REQUIRE_RUNTIME_ENV=1 to enforce production env checks"
+  if ! enabled_env "MOBILECODE_CONNECT_PROD_CHECK_REQUIRE_RUNTIME_ENV" "QUIC_PROD_CHECK_REQUIRE_RUNTIME_ENV"; then
+    log "runtime env gate skipped; set MOBILECODE_CONNECT_PROD_CHECK_REQUIRE_RUNTIME_ENV=1 to enforce production env checks"
     return 0
   fi
 
-  [[ "${QUIC_TUNNEL_STRICT_AUTH:-}" == "true" ]] || \
-    die "QUIC_TUNNEL_STRICT_AUTH=true is required for production"
+  [[ "${MOBILECODE_CONNECT_STRICT_AUTH:-${QUIC_TUNNEL_STRICT_AUTH:-}}" == "true" ]] || \
+    die "MOBILECODE_CONNECT_STRICT_AUTH=true is required for production"
 
-  [[ -n "${QUIC_TEST_TOKEN_SECRET:-}" ]] || \
-    die "QUIC_TEST_TOKEN_SECRET must be set to the production token secret"
-  [[ "$QUIC_TEST_TOKEN_SECRET" != "dev-secret" ]] || \
-    die "QUIC_TEST_TOKEN_SECRET must not be dev-secret in production"
+  local token_secret
+  token_secret="$(env_value "MOBILECODE_CONNECT_TEST_TOKEN_SECRET" "QUIC_TEST_TOKEN_SECRET")"
+  [[ -n "$token_secret" ]] || \
+    die "MOBILECODE_CONNECT_TEST_TOKEN_SECRET must be set to the production token secret"
+  [[ "$token_secret" != "dev-secret" ]] || \
+    die "MOBILECODE_CONNECT_TEST_TOKEN_SECRET must not be dev-secret in production"
 
   log "runtime env gate passed"
 }
@@ -61,39 +77,42 @@ run cargo test -p mobilecode_connect_mobile_core --test smoke_script
 run cargo test -p mobile-cli
 run cargo test --workspace --no-run
 
-if enabled "${QUIC_PROD_CHECK_MOBILE_PACKAGE:-0}" || enabled "${QUIC_PROD_CHECK_IOS_PACKAGE:-0}"; then
+if enabled_env "MOBILECODE_CONNECT_PROD_CHECK_MOBILE_PACKAGE" "QUIC_PROD_CHECK_MOBILE_PACKAGE" || \
+   enabled_env "MOBILECODE_CONNECT_PROD_CHECK_IOS_PACKAGE" "QUIC_PROD_CHECK_IOS_PACKAGE"; then
   run scripts/package-mobile-ios.sh --ios-min-version 17.0 --targets aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios
 else
-  log "real iOS packaging skipped; set QUIC_PROD_CHECK_MOBILE_PACKAGE=1 or QUIC_PROD_CHECK_IOS_PACKAGE=1 to run scripts/package-mobile-ios.sh"
+  log "real iOS packaging skipped; set MOBILECODE_CONNECT_PROD_CHECK_MOBILE_PACKAGE=1 or MOBILECODE_CONNECT_PROD_CHECK_IOS_PACKAGE=1 to run scripts/package-mobile-ios.sh"
 fi
 
-if enabled "${QUIC_PROD_CHECK_MOBILE_PACKAGE:-0}" || enabled "${QUIC_PROD_CHECK_ANDROID_PACKAGE:-0}"; then
+if enabled_env "MOBILECODE_CONNECT_PROD_CHECK_MOBILE_PACKAGE" "QUIC_PROD_CHECK_MOBILE_PACKAGE" || \
+   enabled_env "MOBILECODE_CONNECT_PROD_CHECK_ANDROID_PACKAGE" "QUIC_PROD_CHECK_ANDROID_PACKAGE"; then
   run scripts/package-mobile-android.sh --gradle-task assembleRelease
 else
-  log "real Android packaging skipped; set QUIC_PROD_CHECK_MOBILE_PACKAGE=1 or QUIC_PROD_CHECK_ANDROID_PACKAGE=1 to run scripts/package-mobile-android.sh"
+  log "real Android packaging skipped; set MOBILECODE_CONNECT_PROD_CHECK_MOBILE_PACKAGE=1 or MOBILECODE_CONNECT_PROD_CHECK_ANDROID_PACKAGE=1 to run scripts/package-mobile-android.sh"
 fi
 
-if enabled "${QUIC_PROD_CHECK_DEVICE_SIGNOFF:-0}"; then
-  signoff_file="${QUIC_PROD_CHECK_DEVICE_SIGNOFF_FILE:-docs/mobile-device-acceptance-signoff.md}"
+if enabled_env "MOBILECODE_CONNECT_PROD_CHECK_DEVICE_SIGNOFF" "QUIC_PROD_CHECK_DEVICE_SIGNOFF"; then
+  signoff_file="$(env_value "MOBILECODE_CONNECT_PROD_CHECK_DEVICE_SIGNOFF_FILE" "QUIC_PROD_CHECK_DEVICE_SIGNOFF_FILE")"
+  signoff_file="${signoff_file:-docs/mobile-device-acceptance-signoff.md}"
   [[ -s "$signoff_file" ]] || die "mobile device signoff file is required: $signoff_file; use docs/mobile-device-acceptance.md"
   for required in iOS Android WebView P2P Relay revoke LocalNetworkAndDomain; do
     grep -q "$required" "$signoff_file" || die "mobile device signoff missing required evidence marker: $required"
   done
   log "mobile device signoff gate passed: $signoff_file"
 else
-  log "mobile device signoff skipped; complete docs/mobile-device-acceptance.md and set QUIC_PROD_CHECK_DEVICE_SIGNOFF=1 to enforce it"
+  log "mobile device signoff skipped; complete docs/mobile-device-acceptance.md and set MOBILECODE_CONNECT_PROD_CHECK_DEVICE_SIGNOFF=1 to enforce it"
 fi
 
-if enabled "${QUIC_PROD_CHECK_FULL:-0}"; then
+if enabled_env "MOBILECODE_CONNECT_PROD_CHECK_FULL" "QUIC_PROD_CHECK_FULL"; then
   run cargo test --workspace
 else
-  log "full workspace runtime tests skipped; set QUIC_PROD_CHECK_FULL=1 to run cargo test --workspace"
+  log "full workspace runtime tests skipped; set MOBILECODE_CONNECT_PROD_CHECK_FULL=1 to run cargo test --workspace"
 fi
 
-if enabled "${QUIC_PROD_CHECK_E2E:-0}"; then
+if enabled_env "MOBILECODE_CONNECT_PROD_CHECK_E2E" "QUIC_PROD_CHECK_E2E"; then
   run ./scripts/e2e-smoke.sh
 else
-  log "socket-binding E2E smoke skipped; set QUIC_PROD_CHECK_E2E=1 to run ./scripts/e2e-smoke.sh"
+  log "socket-binding E2E smoke skipped; set MOBILECODE_CONNECT_PROD_CHECK_E2E=1 to run ./scripts/e2e-smoke.sh"
 fi
 
 log "production readiness gate completed; review docs/production-readiness.md before release"

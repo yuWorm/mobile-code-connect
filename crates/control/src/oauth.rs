@@ -109,7 +109,7 @@ fi
             .unwrap()
             .as_nanos();
         let id = NEXT_TEMP_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        std::env::temp_dir().join(format!("quic-test-github-oauth-{suffix}-{id}"))
+        std::env::temp_dir().join(format!("mobilecode-connect-github-oauth-{suffix}-{id}"))
     }
 }
 
@@ -180,7 +180,7 @@ pub trait GitHubOAuthClient: Send + Sync {
 
 const GITHUB_TOKEN_URL: &str = "https://github.com/login/oauth/access_token";
 const GITHUB_API_BASE_URL: &str = "https://api.github.com";
-const USER_AGENT: &str = "quic-test-control";
+const USER_AGENT: &str = "mobilecode-connect-control";
 
 #[derive(Clone, Debug)]
 pub struct GitHubOAuthHttpClient {

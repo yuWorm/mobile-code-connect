@@ -25,7 +25,7 @@ use tokio::sync::watch;
 struct Cli {
     #[arg(long, default_value = "127.0.0.1:4443")]
     bind: SocketAddr,
-    #[arg(long, env = "QUIC_TUNNEL_RELAY_TOKEN_SECRET")]
+    #[arg(long, env = "MOBILECODE_CONNECT_RELAY_TOKEN_SECRET")]
     token_secret: Option<String>,
     #[arg(long)]
     now_epoch_sec: Option<u64>,
@@ -61,7 +61,7 @@ impl Cli {
     fn config(&self, bootstrap: Option<&RelayBootstrapExchangeResponse>) -> Result<RelayConfig> {
         let token_secret = bootstrap
             .map(|bootstrap| bootstrap.token_secret.clone())
-            .or_else(|| self.token_secret.clone())
+            .or_else(|| self.token_secret_value())
             .context("--token-secret is required unless relayd is started with bootstrap args")?;
         Ok(RelayConfig {
             token_secret,
@@ -71,6 +71,15 @@ impl Cli {
 
     fn heartbeat_interval(&self) -> std::time::Duration {
         std::time::Duration::from_secs(self.heartbeat_interval_sec.max(1))
+    }
+
+    fn token_secret_value(&self) -> Option<String> {
+        self.token_secret.clone().or_else(|| {
+            env_alias(
+                "MOBILECODE_CONNECT_RELAY_TOKEN_SECRET",
+                "QUIC_TUNNEL_RELAY_TOKEN_SECRET",
+            )
+        })
     }
 
     fn debug_admin_listen(&self) -> Option<SocketAddr> {
@@ -143,7 +152,7 @@ impl Cli {
                 if self.control_url.is_some()
                     || self.control_token.is_some()
                     || self.relay_id.is_some()
-                    || self.token_secret.is_some()
+                    || self.token_secret_value().is_some()
                 {
                     bail!("bootstrap args cannot be combined with explicit control registration or --token-secret");
                 }
@@ -164,6 +173,13 @@ impl Cli {
             ),
         }
     }
+}
+
+fn env_alias(canonical: &str, legacy: &str) -> Option<String> {
+    std::env::var(canonical)
+        .ok()
+        .filter(|value| !value.is_empty())
+        .or_else(|| std::env::var(legacy).ok().filter(|value| !value.is_empty()))
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -632,7 +648,9 @@ mod tests {
         },
         session::RelaySessionState,
     };
-    use std::sync::Arc;
+    use std::sync::{Arc, Mutex};
+
+    static ENV_LOCK: Mutex<()> = Mutex::new(());
 
     fn test_claims(session_id: &str) -> RelayTokenClaims {
         RelayTokenClaims {
@@ -709,6 +727,22 @@ mod tests {
             "127.0.0.1:9090"
         );
         assert_eq!(cli.cert_out.unwrap().to_string_lossy(), "relay.der");
+    }
+
+    #[test]
+    fn relayd_accepts_legacy_token_secret_env_alias() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        std::env::remove_var("MOBILECODE_CONNECT_RELAY_TOKEN_SECRET");
+        std::env::set_var("QUIC_TUNNEL_RELAY_TOKEN_SECRET", "legacy-relay-secret");
+
+        let cli = Cli::try_parse_from(["relayd"]).unwrap();
+
+        assert_eq!(
+            cli.config(None).unwrap().token_secret,
+            "legacy-relay-secret"
+        );
+
+        std::env::remove_var("QUIC_TUNNEL_RELAY_TOKEN_SECRET");
     }
 
     #[test]
@@ -789,6 +823,10 @@ mod tests {
 
     #[test]
     fn relayd_bootstrap_args_build_exchange_request_and_runtime_config() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        std::env::remove_var("MOBILECODE_CONNECT_RELAY_TOKEN_SECRET");
+        std::env::remove_var("QUIC_TUNNEL_RELAY_TOKEN_SECRET");
+
         let cli = Cli::try_parse_from([
             "relayd",
             "--bind",
@@ -827,6 +865,31 @@ mod tests {
         assert_eq!(registration.relay_addr, "relay.example.com:4443");
         assert_eq!(registration.admin_addr, "");
         assert_eq!(registration.capacity_streams, 64);
+    }
+
+    #[test]
+    fn relayd_bootstrap_args_reject_legacy_token_secret_env_alias() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        std::env::remove_var("MOBILECODE_CONNECT_RELAY_TOKEN_SECRET");
+        std::env::set_var("QUIC_TUNNEL_RELAY_TOKEN_SECRET", "legacy-relay-secret");
+
+        let cli = Cli::try_parse_from([
+            "relayd",
+            "--bind",
+            "127.0.0.1:0",
+            "--bootstrap-control-url",
+            "https://control.example.com",
+            "--bootstrap-id",
+            "rb_001",
+            "--bootstrap-token",
+            "shown-once",
+        ])
+        .unwrap();
+
+        let error = cli.bootstrap_exchange().unwrap_err().to_string();
+        assert!(error.contains("bootstrap args cannot be combined"));
+
+        std::env::remove_var("QUIC_TUNNEL_RELAY_TOKEN_SECRET");
     }
 
     #[test]

@@ -4169,11 +4169,11 @@ async fn relayd_binary_is_downloadable_from_configured_path() {
         .unwrap()
         .as_nanos();
     let relayd_path = std::env::temp_dir().join(format!(
-        "quic-test-relayd-download-{}-{suffix}",
+        "mobilecode-connect-relayd-download-{}-{suffix}",
         std::process::id()
     ));
     fs::write(&relayd_path, b"dummy-relayd-binary").unwrap();
-    std::env::set_var("QUIC_TUNNEL_RELAYD_BINARY", &relayd_path);
+    std::env::set_var("MOBILECODE_CONNECT_RELAYD_BINARY", &relayd_path);
 
     let state = ControlState::new(
         "dev-secret",
@@ -4182,7 +4182,7 @@ async fn relayd_binary_is_downloadable_from_configured_path() {
     );
     let app = routes(state);
     let response = get_without_token(app, "/relayd").await;
-    std::env::remove_var("QUIC_TUNNEL_RELAYD_BINARY");
+    std::env::remove_var("MOBILECODE_CONNECT_RELAYD_BINARY");
     let _ = fs::remove_file(&relayd_path);
 
     assert_eq!(response.status(), StatusCode::OK);
