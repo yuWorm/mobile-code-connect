@@ -1,12 +1,12 @@
 import Foundation
 import Security
 
-public enum QuicTunnelMobileGrantPairingError: Error, Equatable {
+public enum MobileCodeConnectMobileGrantPairingError: Error, Equatable {
     case invalidNonceByteCount(Int)
     case nonceGenerationFailed(OSStatus)
 }
 
-public final class QuicTunnelMobileGrantPairingController {
+public final class MobileCodeConnectMobileGrantPairingController {
     public var options: FfiMobileGrantPairingOptions
 
     public static func makePairingOptions(
@@ -23,7 +23,7 @@ public final class QuicTunnelMobileGrantPairingController {
 
     public static func generateNonce(byteCount: Int = 16) throws -> String {
         guard byteCount > 0 else {
-            throw QuicTunnelMobileGrantPairingError.invalidNonceByteCount(byteCount)
+            throw MobileCodeConnectMobileGrantPairingError.invalidNonceByteCount(byteCount)
         }
         var bytes = [UInt8](repeating: 0, count: byteCount)
         let status = bytes.withUnsafeMutableBytes { buffer -> OSStatus in
@@ -33,7 +33,7 @@ public final class QuicTunnelMobileGrantPairingController {
             return SecRandomCopyBytes(kSecRandomDefault, buffer.count, baseAddress)
         }
         guard status == errSecSuccess else {
-            throw QuicTunnelMobileGrantPairingError.nonceGenerationFailed(status)
+            throw MobileCodeConnectMobileGrantPairingError.nonceGenerationFailed(status)
         }
 
         return Data(bytes)

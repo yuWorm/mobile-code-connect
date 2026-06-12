@@ -24,7 +24,7 @@ use mobilecode_connect_sdk::{
     server::ServerApi,
     server_auth::{ServerAuthApi, ServerAuthSdk},
     store::TokenStore,
-    ControllerSdk, CreateSessionInput, LoginInput, QuicTunnelSdk, RegisterControllerInput,
+    ControllerSdk, CreateSessionInput, LoginInput, MobileCodeConnectSdk, RegisterControllerInput,
     RegisterInput, ServerLoginInput, ServerRegistrationInput, ServerSdk,
 };
 use serde::{de::DeserializeOwned, Serialize};
@@ -38,7 +38,7 @@ async fn sdk_facade_runs_full_live_workflow_against_in_process_control_routes() 
         "127.0.0.1:3478",
     ));
     let dir = unique_temp_dir();
-    let sdk = QuicTunnelSdk::builder()
+    let sdk = MobileCodeConnectSdk::builder()
         .control_url("http://127.0.0.1:1")
         .token_file(dir.join("user-token.json"))
         .server_credential_file(dir.join("server-credential.json"))
@@ -474,7 +474,7 @@ async fn approve_browser_server_auth(
         .unwrap()
 }
 
-async fn assert_saved_token(sdk: &QuicTunnelSdk, user_id: &UserId) {
+async fn assert_saved_token(sdk: &MobileCodeConnectSdk, user_id: &UserId) {
     let stored = sdk.token_store().load_token().await.unwrap().unwrap();
     assert_eq!(&stored.user_id, user_id);
     assert!(!stored.access_token.is_empty());

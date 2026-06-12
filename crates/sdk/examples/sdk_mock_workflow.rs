@@ -18,12 +18,12 @@ use mobilecode_connect_sdk::{
     controller::{ControllerApi, ControllerSdk, CreateSessionInput, RegisterControllerInput},
     server::{ServerApi, ServerRegistrationInput, ServerSdk},
     server_auth::{ServerAuthApi, ServerAuthSdk, ServerLoginInput},
-    QuicTunnelSdk,
+    MobileCodeConnectSdk,
 };
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let sdk = QuicTunnelSdk::builder()
+    let sdk = MobileCodeConnectSdk::builder()
         .control_url("http://127.0.0.1:8080")
         .memory_token_store()
         .memory_server_credential_store()

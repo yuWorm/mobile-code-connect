@@ -15,7 +15,7 @@ usage() {
   cat <<'EOF'
 Usage: scripts/package-mobile-ios.sh [options]
 
-Build the iOS SwiftPM package inputs for QuicTunnelMobileSdk.
+Build the iOS SwiftPM package inputs for MobileCodeConnectMobileSdk.
 
 Options:
   --targets CSV        Rust iOS targets to build
@@ -24,7 +24,7 @@ Options:
   --ios-min-version V  iOS deployment target for Rust builds (default: 17.0)
   --xcframework-output PATH
                        XCFramework output path
-                       (default: mobile/ios/Artifacts/quic_tunnel_mobile_coreFFI.xcframework)
+                       (default: mobile/ios/Artifacts/mobilecode_connect_mobile_coreFFI.xcframework)
   --skip-build         Do not run cargo build; require existing target artifacts
   --skip-xcodebuild    Stage bindings/headers but do not create the XCFramework
   --dry-run            Print the packaging plan without requiring toolchains
@@ -146,21 +146,21 @@ ensure_rust_target() {
 build_target() {
   local target="$1"
   if [[ "$DRY_RUN" -eq 1 ]]; then
-    log "dry-run: IPHONEOS_DEPLOYMENT_TARGET=$IOS_MIN_VERSION cargo build -p quic_tunnel_mobile_core --release --target $target"
+    log "dry-run: IPHONEOS_DEPLOYMENT_TARGET=$IOS_MIN_VERSION cargo build -p mobilecode_connect_mobile_core --release --target $target"
     return 0
   fi
 
   ensure_rust_target "$target"
 
   if [[ "$SKIP_BUILD" -eq 0 ]]; then
-    log "IPHONEOS_DEPLOYMENT_TARGET=$IOS_MIN_VERSION cargo build -p quic_tunnel_mobile_core --release --target $target"
-    IPHONEOS_DEPLOYMENT_TARGET="$IOS_MIN_VERSION" cargo build -p quic_tunnel_mobile_core --release --target "$target"
+    log "IPHONEOS_DEPLOYMENT_TARGET=$IOS_MIN_VERSION cargo build -p mobilecode_connect_mobile_core --release --target $target"
+    IPHONEOS_DEPLOYMENT_TARGET="$IOS_MIN_VERSION" cargo build -p mobilecode_connect_mobile_core --release --target "$target"
   fi
 }
 
 static_library_for_target() {
   local target="$1"
-  printf '%s/target/%s/release/libquic_tunnel_mobile_core.a' "$ROOT_DIR" "$target"
+  printf '%s/target/%s/release/libmobilecode_connect_mobile_core.a' "$ROOT_DIR" "$target"
 }
 
 for target in "${IOS_TARGETS[@]}"; do
@@ -184,11 +184,11 @@ else
 fi
 
 SWIFT_BINDINGS_DIR="$STAGING_DIR/uniffi/swift"
-GENERATED_SWIFT_DIR="$IOS_DIR/Sources/QuicTunnelMobileSdk/Generated"
+GENERATED_SWIFT_DIR="$IOS_DIR/Sources/MobileCodeConnectMobileSdk/Generated"
 HEADERS_DIR="$STAGING_DIR/headers"
 ARTIFACTS_DIR="$IOS_DIR/Artifacts"
-SIMULATOR_LIBRARY="$STAGING_DIR/libquic_tunnel_mobile_core_simulator.a"
-XCFRAMEWORK_RELATIVE_PATH="Artifacts/quic_tunnel_mobile_coreFFI.xcframework"
+SIMULATOR_LIBRARY="$STAGING_DIR/libmobilecode_connect_mobile_core_simulator.a"
+XCFRAMEWORK_RELATIVE_PATH="Artifacts/mobilecode_connect_mobile_coreFFI.xcframework"
 XCFRAMEWORK_PATH="${XCFRAMEWORK_OUTPUT:-$IOS_DIR/$XCFRAMEWORK_RELATIVE_PATH}"
 XCFRAMEWORK_DIR="$(dirname "$XCFRAMEWORK_PATH")"
 MANIFEST_PATH="$STAGING_DIR/mobile-package-manifest.json"
@@ -196,16 +196,16 @@ log "XCFRAMEWORK_OUTPUT=$XCFRAMEWORK_PATH"
 
 if [[ "$DRY_RUN" -eq 1 ]]; then
   log "dry-run: mkdir -p $GENERATED_SWIFT_DIR $HEADERS_DIR $XCFRAMEWORK_DIR"
-  log "dry-run: cp $SWIFT_BINDINGS_DIR/quic_tunnel_mobile_core.swift $GENERATED_SWIFT_DIR/quic_tunnel_mobile_core.swift"
-  log "dry-run: cp $SWIFT_BINDINGS_DIR/quic_tunnel_mobile_coreFFI.h $HEADERS_DIR/quic_tunnel_mobile_coreFFI.h"
-  log "dry-run: cp $SWIFT_BINDINGS_DIR/quic_tunnel_mobile_coreFFI.modulemap $HEADERS_DIR/module.modulemap"
+  log "dry-run: cp $SWIFT_BINDINGS_DIR/mobilecode_connect_mobile_core.swift $GENERATED_SWIFT_DIR/mobilecode_connect_mobile_core.swift"
+  log "dry-run: cp $SWIFT_BINDINGS_DIR/mobilecode_connect_mobile_coreFFI.h $HEADERS_DIR/mobilecode_connect_mobile_coreFFI.h"
+  log "dry-run: cp $SWIFT_BINDINGS_DIR/mobilecode_connect_mobile_coreFFI.modulemap $HEADERS_DIR/module.modulemap"
 else
   mkdir -p "$GENERATED_SWIFT_DIR" "$HEADERS_DIR" "$XCFRAMEWORK_DIR"
-  cp "$SWIFT_BINDINGS_DIR/quic_tunnel_mobile_core.swift" \
-    "$GENERATED_SWIFT_DIR/quic_tunnel_mobile_core.swift"
-  cp "$SWIFT_BINDINGS_DIR/quic_tunnel_mobile_coreFFI.h" \
-    "$HEADERS_DIR/quic_tunnel_mobile_coreFFI.h"
-  cp "$SWIFT_BINDINGS_DIR/quic_tunnel_mobile_coreFFI.modulemap" \
+  cp "$SWIFT_BINDINGS_DIR/mobilecode_connect_mobile_core.swift" \
+    "$GENERATED_SWIFT_DIR/mobilecode_connect_mobile_core.swift"
+  cp "$SWIFT_BINDINGS_DIR/mobilecode_connect_mobile_coreFFI.h" \
+    "$HEADERS_DIR/mobilecode_connect_mobile_coreFFI.h"
+  cp "$SWIFT_BINDINGS_DIR/mobilecode_connect_mobile_coreFFI.modulemap" \
     "$HEADERS_DIR/module.modulemap"
 fi
 
@@ -244,8 +244,8 @@ write_ios_manifest() {
       write_manifest_artifact "$(static_library_for_target "$target")"
     done
     write_manifest_artifact "$SIMULATOR_LIBRARY"
-    write_manifest_artifact "$GENERATED_SWIFT_DIR/quic_tunnel_mobile_core.swift"
-    write_manifest_artifact "$HEADERS_DIR/quic_tunnel_mobile_coreFFI.h"
+    write_manifest_artifact "$GENERATED_SWIFT_DIR/mobilecode_connect_mobile_core.swift"
+    write_manifest_artifact "$HEADERS_DIR/mobilecode_connect_mobile_coreFFI.h"
     write_manifest_artifact "$HEADERS_DIR/module.modulemap"
     if [[ -d "$XCFRAMEWORK_PATH" ]]; then
       while IFS= read -r file; do

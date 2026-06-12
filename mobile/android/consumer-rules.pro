@@ -1,4 +1,4 @@
 -keep class com.sun.jna.** { *; }
--keep class dev.quictunnel.mobile.** { *; }
--keep class uniffi.quic_tunnel_mobile_core.** { *; }
+-keep class dev.mobilecode.connect.mobile.** { *; }
+-keep class uniffi.mobilecode_connect_mobile_core.** { *; }
 -dontwarn com.sun.jna.**

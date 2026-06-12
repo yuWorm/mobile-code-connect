@@ -3,26 +3,26 @@
 import PackageDescription
 
 let package = Package(
-    name: "QuicTunnelMobileSdk",
+    name: "MobileCodeConnectMobileSdk",
     platforms: [
         .iOS(.v17),
         .macOS(.v14),
     ],
     products: [
         .library(
-            name: "QuicTunnelMobileSdk",
-            targets: ["QuicTunnelMobileSdk"]
+            name: "MobileCodeConnectMobileSdk",
+            targets: ["MobileCodeConnectMobileSdk"]
         ),
     ],
     targets: [
         .binaryTarget(
-            name: "quic_tunnel_mobile_coreFFI",
-            path: "Artifacts/quic_tunnel_mobile_coreFFI.xcframework"
+            name: "mobilecode_connect_mobile_coreFFI",
+            path: "Artifacts/mobilecode_connect_mobile_coreFFI.xcframework"
         ),
         .target(
-            name: "QuicTunnelMobileSdk",
-            dependencies: ["quic_tunnel_mobile_coreFFI"],
-            path: "Sources/QuicTunnelMobileSdk"
+            name: "MobileCodeConnectMobileSdk",
+            dependencies: ["mobilecode_connect_mobile_coreFFI"],
+            path: "Sources/MobileCodeConnectMobileSdk"
         ),
     ]
 )

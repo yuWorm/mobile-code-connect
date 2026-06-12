@@ -1,4 +1,4 @@
-package dev.quictunnel.mobile
+package dev.mobilecode.connect.mobile
 
 import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
@@ -10,15 +10,15 @@ import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
-import uniffi.quic_tunnel_mobile_core.FfiMobileException
-import uniffi.quic_tunnel_mobile_core.FfiMobileGrantCredential
-import uniffi.quic_tunnel_mobile_core.mobileGrantCredentialFromJson
-import uniffi.quic_tunnel_mobile_core.mobileGrantCredentialToJson
+import uniffi.mobilecode_connect_mobile_core.FfiMobileException
+import uniffi.mobilecode_connect_mobile_core.FfiMobileGrantCredential
+import uniffi.mobilecode_connect_mobile_core.mobileGrantCredentialFromJson
+import uniffi.mobilecode_connect_mobile_core.mobileGrantCredentialToJson
 
-class QuicTunnelMobileGrantSecureStore(
+class MobileCodeConnectMobileGrantSecureStore(
     context: Context,
-    private val keyAlias: String = "dev.quictunnel.mobile.mobile_grant",
-    preferencesName: String = "dev.quictunnel.mobile.grants",
+    private val keyAlias: String = "dev.mobilecode.connect.mobile.mobile_grant",
+    preferencesName: String = "dev.mobilecode.connect.mobile.grants",
     private val credentialKey: String = "default",
 ) {
     private val preferences =

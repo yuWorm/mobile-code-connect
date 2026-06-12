@@ -231,7 +231,7 @@ fn production_check_documents_release_readiness() {
         "create-relay-bootstrap",
         "Keychain",
         "Android Keystore",
-        "QuicTunnelMobileGrantSecureStore",
+        "MobileCodeConnectMobileGrantSecureStore",
         "QUIC_PROD_CHECK_MOBILE_PACKAGE=1",
         "QUIC_PROD_CHECK_DEVICE_SIGNOFF=1",
         "mobile-device-acceptance.md",

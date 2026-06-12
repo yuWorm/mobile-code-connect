@@ -1,22 +1,22 @@
-package dev.quictunnel.mobile
+package dev.mobilecode.connect.mobile
 
 import androidx.webkit.ProxyConfig
 import androidx.webkit.ProxyController
 import androidx.webkit.WebViewFeature
 import java.util.concurrent.Executor
-import uniffi.quic_tunnel_mobile_core.FfiBrowserProxy
-import uniffi.quic_tunnel_mobile_core.FfiBrowserProxyConfig
-import uniffi.quic_tunnel_mobile_core.FfiBrowserProxyDirectFallbackPolicy
-import uniffi.quic_tunnel_mobile_core.FfiBrowserProxyStats
-import uniffi.quic_tunnel_mobile_core.FfiBrowserProxyUrlClassification
-import uniffi.quic_tunnel_mobile_core.FfiMobileException
-import uniffi.quic_tunnel_mobile_core.FfiMobileTunnel
-import uniffi.quic_tunnel_mobile_core.browserProxyClassifyUrlWithDefaults
-import uniffi.quic_tunnel_mobile_core.browserProxyConfigWithDefaults
-import uniffi.quic_tunnel_mobile_core.browserProxyDeviceServiceRoute
-import uniffi.quic_tunnel_mobile_core.browserProxyRouteHttpUrl
+import uniffi.mobilecode_connect_mobile_core.FfiBrowserProxy
+import uniffi.mobilecode_connect_mobile_core.FfiBrowserProxyConfig
+import uniffi.mobilecode_connect_mobile_core.FfiBrowserProxyDirectFallbackPolicy
+import uniffi.mobilecode_connect_mobile_core.FfiBrowserProxyStats
+import uniffi.mobilecode_connect_mobile_core.FfiBrowserProxyUrlClassification
+import uniffi.mobilecode_connect_mobile_core.FfiMobileException
+import uniffi.mobilecode_connect_mobile_core.FfiMobileTunnel
+import uniffi.mobilecode_connect_mobile_core.browserProxyClassifyUrlWithDefaults
+import uniffi.mobilecode_connect_mobile_core.browserProxyConfigWithDefaults
+import uniffi.mobilecode_connect_mobile_core.browserProxyDeviceServiceRoute
+import uniffi.mobilecode_connect_mobile_core.browserProxyRouteHttpUrl
 
-class QuicTunnelBrowserProxyController(
+class MobileCodeConnectBrowserProxyController(
     private val tunnel: FfiMobileTunnel,
 ) : AutoCloseable {
     companion object {

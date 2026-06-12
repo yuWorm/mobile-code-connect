@@ -12,8 +12,8 @@ pub use admin::AdminSdk;
 pub use auth::{AuthSdk, LoginInput, RegisterInput};
 pub use controller::{ControllerSdk, CreateSessionInput, RegisterControllerInput};
 pub use facade::{
-    EnsureBrowserServerLogin, EnsureDeviceCodeServerLogin, OpenMobileServiceInput,
-    OpenedMobileService, QuicTunnelSdk, QuicTunnelSdkBuilder,
+    EnsureBrowserServerLogin, EnsureDeviceCodeServerLogin, MobileCodeConnectSdk,
+    MobileCodeConnectSdkBuilder, OpenMobileServiceInput, OpenedMobileService,
 };
 pub use mobile::{
     classify_browser_proxy_url_with_defaults, classify_browser_proxy_url_with_domain_suffix,

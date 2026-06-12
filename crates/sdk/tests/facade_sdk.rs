@@ -6,15 +6,15 @@ use mobilecode_connect_sdk::{
     server_auth::ServerCredentialStore,
     store::{StoredToken, TokenStore},
     CreateSessionInput, EnsureBrowserServerLogin, EnsureDeviceCodeServerLogin,
-    HttpControlClientOptions, LoginInput, OpenMobileServiceInput, P2pOrRelayTunnelConfig,
-    QuicTunnelSdk, RegisterControllerInput, RegisterInput, SdkError, ServerLoginInput,
+    HttpControlClientOptions, LoginInput, MobileCodeConnectSdk, OpenMobileServiceInput,
+    P2pOrRelayTunnelConfig, RegisterControllerInput, RegisterInput, SdkError, ServerLoginInput,
     StoredServerCredential,
 };
 use rustls::pki_types::CertificateDer;
 
 #[tokio::test]
 async fn builder_defaults_to_memory_token_store() {
-    let sdk = QuicTunnelSdk::builder()
+    let sdk = MobileCodeConnectSdk::builder()
         .control_url("http://127.0.0.1:4242")
         .build()
         .unwrap();
@@ -27,7 +27,7 @@ async fn builder_defaults_to_memory_token_store() {
 async fn builder_file_token_store_is_shared_across_facades() {
     let dir = unique_temp_dir();
     let token_path = dir.join("token.json");
-    let sdk = QuicTunnelSdk::builder()
+    let sdk = MobileCodeConnectSdk::builder()
         .control_url("http://127.0.0.1:4242")
         .token_file(token_path.clone())
         .build()
@@ -58,7 +58,7 @@ async fn builder_file_token_store_is_shared_across_facades() {
 async fn builder_file_server_credential_store_is_shared_across_server_facades() {
     let dir = unique_temp_dir();
     let credential_path = dir.join("server-credential.json");
-    let sdk = QuicTunnelSdk::builder()
+    let sdk = MobileCodeConnectSdk::builder()
         .control_url("http://127.0.0.1:4242")
         .server_credential_file(credential_path.clone())
         .build()
@@ -97,7 +97,7 @@ fn builder_accepts_control_client_timeout_and_retry_options() {
         .with_max_retries(2)
         .with_retry_backoff(Duration::from_millis(25));
 
-    let sdk = QuicTunnelSdk::builder()
+    let sdk = MobileCodeConnectSdk::builder()
         .control_url("http://127.0.0.1:4242")
         .control_client_options(options)
         .build()
@@ -108,7 +108,7 @@ fn builder_accepts_control_client_timeout_and_retry_options() {
 
 #[tokio::test]
 async fn facade_admin_uses_shared_user_token_store() {
-    let sdk = QuicTunnelSdk::builder()
+    let sdk = MobileCodeConnectSdk::builder()
         .control_url("http://127.0.0.1:4242")
         .build()
         .unwrap();
@@ -128,7 +128,7 @@ async fn facade_admin_uses_shared_user_token_store() {
 
 #[tokio::test]
 async fn facade_ensure_auth_helpers_reuse_saved_token_without_control_request() {
-    let sdk = QuicTunnelSdk::builder()
+    let sdk = MobileCodeConnectSdk::builder()
         .control_url("https://127.0.0.1:4242")
         .build()
         .unwrap();
@@ -163,7 +163,7 @@ async fn facade_ensure_auth_helpers_reuse_saved_token_without_control_request() 
 
 #[tokio::test]
 async fn facade_ensure_auth_helpers_login_or_register_when_token_is_missing() {
-    let sdk = QuicTunnelSdk::builder()
+    let sdk = MobileCodeConnectSdk::builder()
         .control_url("https://127.0.0.1:4242")
         .build()
         .unwrap();
@@ -189,7 +189,7 @@ async fn facade_ensure_auth_helpers_login_or_register_when_token_is_missing() {
 
 #[tokio::test]
 async fn facade_current_valid_token_filters_expired_saved_token() {
-    let sdk = QuicTunnelSdk::builder()
+    let sdk = MobileCodeConnectSdk::builder()
         .control_url("http://127.0.0.1:4242")
         .build()
         .unwrap();
@@ -207,7 +207,7 @@ async fn facade_current_valid_token_filters_expired_saved_token() {
 
 #[tokio::test]
 async fn facade_ensure_auth_fresh_helpers_reuse_only_unexpired_saved_token() {
-    let sdk = QuicTunnelSdk::builder()
+    let sdk = MobileCodeConnectSdk::builder()
         .control_url("https://127.0.0.1:4242")
         .build()
         .unwrap();
@@ -242,7 +242,7 @@ async fn facade_ensure_auth_fresh_helpers_reuse_only_unexpired_saved_token() {
 
 #[tokio::test]
 async fn facade_ensure_controller_requires_saved_token_before_control_request() {
-    let sdk = QuicTunnelSdk::builder()
+    let sdk = MobileCodeConnectSdk::builder()
         .control_url("https://127.0.0.1:4242")
         .build()
         .unwrap();
@@ -260,7 +260,7 @@ async fn facade_ensure_controller_requires_saved_token_before_control_request() 
 
 #[tokio::test]
 async fn facade_ensure_server_login_helpers_reuse_saved_credential_without_control_request() {
-    let sdk = QuicTunnelSdk::builder()
+    let sdk = MobileCodeConnectSdk::builder()
         .control_url("https://127.0.0.1:4242")
         .build()
         .unwrap();
@@ -286,7 +286,7 @@ async fn facade_ensure_server_login_helpers_reuse_saved_credential_without_contr
 
 #[tokio::test]
 async fn facade_ensure_server_login_helpers_ignore_credential_for_another_control_server() {
-    let sdk = QuicTunnelSdk::builder()
+    let sdk = MobileCodeConnectSdk::builder()
         .control_url("https://127.0.0.1:4242")
         .build()
         .unwrap();
@@ -313,7 +313,7 @@ async fn facade_ensure_server_login_helpers_ignore_credential_for_another_contro
 
 #[tokio::test]
 async fn facade_ensure_server_login_helpers_start_login_when_credential_is_missing() {
-    let sdk = QuicTunnelSdk::builder()
+    let sdk = MobileCodeConnectSdk::builder()
         .control_url("https://127.0.0.1:4242")
         .build()
         .unwrap();
@@ -332,7 +332,7 @@ async fn facade_ensure_server_login_helpers_start_login_when_credential_is_missi
 
 #[tokio::test]
 async fn facade_starts_mobile_tunnel_from_shared_token_store() {
-    let sdk = QuicTunnelSdk::builder()
+    let sdk = MobileCodeConnectSdk::builder()
         .control_url("http://127.0.0.1:4242")
         .build()
         .unwrap();
@@ -355,7 +355,7 @@ async fn facade_starts_mobile_tunnel_from_shared_token_store() {
 
 #[tokio::test]
 async fn facade_auth_controller_methods_surface_invalid_control_url() {
-    let sdk = QuicTunnelSdk::builder()
+    let sdk = MobileCodeConnectSdk::builder()
         .control_url("https://127.0.0.1:4242")
         .build()
         .unwrap();
@@ -409,7 +409,7 @@ async fn facade_auth_controller_methods_surface_invalid_control_url() {
 
 #[tokio::test]
 async fn facade_logout_clears_shared_token_store_without_control_request() {
-    let sdk = QuicTunnelSdk::builder()
+    let sdk = MobileCodeConnectSdk::builder()
         .control_url("https://127.0.0.1:4242")
         .build()
         .unwrap();
@@ -429,7 +429,7 @@ async fn facade_logout_clears_shared_token_store_without_control_request() {
 
 #[tokio::test]
 async fn facade_open_mobile_service_uses_shared_token_and_ephemeral_port() {
-    let sdk = QuicTunnelSdk::builder()
+    let sdk = MobileCodeConnectSdk::builder()
         .control_url("http://127.0.0.1:4242")
         .build()
         .unwrap();
@@ -484,7 +484,7 @@ async fn facade_open_mobile_service_p2p_or_relay_uses_shared_token_and_ephemeral
 
 #[tokio::test]
 async fn facade_open_mobile_service_requires_saved_token() {
-    let sdk = QuicTunnelSdk::builder()
+    let sdk = MobileCodeConnectSdk::builder()
         .control_url("http://127.0.0.1:4242")
         .build()
         .unwrap();
@@ -529,8 +529,8 @@ fn sdk_error_classifies_auth_related_statuses() {
 
 #[test]
 fn builder_rejects_missing_or_empty_control_url() {
-    let missing = QuicTunnelSdk::builder().build().unwrap_err();
-    let empty = QuicTunnelSdk::builder()
+    let missing = MobileCodeConnectSdk::builder().build().unwrap_err();
+    let empty = MobileCodeConnectSdk::builder()
         .control_url("   ")
         .build()
         .unwrap_err();
@@ -568,8 +568,8 @@ fn register_input() -> RegisterInput {
     }
 }
 
-async fn sdk_with_mobile_token() -> QuicTunnelSdk {
-    let sdk = QuicTunnelSdk::builder()
+async fn sdk_with_mobile_token() -> MobileCodeConnectSdk {
+    let sdk = MobileCodeConnectSdk::builder()
         .control_url("http://127.0.0.1:4242")
         .build()
         .unwrap();

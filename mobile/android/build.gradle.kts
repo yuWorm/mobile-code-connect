@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "dev.quictunnel.mobile"
+    namespace = "dev.mobilecode.connect.mobile"
     compileSdk = 37
 
     defaultConfig {

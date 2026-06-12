@@ -1,18 +1,18 @@
 import Foundation
 import Security
 
-public enum QuicTunnelMobileGrantSecureStoreError: Error, Equatable {
+public enum MobileCodeConnectMobileGrantSecureStoreError: Error, Equatable {
     case invalidStoredCredential
     case keychainFailed(OSStatus)
 }
 
-public final class QuicTunnelMobileGrantSecureStore {
+public final class MobileCodeConnectMobileGrantSecureStore {
     public let service: String
     public let account: String
     public let accessGroup: String?
 
     public init(
-        service: String = "dev.quictunnel.mobile.mobile-grant",
+        service: String = "dev.mobilecode.connect.mobile.mobile-grant",
         account: String = "default",
         accessGroup: String? = nil
     ) {
@@ -24,7 +24,7 @@ public final class QuicTunnelMobileGrantSecureStore {
     public func save(_ grant: FfiMobileGrantCredential) throws {
         let json = try mobileGrantCredentialToJson(grant: grant)
         guard let data = json.data(using: .utf8) else {
-            throw QuicTunnelMobileGrantSecureStoreError.invalidStoredCredential
+            throw MobileCodeConnectMobileGrantSecureStoreError.invalidStoredCredential
         }
 
         try clear()
@@ -34,7 +34,7 @@ public final class QuicTunnelMobileGrantSecureStore {
 
         let status = SecItemAdd(query as CFDictionary, nil)
         guard status == errSecSuccess else {
-            throw QuicTunnelMobileGrantSecureStoreError.keychainFailed(status)
+            throw MobileCodeConnectMobileGrantSecureStoreError.keychainFailed(status)
         }
     }
 
@@ -49,13 +49,13 @@ public final class QuicTunnelMobileGrantSecureStore {
             return nil
         }
         guard status == errSecSuccess else {
-            throw QuicTunnelMobileGrantSecureStoreError.keychainFailed(status)
+            throw MobileCodeConnectMobileGrantSecureStoreError.keychainFailed(status)
         }
         guard
             let data = item as? Data,
             let json = String(data: data, encoding: .utf8)
         else {
-            throw QuicTunnelMobileGrantSecureStoreError.invalidStoredCredential
+            throw MobileCodeConnectMobileGrantSecureStoreError.invalidStoredCredential
         }
         return try mobileGrantCredentialFromJson(json: json)
     }
@@ -63,7 +63,7 @@ public final class QuicTunnelMobileGrantSecureStore {
     public func clear() throws {
         let status = SecItemDelete(baseQuery() as CFDictionary)
         guard status == errSecSuccess || status == errSecItemNotFound else {
-            throw QuicTunnelMobileGrantSecureStoreError.keychainFailed(status)
+            throw MobileCodeConnectMobileGrantSecureStoreError.keychainFailed(status)
         }
     }
 
