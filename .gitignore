@@ -1,5 +1,6 @@
 /target
 /.codegraph
+/.worktrees
 /.env
 *.local.yaml
 *.local.toml
