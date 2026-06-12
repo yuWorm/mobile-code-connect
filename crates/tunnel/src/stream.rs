@@ -1,4 +1,4 @@
-use quic_tunnel_protocol::{ControlFrame, DataStreamHeader, ProtocolError};
+use mobilecode_connect_protocol::{ControlFrame, DataStreamHeader, ProtocolError};
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 
 const HEADER_LEN_SIZE: usize = 4;

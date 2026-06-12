@@ -1,6 +1,6 @@
 use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 
-use quic_tunnel_protocol::TrafficStats;
+use mobilecode_connect_protocol::TrafficStats;
 
 #[derive(Debug, Default)]
 pub struct AtomicTrafficStats {

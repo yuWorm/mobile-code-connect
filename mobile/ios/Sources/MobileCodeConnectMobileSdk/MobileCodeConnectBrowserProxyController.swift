@@ -2,12 +2,12 @@ import Foundation
 import Network
 import WebKit
 
-public enum QuicTunnelBrowserProxyError: Error, Equatable {
+public enum MobileCodeConnectBrowserProxyError: Error, Equatable {
     case invalidProxyPort(UInt16)
 }
 
 @MainActor
-public final class QuicTunnelBrowserProxyController {
+public final class MobileCodeConnectBrowserProxyController {
     public let tunnel: FfiMobileTunnel
     private var browserProxy: FfiBrowserProxy?
 
@@ -88,7 +88,7 @@ public final class QuicTunnelBrowserProxyController {
     @available(iOS 17.0, macOS 14.0, visionOS 1.0, *)
     public func proxyConfiguration(for proxy: FfiBrowserProxy) throws -> ProxyConfiguration {
         guard let port = NWEndpoint.Port(rawValue: proxy.port()) else {
-            throw QuicTunnelBrowserProxyError.invalidProxyPort(proxy.port())
+            throw MobileCodeConnectBrowserProxyError.invalidProxyPort(proxy.port())
         }
 
         let endpoint = NWEndpoint.hostPort(host: NWEndpoint.Host(proxy.host()), port: port)

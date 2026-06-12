@@ -1,7 +1,7 @@
 use std::{fmt, time::Duration};
 
-use quic_tunnel_auth::ControlRole;
-use quic_tunnel_protocol::{
+use mobilecode_connect_auth::ControlRole;
+use mobilecode_connect_protocol::{
     ClientId, Device, DeviceId, GrantSessionRequest, MobilePairingRequest,
     PendingGrantSessionStatus, PendingPairingStatus, RelayLimits, Service, ServiceId, SessionId,
     TrafficStats, UserId,

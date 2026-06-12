@@ -1,12 +1,12 @@
 use std::sync::Arc;
 
-use quic_tunnel_control_client::HttpControlClientOptions;
-use quic_tunnel_mobile_core::{
+use mobilecode_connect_control_client::HttpControlClientOptions;
+use mobilecode_connect_mobile_core::{
     client::{OpenServiceRequest, TunnelClient},
     config::TunnelConfig,
     forward::MemoryStreamConnector,
 };
-use quic_tunnel_protocol::{ClientId, DeviceId, ServiceId};
+use mobilecode_connect_protocol::{ClientId, DeviceId, ServiceId};
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::{TcpListener, TcpStream},

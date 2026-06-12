@@ -1,15 +1,15 @@
 [package]
-name = "quic_tunnel_sdk"
+name = "mobilecode_connect_sdk"
 edition.workspace = true
 version.workspace = true
 license.workspace = true
 
 [dependencies]
 async-trait.workspace = true
-quic_tunnel_auth = { path = "../auth" }
-quic_tunnel_control_client = { path = "../control-client" }
-quic_tunnel_mobile_core = { path = "../mobile-core" }
-quic_tunnel_protocol = { path = "../protocol" }
+mobilecode_connect_auth = { path = "../auth" }
+mobilecode_connect_control_client = { path = "../control-client" }
+mobilecode_connect_mobile_core = { path = "../mobile-core" }
+mobilecode_connect_protocol = { path = "../protocol" }
 rustls.workspace = true
 serde.workspace = true
 serde_json.workspace = true
@@ -18,5 +18,5 @@ tokio.workspace = true
 
 [dev-dependencies]
 axum.workspace = true
-quic_tunnel_control = { path = "../control" }
+mobilecode_connect_control = { path = "../control" }
 tower.workspace = true

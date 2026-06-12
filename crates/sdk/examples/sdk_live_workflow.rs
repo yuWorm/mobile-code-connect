@@ -5,12 +5,12 @@ use std::{
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
-use quic_tunnel_protocol::{
+use mobilecode_connect_protocol::{
     ClientId, Device, DeviceId, DeviceStatus, Service, ServiceId, ServiceProtocol,
 };
-use quic_tunnel_sdk::{
+use mobilecode_connect_sdk::{
     CreateSessionInput, EnsureBrowserServerLogin, EnsureDeviceCodeServerLogin, LoginInput,
-    QuicTunnelSdk, RegisterControllerInput, RegisterInput, ServerLoginInput,
+    MobileCodeConnectSdk, RegisterControllerInput, RegisterInput, ServerLoginInput,
     ServerRegistrationInput, StoredToken,
 };
 
@@ -24,7 +24,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "QUIC_TUNNEL_SDK_STATE_DIR",
         "target/sdk-live-workflow".to_string(),
     ));
-    let sdk = QuicTunnelSdk::builder()
+    let sdk = MobileCodeConnectSdk::builder()
         .control_url(control_url.clone())
         .token_file(state_dir.join("user-token.json"))
         .server_credential_file(state_dir.join("server-credential.json"))
@@ -100,7 +100,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-async fn ensure_user_token(sdk: &QuicTunnelSdk) -> Result<StoredToken, Box<dyn std::error::Error>> {
+async fn ensure_user_token(
+    sdk: &MobileCodeConnectSdk,
+) -> Result<StoredToken, Box<dyn std::error::Error>> {
     let now_epoch_sec = now_epoch_sec()?;
     if let Some(token) = sdk.current_valid_token(now_epoch_sec).await? {
         println!("using saved user token for user={}", token.user_id);
@@ -131,7 +133,7 @@ async fn ensure_user_token(sdk: &QuicTunnelSdk) -> Result<StoredToken, Box<dyn s
 }
 
 async fn ensure_server_credential(
-    sdk: &QuicTunnelSdk,
+    sdk: &MobileCodeConnectSdk,
     device_id: DeviceId,
     device_name: String,
 ) -> Result<(), Box<dyn std::error::Error>> {

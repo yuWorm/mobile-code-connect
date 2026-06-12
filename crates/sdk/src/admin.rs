@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
 use async_trait::async_trait;
-pub use quic_tunnel_auth::ControlRole;
-pub use quic_tunnel_control_client::{
+pub use mobilecode_connect_auth::ControlRole;
+pub use mobilecode_connect_control_client::{
     AdminListQuery, AdminSessionSummary, AuditLogEntry, ControllerDevice,
     CreateRelayBootstrapRequest, CreateRelayCredentialRequest, CreateUserRequest, DashboardSummary,
     DeviceAccessGrant, GrantDeviceAccessRequest, Page, Plan, RegisterRelayRequest,
@@ -14,10 +14,10 @@ pub use quic_tunnel_control_client::{
     UpdateUserRoleRequest, UpdateUserStatusRequest, UserDetail, UserSummary, UserUsagePeriod,
     UserUsageSummary,
 };
-use quic_tunnel_control_client::{
+use mobilecode_connect_control_client::{
     AssignUserPlanRequest, ControlClientError, HttpControlClient, HttpControlClientOptions,
 };
-use quic_tunnel_protocol::{ClientId, Device, DeviceId, UserId};
+use mobilecode_connect_protocol::{ClientId, Device, DeviceId, UserId};
 use tokio::sync::{Mutex, MutexGuard};
 
 use crate::{

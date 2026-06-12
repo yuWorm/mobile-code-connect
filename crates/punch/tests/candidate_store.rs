@@ -1,7 +1,7 @@
 use std::net::SocketAddr;
 
-use quic_tunnel_protocol::{CandidateSource, CandidateType, PeerRole, SessionId};
-use quic_tunnel_punch::candidate::{CandidateRecord, CandidateStore};
+use mobilecode_connect_protocol::{CandidateSource, CandidateType, PeerRole, SessionId};
+use mobilecode_connect_punch::candidate::{CandidateRecord, CandidateStore};
 
 fn addr(port: u16) -> SocketAddr {
     format!("203.0.113.10:{port}").parse().unwrap()

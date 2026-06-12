@@ -1,10 +1,10 @@
 use std::path::PathBuf;
 
-use quic_tunnel_control_client::{
+use mobilecode_connect_control_client::{
     ControllerDevice, CreateSessionResponse, HttpControlClient, HttpControlClientOptions,
 };
-use quic_tunnel_mobile_core::forward::LocalForwardHandle;
-use quic_tunnel_protocol::{ClientId, Device, DeviceId, Service, ServiceId};
+use mobilecode_connect_mobile_core::forward::LocalForwardHandle;
+use mobilecode_connect_protocol::{ClientId, Device, DeviceId, Service, ServiceId};
 use rustls::pki_types::CertificateDer;
 
 use crate::{
@@ -22,7 +22,7 @@ use crate::{
 };
 
 #[derive(Debug, Clone)]
-pub struct QuicTunnelSdk {
+pub struct MobileCodeConnectSdk {
     control_url: String,
     token_store: SdkTokenStore,
     server_credential_store: SdkServerCredentialStore,
@@ -30,7 +30,7 @@ pub struct QuicTunnelSdk {
 }
 
 #[derive(Debug, Default)]
-pub struct QuicTunnelSdkBuilder {
+pub struct MobileCodeConnectSdkBuilder {
     control_url: Option<String>,
     token_store: Option<SdkTokenStore>,
     server_credential_store: Option<SdkServerCredentialStore>,
@@ -63,9 +63,9 @@ pub enum EnsureDeviceCodeServerLogin {
     Pending(DeviceCodeServerLogin),
 }
 
-impl QuicTunnelSdk {
-    pub fn builder() -> QuicTunnelSdkBuilder {
-        QuicTunnelSdkBuilder::default()
+impl MobileCodeConnectSdk {
+    pub fn builder() -> MobileCodeConnectSdkBuilder {
+        MobileCodeConnectSdkBuilder::default()
     }
 
     pub fn control_url(&self) -> &str {
@@ -389,7 +389,7 @@ impl OpenedMobileService {
     }
 }
 
-impl QuicTunnelSdkBuilder {
+impl MobileCodeConnectSdkBuilder {
     pub fn control_url(mut self, control_url: impl Into<String>) -> Self {
         self.control_url = Some(control_url.into());
         self
@@ -430,7 +430,7 @@ impl QuicTunnelSdkBuilder {
         self
     }
 
-    pub fn build(self) -> Result<QuicTunnelSdk, SdkError> {
+    pub fn build(self) -> Result<MobileCodeConnectSdk, SdkError> {
         let control_url = self
             .control_url
             .map(|control_url| control_url.trim().to_string())
@@ -439,7 +439,7 @@ impl QuicTunnelSdkBuilder {
                 reason: "control_url is required".to_string(),
             })?;
 
-        Ok(QuicTunnelSdk {
+        Ok(MobileCodeConnectSdk {
             control_url,
             token_store: self.token_store.unwrap_or_default(),
             server_credential_store: self.server_credential_store.unwrap_or_default(),

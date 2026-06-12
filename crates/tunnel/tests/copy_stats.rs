@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use quic_tunnel_tunnel::{copy::copy_bidirectional_with_stats, stats::AtomicTrafficStats};
+use mobilecode_connect_tunnel::{copy::copy_bidirectional_with_stats, stats::AtomicTrafficStats};
 use tokio::io::{duplex, AsyncReadExt, AsyncWriteExt};
 
 #[tokio::test]

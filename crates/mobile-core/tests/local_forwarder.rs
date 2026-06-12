@@ -1,7 +1,9 @@
 use std::{sync::Arc, time::Duration};
 
-use quic_tunnel_mobile_core::forward::{LocalForwarder, MemoryStreamConnector, OpenForwardRequest};
-use quic_tunnel_protocol::{DeviceId, ServiceId};
+use mobilecode_connect_mobile_core::forward::{
+    LocalForwarder, MemoryStreamConnector, OpenForwardRequest,
+};
+use mobilecode_connect_protocol::{DeviceId, ServiceId};
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::TcpStream,

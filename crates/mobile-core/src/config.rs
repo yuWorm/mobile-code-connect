@@ -1,5 +1,5 @@
-use quic_tunnel_control_client::HttpControlClientOptions;
-use quic_tunnel_protocol::ClientId;
+use mobilecode_connect_control_client::HttpControlClientOptions;
+use mobilecode_connect_protocol::ClientId;
 
 use crate::client::TunnelError;
 

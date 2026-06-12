@@ -3,13 +3,13 @@ use std::{
     sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard},
 };
 
-use quic_tunnel_auth::ControlRole;
-use quic_tunnel_control_client::{
+use mobilecode_connect_auth::ControlRole;
+use mobilecode_connect_control_client::{
     AgentSessionAssignment, ApprovedMobileGrantMetadata, AuditLogEntry, ControllerDevice,
     CreateSessionResponse, OAuthIdentity, Plan, RelayCommand, RelayCredential, RelayNode,
     RelaySessionSnapshot, ServerAuthMode, ServerAuthStatus, UserUsagePeriod,
 };
-use quic_tunnel_protocol::{
+use mobilecode_connect_protocol::{
     Device, DeviceId, GrantSessionRequest, MobilePairingRequest, PendingGrantSessionStatus,
     PendingPairingStatus, Service, SessionId, TrafficStats, UserId,
 };

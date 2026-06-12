@@ -1,10 +1,10 @@
-use quic_tunnel_control::{routes::routes, state::ControlState};
-use quic_tunnel_control_client::{
+use mobilecode_connect_control::{routes::routes, state::ControlState};
+use mobilecode_connect_control_client::{
     AgentSessionStatus, ControlClientError, CreateSessionRequest, HttpControlClient, Plan,
     RegisterControllerDeviceRequest, RegisterRelayRequest, RegisterUserRequest, UpdateRelayRequest,
     UpdateUserPlanRequest,
 };
-use quic_tunnel_protocol::{
+use mobilecode_connect_protocol::{
     ClientId, Device, DeviceId, DeviceStatus, RelayLimits, Service, ServiceId, ServiceProtocol,
     UserId,
 };

@@ -1,9 +1,9 @@
 use async_trait::async_trait;
-use quic_tunnel_control_client::{
+use mobilecode_connect_control_client::{
     ControlClientError, ControllerDevice, CreateSessionRequest, CreateSessionResponse,
     HttpControlClient, HttpControlClientOptions, RegisterControllerDeviceRequest,
 };
-use quic_tunnel_protocol::{ClientId, Device, DeviceId, Service, ServiceId};
+use mobilecode_connect_protocol::{ClientId, Device, DeviceId, Service, ServiceId};
 use tokio::sync::Mutex;
 
 use crate::{store::TokenStore, SdkError};

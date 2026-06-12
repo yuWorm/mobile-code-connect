@@ -19,7 +19,7 @@ usage() {
   cat <<'EOF'
 Usage: scripts/package-mobile-android.sh [options]
 
-Build the Android AAR inputs for QuicTunnelMobileSdk.
+Build the Android AAR inputs for MobileCodeConnectMobileSdk.
 
 Options:
   --targets CSV      Rust Android targets to build
@@ -244,15 +244,15 @@ build_target() {
   configure_ndk_for_target "$target"
 
   if [[ "$DRY_RUN" -eq 1 ]]; then
-    log "dry-run: cargo build -p quic_tunnel_mobile_core --release --target $target"
+    log "dry-run: cargo build -p mobilecode_connect_mobile_core --release --target $target"
     return 0
   fi
 
   ensure_rust_target "$target"
 
   if [[ "$SKIP_BUILD" -eq 0 ]]; then
-    log "cargo build -p quic_tunnel_mobile_core --release --target $target"
-    cargo build -p quic_tunnel_mobile_core --release --target "$target"
+    log "cargo build -p mobilecode_connect_mobile_core --release --target $target"
+    cargo build -p mobilecode_connect_mobile_core --release --target "$target"
   fi
 }
 
@@ -288,7 +288,7 @@ configure_ndk_for_target() {
 
 shared_library_for_target() {
   local target="$1"
-  printf '%s/target/%s/release/libquic_tunnel_mobile_core.so' "$ROOT_DIR" "$target"
+  printf '%s/target/%s/release/libmobilecode_connect_mobile_core.so' "$ROOT_DIR" "$target"
 }
 
 for target in "${ANDROID_TARGETS[@]}"; do
@@ -329,7 +329,7 @@ fi
 for target in "${ANDROID_TARGETS[@]}"; do
   abi="$(abi_for_target "$target")"
   library="$(shared_library_for_target "$target")"
-  staged_library="$JNILIBS_DEST/$abi/libquic_tunnel_mobile_core.so"
+  staged_library="$JNILIBS_DEST/$abi/libmobilecode_connect_mobile_core.so"
   if [[ "$DRY_RUN" -eq 1 ]]; then
     log "dry-run: cp $library $staged_library"
     if [[ "$STRIP_NATIVE_LIBS" -eq 1 ]]; then

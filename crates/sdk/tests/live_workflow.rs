@@ -4,8 +4,8 @@ use axum::{
     http::{Method, Request},
     Router,
 };
-use quic_tunnel_control::{routes::routes, state::ControlState};
-use quic_tunnel_control_client::{
+use mobilecode_connect_control::{routes::routes, state::ControlState};
+use mobilecode_connect_control_client::{
     AgentSessionAssignment, AgentSessionStatus, AuthResponse, BrowserServerAuthApprovalResponse,
     BrowserServerAuthExchangeRequest, BrowserServerAuthStartResponse, ControlClientError,
     ControllerDevice, CreateSessionRequest, CreateSessionResponse, DeviceServerAuthPollResponse,
@@ -13,18 +13,18 @@ use quic_tunnel_control_client::{
     RegisterControllerDeviceRequest, RegisterP2pCertificateRequest, RegisterUserRequest,
     ServerCredentialResponse, StartServerAuthRequest, UpdatePasswordRequest,
 };
-use quic_tunnel_protocol::{
+use mobilecode_connect_protocol::{
     ClientId, Device, DeviceId, DeviceStatus, Service, ServiceId, ServiceProtocol, SessionId,
     UserId,
 };
-use quic_tunnel_sdk::{
+use mobilecode_connect_sdk::{
     auth::AuthSdk,
     client::ControlApi,
     controller::ControllerApi,
     server::ServerApi,
     server_auth::{ServerAuthApi, ServerAuthSdk},
     store::TokenStore,
-    ControllerSdk, CreateSessionInput, LoginInput, QuicTunnelSdk, RegisterControllerInput,
+    ControllerSdk, CreateSessionInput, LoginInput, MobileCodeConnectSdk, RegisterControllerInput,
     RegisterInput, ServerLoginInput, ServerRegistrationInput, ServerSdk,
 };
 use serde::{de::DeserializeOwned, Serialize};
@@ -38,7 +38,7 @@ async fn sdk_facade_runs_full_live_workflow_against_in_process_control_routes() 
         "127.0.0.1:3478",
     ));
     let dir = unique_temp_dir();
-    let sdk = QuicTunnelSdk::builder()
+    let sdk = MobileCodeConnectSdk::builder()
         .control_url("http://127.0.0.1:1")
         .token_file(dir.join("user-token.json"))
         .server_credential_file(dir.join("server-credential.json"))
@@ -474,7 +474,7 @@ async fn approve_browser_server_auth(
         .unwrap()
 }
 
-async fn assert_saved_token(sdk: &QuicTunnelSdk, user_id: &UserId) {
+async fn assert_saved_token(sdk: &MobileCodeConnectSdk, user_id: &UserId) {
     let stored = sdk.token_store().load_token().await.unwrap().unwrap();
     assert_eq!(&stored.user_id, user_id);
     assert!(!stored.access_token.is_empty());

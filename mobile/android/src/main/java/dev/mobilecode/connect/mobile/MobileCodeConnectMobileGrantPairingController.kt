@@ -1,17 +1,17 @@
-package dev.quictunnel.mobile
+package dev.mobilecode.connect.mobile
 
 import android.util.Base64
 import java.security.SecureRandom
-import uniffi.quic_tunnel_mobile_core.FfiMobileException
-import uniffi.quic_tunnel_mobile_core.FfiMobileGrantPairingOptions
-import uniffi.quic_tunnel_mobile_core.FfiMobileGrantPairingPollResult
-import uniffi.quic_tunnel_mobile_core.FfiMobileGrantPairingSession
-import uniffi.quic_tunnel_mobile_core.FfiMobileInvitePayload
-import uniffi.quic_tunnel_mobile_core.mobileGrantPairingOptionsWithDefaults
-import uniffi.quic_tunnel_mobile_core.pollMobileGrantPairingOnce
-import uniffi.quic_tunnel_mobile_core.startMobileGrantPairing
+import uniffi.mobilecode_connect_mobile_core.FfiMobileException
+import uniffi.mobilecode_connect_mobile_core.FfiMobileGrantPairingOptions
+import uniffi.mobilecode_connect_mobile_core.FfiMobileGrantPairingPollResult
+import uniffi.mobilecode_connect_mobile_core.FfiMobileGrantPairingSession
+import uniffi.mobilecode_connect_mobile_core.FfiMobileInvitePayload
+import uniffi.mobilecode_connect_mobile_core.mobileGrantPairingOptionsWithDefaults
+import uniffi.mobilecode_connect_mobile_core.pollMobileGrantPairingOnce
+import uniffi.mobilecode_connect_mobile_core.startMobileGrantPairing
 
-class QuicTunnelMobileGrantPairingController(
+class MobileCodeConnectMobileGrantPairingController(
     private val options: FfiMobileGrantPairingOptions = mobileGrantPairingOptionsWithDefaults(),
 ) {
     companion object {

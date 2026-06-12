@@ -5,7 +5,7 @@ use std::{
     time::Duration,
 };
 
-use quic_tunnel_protocol::{DeviceId, MobileGrantCredential, ServiceId};
+use mobilecode_connect_protocol::{DeviceId, MobileGrantCredential, ServiceId};
 use rustls::pki_types::CertificateDer;
 
 use crate::{

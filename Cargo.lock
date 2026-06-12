@@ -8,10 +8,10 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap",
- "quic_tunnel_agent",
- "quic_tunnel_protocol",
- "quic_tunnel_sdk",
- "quic_tunnel_tunnel",
+ "mobilecode_connect_agent",
+ "mobilecode_connect_protocol",
+ "mobilecode_connect_sdk",
+ "mobilecode_connect_tunnel",
  "rustls",
  "serde_json",
  "tokio",
@@ -411,8 +411,8 @@ dependencies = [
  "anyhow",
  "axum",
  "clap",
- "quic_tunnel_control",
- "quic_tunnel_control_client",
+ "mobilecode_connect_control",
+ "mobilecode_connect_control_client",
  "tokio",
  "tracing",
  "tracing-subscriber",
@@ -997,17 +997,186 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap",
- "quic_tunnel_auth",
- "quic_tunnel_control_client",
- "quic_tunnel_mobile_core",
- "quic_tunnel_protocol",
- "quic_tunnel_sdk",
+ "mobilecode_connect_auth",
+ "mobilecode_connect_control_client",
+ "mobilecode_connect_mobile_core",
+ "mobilecode_connect_protocol",
+ "mobilecode_connect_sdk",
  "rustls",
  "serde",
  "serde_json",
  "tokio",
  "tracing",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "mobilecode_connect_agent"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "libc",
+ "mobilecode_connect_control",
+ "mobilecode_connect_control_client",
+ "mobilecode_connect_protocol",
+ "mobilecode_connect_punch",
+ "mobilecode_connect_tunnel",
+ "quinn",
+ "rustls",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "mobilecode_connect_auth"
+version = "0.1.0"
+dependencies = [
+ "base64",
+ "hmac",
+ "mobilecode_connect_protocol",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror 2.0.18",
+]
+
+[[package]]
+name = "mobilecode_connect_control"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "axum",
+ "base64",
+ "mobilecode_connect_auth",
+ "mobilecode_connect_control_client",
+ "mobilecode_connect_protocol",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror 2.0.18",
+ "tokio",
+ "tower",
+ "uuid",
+]
+
+[[package]]
+name = "mobilecode_connect_control_client"
+version = "0.1.0"
+dependencies = [
+ "mobilecode_connect_auth",
+ "mobilecode_connect_protocol",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+]
+
+[[package]]
+name = "mobilecode_connect_mobile_core"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "axum",
+ "mobilecode_connect_agent",
+ "mobilecode_connect_auth",
+ "mobilecode_connect_control",
+ "mobilecode_connect_control_client",
+ "mobilecode_connect_protocol",
+ "mobilecode_connect_punch",
+ "mobilecode_connect_tunnel",
+ "quinn",
+ "rustls",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+ "uniffi",
+ "uuid",
+]
+
+[[package]]
+name = "mobilecode_connect_protocol"
+version = "0.1.0"
+dependencies = [
+ "base64",
+ "hmac",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror 2.0.18",
+ "uuid",
+]
+
+[[package]]
+name = "mobilecode_connect_punch"
+version = "0.1.0"
+dependencies = [
+ "base64",
+ "hmac",
+ "mobilecode_connect_protocol",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror 2.0.18",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "mobilecode_connect_relay"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "axum",
+ "mobilecode_connect_agent",
+ "mobilecode_connect_auth",
+ "mobilecode_connect_control",
+ "mobilecode_connect_control_client",
+ "mobilecode_connect_mobile_core",
+ "mobilecode_connect_protocol",
+ "mobilecode_connect_tunnel",
+ "quinn",
+ "rustls",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+ "tower",
+]
+
+[[package]]
+name = "mobilecode_connect_sdk"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "axum",
+ "mobilecode_connect_auth",
+ "mobilecode_connect_control",
+ "mobilecode_connect_control_client",
+ "mobilecode_connect_mobile_core",
+ "mobilecode_connect_protocol",
+ "rustls",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+ "tower",
+]
+
+[[package]]
+name = "mobilecode_connect_tunnel"
+version = "0.1.0"
+dependencies = [
+ "mobilecode_connect_protocol",
+ "quinn",
+ "rcgen",
+ "rustls",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
 ]
 
 [[package]]
@@ -1150,179 +1319,10 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap",
- "quic_tunnel_punch",
+ "mobilecode_connect_punch",
  "tokio",
  "tracing",
  "tracing-subscriber",
-]
-
-[[package]]
-name = "quic_tunnel_agent"
-version = "0.1.0"
-dependencies = [
- "axum",
- "libc",
- "quic_tunnel_control",
- "quic_tunnel_control_client",
- "quic_tunnel_protocol",
- "quic_tunnel_punch",
- "quic_tunnel_tunnel",
- "quinn",
- "rustls",
- "serde",
- "serde_json",
- "thiserror 2.0.18",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "quic_tunnel_auth"
-version = "0.1.0"
-dependencies = [
- "base64",
- "hmac",
- "quic_tunnel_protocol",
- "serde",
- "serde_json",
- "sha2",
- "thiserror 2.0.18",
-]
-
-[[package]]
-name = "quic_tunnel_control"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "axum",
- "base64",
- "quic_tunnel_auth",
- "quic_tunnel_control_client",
- "quic_tunnel_protocol",
- "rusqlite",
- "serde",
- "serde_json",
- "sha2",
- "thiserror 2.0.18",
- "tokio",
- "tower",
- "uuid",
-]
-
-[[package]]
-name = "quic_tunnel_control_client"
-version = "0.1.0"
-dependencies = [
- "quic_tunnel_auth",
- "quic_tunnel_protocol",
- "serde",
- "serde_json",
- "thiserror 2.0.18",
- "tokio",
-]
-
-[[package]]
-name = "quic_tunnel_mobile_core"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "axum",
- "quic_tunnel_agent",
- "quic_tunnel_auth",
- "quic_tunnel_control",
- "quic_tunnel_control_client",
- "quic_tunnel_protocol",
- "quic_tunnel_punch",
- "quic_tunnel_tunnel",
- "quinn",
- "rustls",
- "serde_json",
- "thiserror 2.0.18",
- "tokio",
- "uniffi",
- "uuid",
-]
-
-[[package]]
-name = "quic_tunnel_protocol"
-version = "0.1.0"
-dependencies = [
- "base64",
- "hmac",
- "serde",
- "serde_json",
- "sha2",
- "thiserror 2.0.18",
- "uuid",
-]
-
-[[package]]
-name = "quic_tunnel_punch"
-version = "0.1.0"
-dependencies = [
- "base64",
- "hmac",
- "quic_tunnel_protocol",
- "serde",
- "serde_json",
- "sha2",
- "thiserror 2.0.18",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "quic_tunnel_relay"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "axum",
- "quic_tunnel_agent",
- "quic_tunnel_auth",
- "quic_tunnel_control",
- "quic_tunnel_control_client",
- "quic_tunnel_mobile_core",
- "quic_tunnel_protocol",
- "quic_tunnel_tunnel",
- "quinn",
- "rustls",
- "serde",
- "serde_json",
- "thiserror 2.0.18",
- "tokio",
- "tower",
-]
-
-[[package]]
-name = "quic_tunnel_sdk"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "axum",
- "quic_tunnel_auth",
- "quic_tunnel_control",
- "quic_tunnel_control_client",
- "quic_tunnel_mobile_core",
- "quic_tunnel_protocol",
- "rustls",
- "serde",
- "serde_json",
- "thiserror 2.0.18",
- "tokio",
- "tower",
-]
-
-[[package]]
-name = "quic_tunnel_tunnel"
-version = "0.1.0"
-dependencies = [
- "quic_tunnel_protocol",
- "quinn",
- "rcgen",
- "rustls",
- "serde_json",
- "thiserror 2.0.18",
- "tokio",
 ]
 
 [[package]]
@@ -1478,11 +1478,11 @@ dependencies = [
  "anyhow",
  "axum",
  "clap",
- "quic_tunnel_auth",
- "quic_tunnel_control",
- "quic_tunnel_control_client",
- "quic_tunnel_protocol",
- "quic_tunnel_relay",
+ "mobilecode_connect_auth",
+ "mobilecode_connect_control",
+ "mobilecode_connect_control_client",
+ "mobilecode_connect_protocol",
+ "mobilecode_connect_relay",
  "tokio",
  "tracing",
  "tracing-subscriber",

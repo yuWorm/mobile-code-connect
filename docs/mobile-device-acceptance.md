@@ -15,9 +15,9 @@ the signoff exists.
 
 ## iOS
 
-- Install an app build that links `QuicTunnelMobileSdk`.
+- Install an app build that links `MobileCodeConnectMobileSdk`.
 - Pair from an agent invite and verify the grant is saved through Keychain via
-  `QuicTunnelMobileGrantSecureStore`.
+  `MobileCodeConnectMobileGrantSecureStore`.
 - Restart the app and verify the grant loads without logging into Control.
 - Start `FfiMobileTunnel.startWithMobileGrant(...)`, start the browser proxy,
   apply the proxy to `WKWebView`, and load a synthetic device-service URL.
@@ -26,7 +26,7 @@ the signoff exists.
 
 ## Android
 
-- Install an app build that links `QuicTunnelMobileSdk`.
+- Install an app build that links `MobileCodeConnectMobileSdk`.
 - Pair from an agent invite and verify the grant is encrypted with Android
   Keystore before app-private preference storage.
 - Restart the app and verify the grant loads without logging into Control.

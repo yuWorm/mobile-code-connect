@@ -1,12 +1,12 @@
 [package]
-name = "quic_tunnel_tunnel"
+name = "mobilecode_connect_tunnel"
 edition.workspace = true
 version.workspace = true
 license.workspace = true
 
 [dependencies]
 quinn.workspace = true
-quic_tunnel_protocol = { path = "../protocol" }
+mobilecode_connect_protocol = { path = "../protocol" }
 rcgen.workspace = true
 rustls.workspace = true
 serde_json.workspace = true

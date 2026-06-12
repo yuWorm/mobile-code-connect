@@ -123,7 +123,7 @@ Do not deploy if any gate fails.
   as release evidence. Set `QUIC_PROD_CHECK_MOBILE_PACKAGE=1`, or the narrower
   `QUIC_PROD_CHECK_IOS_PACKAGE=1` / `QUIC_PROD_CHECK_ANDROID_PACKAGE=1`, before
   release to make `scripts/production-check.sh` run the real package builds.
-- Store mobile grant credentials with `QuicTunnelMobileGrantSecureStore`.
+- Store mobile grant credentials with `MobileCodeConnectMobileGrantSecureStore`.
   The iOS wrapper stores credential JSON in Keychain; the Android wrapper
   encrypts the credential with an Android Keystore AES-GCM key before writing
   app-private preferences.

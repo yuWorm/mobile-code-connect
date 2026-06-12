@@ -3,20 +3,22 @@ use std::{
     sync::Arc,
 };
 
-use quic_tunnel_agent::{
+use mobilecode_connect_agent::{
     config::ServiceConfig,
     relay_client::{RelayAgentClient, RelayAgentConfig},
     service_registry::ServiceRegistry,
 };
-use quic_tunnel_auth::{RelayTokenClaims, TokenKey, TokenSigner};
-use quic_tunnel_control_client::HttpControlClientOptions;
-use quic_tunnel_mobile_core::{
+use mobilecode_connect_auth::{RelayTokenClaims, TokenKey, TokenSigner};
+use mobilecode_connect_control_client::HttpControlClientOptions;
+use mobilecode_connect_mobile_core::{
     client::{OpenServiceRequest, TunnelClient},
     config::TunnelConfig,
     forward::{RelayConnectorConfig, RelayStreamConnector},
 };
-use quic_tunnel_protocol::{ClientId, DeviceId, ServiceId, ServiceProtocol, SessionId, UserId};
-use quic_tunnel_relay::{config::RelayConfig, runtime::RelayService};
+use mobilecode_connect_protocol::{
+    ClientId, DeviceId, ServiceId, ServiceProtocol, SessionId, UserId,
+};
+use mobilecode_connect_relay::{config::RelayConfig, runtime::RelayService};
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::{TcpListener, TcpStream},

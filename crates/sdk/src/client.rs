@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use quic_tunnel_control_client::{
+use mobilecode_connect_control_client::{
     AuthResponse, ControlClientError, HttpControlClient, LoginRequest, RegisterUserRequest,
     UpdatePasswordRequest,
 };

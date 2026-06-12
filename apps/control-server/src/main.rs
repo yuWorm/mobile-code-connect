@@ -2,12 +2,12 @@ use std::{path::PathBuf, sync::Arc};
 
 use anyhow::{bail, Context, Result};
 use clap::Parser;
-use quic_tunnel_control::{
+use mobilecode_connect_control::{
     oauth::{GitHubOAuthConfig, GitHubOAuthHttpClient},
     routes::routes,
     state::ControlState,
 };
-use quic_tunnel_control_client::RegisterUserRequest;
+use mobilecode_connect_control_client::RegisterUserRequest;
 
 #[derive(Debug, Parser)]
 #[command(name = "control-server")]

@@ -1,12 +1,12 @@
-use quic_tunnel_auth::{TokenKey, TokenSigner};
-use quic_tunnel_control::{routes::routes, state::ControlState};
-use quic_tunnel_control_client::{
+use mobilecode_connect_auth::{TokenKey, TokenSigner};
+use mobilecode_connect_control::{routes::routes, state::ControlState};
+use mobilecode_connect_control_client::{
     HttpControlClient, HttpControlClientOptions, RegisterUserRequest,
 };
-use quic_tunnel_mobile_core::forward::{
+use mobilecode_connect_mobile_core::forward::{
     ControlRelayConnectorConfig, ControlRelayStreamConnector, OpenForwardRequest,
 };
-use quic_tunnel_protocol::{
+use mobilecode_connect_protocol::{
     ClientId, Device, DeviceId, DeviceStatus, Service, ServiceId, ServiceProtocol, UserId,
 };
 use rustls::pki_types::CertificateDer;

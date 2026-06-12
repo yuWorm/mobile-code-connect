@@ -1,6 +1,6 @@
 use std::{collections::HashMap, net::IpAddr};
 
-use quic_tunnel_protocol::ServiceId;
+use mobilecode_connect_protocol::ServiceId;
 
 use crate::config::ServiceConfig;
 

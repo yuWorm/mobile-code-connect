@@ -11,7 +11,7 @@ usage() {
   cat <<'EOF'
 Usage: scripts/gen-mobile-bindings.sh [options]
 
-Build quic_tunnel_mobile_core and generate UniFFI Swift/Kotlin bindings.
+Build mobilecode_connect_mobile_core and generate UniFFI Swift/Kotlin bindings.
 
 Options:
   --language swift|kotlin|all  Language to generate (default: all)
@@ -71,13 +71,13 @@ EOF
 fi
 
 if [[ "$BUILD_RELEASE" -eq 1 ]]; then
-  cargo build -p quic_tunnel_mobile_core --release
+  cargo build -p mobilecode_connect_mobile_core --release
 fi
 
 if [[ -z "$LIBRARY" ]]; then
   case "$(uname -s)" in
-    Darwin) LIBRARY="$ROOT_DIR/target/release/libquic_tunnel_mobile_core.dylib" ;;
-    Linux) LIBRARY="$ROOT_DIR/target/release/libquic_tunnel_mobile_core.so" ;;
+    Darwin) LIBRARY="$ROOT_DIR/target/release/libmobilecode_connect_mobile_core.dylib" ;;
+    Linux) LIBRARY="$ROOT_DIR/target/release/libmobilecode_connect_mobile_core.so" ;;
     *)
       echo "unsupported host OS; pass --library explicitly" >&2
       exit 2
@@ -99,7 +99,7 @@ generate() {
   uniffi-bindgen generate "$LIBRARY" \
     --library \
     --metadata-no-deps \
-    --crate quic_tunnel_mobile_core \
+    --crate mobilecode_connect_mobile_core \
     --language "$language" \
     --out-dir "$language_out_dir"
 }

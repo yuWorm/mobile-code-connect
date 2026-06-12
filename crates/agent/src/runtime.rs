@@ -8,15 +8,15 @@ use std::{
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
-use quic_tunnel_control_client::{
+use mobilecode_connect_control_client::{
     AgentSessionAssignment, ApproveMobilePairingRequest, ControlClientError,
     DenyMobileGrantRequest, HttpControlClient,
 };
-use quic_tunnel_protocol::{
+use mobilecode_connect_protocol::{
     ClientId, Device, DeviceId, DeviceStatus, PeerRole, Service, ServiceId, SessionId, UserId,
 };
-use quic_tunnel_punch::probe::{establish_p2p_path, P2pPathConfig, P2pPathError};
-use quic_tunnel_tunnel::quic::P2pQuicIdentity;
+use mobilecode_connect_punch::probe::{establish_p2p_path, P2pPathConfig, P2pPathError};
+use mobilecode_connect_tunnel::quic::P2pQuicIdentity;
 use rustls::pki_types::CertificateDer;
 use tokio::{sync::oneshot, task::JoinHandle};
 
@@ -420,7 +420,7 @@ fn device_from_config(config: &AgentConfig) -> Device {
 }
 
 fn services_from_config(
-    device_id: &quic_tunnel_protocol::DeviceId,
+    device_id: &mobilecode_connect_protocol::DeviceId,
     services: Vec<ServiceConfig>,
 ) -> Vec<Service> {
     services
@@ -494,7 +494,7 @@ where
 mod tests {
     use super::*;
     use crate::mobile_grant::CreateMobileInviteRequest;
-    use quic_tunnel_protocol::MobilePairingRequest;
+    use mobilecode_connect_protocol::MobilePairingRequest;
 
     #[test]
     fn active_mobile_grant_metadata_is_invalid_after_local_revoke() {

@@ -2,12 +2,12 @@ use axum::{
     body::{to_bytes, Body},
     http::{Method, Request, StatusCode},
 };
-use quic_tunnel_control::{
+use mobilecode_connect_control::{
     routes::routes,
     session::{CreateSessionRequest, CreateSessionResponse, RegisterP2pCertificateRequest},
     state::ControlState,
 };
-use quic_tunnel_protocol::{
+use mobilecode_connect_protocol::{
     Device, DeviceId, DeviceStatus, Service, ServiceId, ServiceProtocol, UserId,
 };
 use serde::de::DeserializeOwned;

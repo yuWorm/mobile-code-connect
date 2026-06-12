@@ -1,5 +1,5 @@
 [package]
-name = "quic_tunnel_mobile_core"
+name = "mobilecode_connect_mobile_core"
 edition.workspace = true
 version.workspace = true
 license.workspace = true
@@ -10,10 +10,10 @@ crate-type = ["rlib", "cdylib", "staticlib"]
 [dependencies]
 async-trait.workspace = true
 quinn.workspace = true
-quic_tunnel_control_client = { path = "../control-client" }
-quic_tunnel_punch = { path = "../punch" }
-quic_tunnel_protocol = { path = "../protocol" }
-quic_tunnel_tunnel = { path = "../tunnel" }
+mobilecode_connect_control_client = { path = "../control-client" }
+mobilecode_connect_punch = { path = "../punch" }
+mobilecode_connect_protocol = { path = "../protocol" }
+mobilecode_connect_tunnel = { path = "../tunnel" }
 rustls.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
@@ -23,6 +23,6 @@ uuid.workspace = true
 
 [dev-dependencies]
 axum.workspace = true
-quic_tunnel_agent = { path = "../agent" }
-quic_tunnel_auth = { path = "../auth" }
-quic_tunnel_control = { path = "../control" }
+mobilecode_connect_agent = { path = "../agent" }
+mobilecode_connect_auth = { path = "../auth" }
+mobilecode_connect_control = { path = "../control" }

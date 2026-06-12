@@ -8,13 +8,13 @@ license.workspace = true
 anyhow.workspace = true
 axum.workspace = true
 clap.workspace = true
-quic_tunnel_relay = { path = "../../crates/relay" }
-quic_tunnel_control_client = { path = "../../crates/control-client" }
+mobilecode_connect_relay = { path = "../../crates/relay" }
+mobilecode_connect_control_client = { path = "../../crates/control-client" }
 tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 
 [dev-dependencies]
-quic_tunnel_auth = { path = "../../crates/auth" }
-quic_tunnel_control = { path = "../../crates/control" }
-quic_tunnel_protocol = { path = "../../crates/protocol" }
+mobilecode_connect_auth = { path = "../../crates/auth" }
+mobilecode_connect_control = { path = "../../crates/control" }
+mobilecode_connect_protocol = { path = "../../crates/protocol" }

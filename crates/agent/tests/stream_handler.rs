@@ -1,6 +1,6 @@
 use std::{net::SocketAddr, str::FromStr};
 
-use quic_tunnel_agent::{
+use mobilecode_connect_agent::{
     config::ServiceConfig,
     service_registry::ServiceRegistry,
     stream_handler::{
@@ -8,8 +8,10 @@ use quic_tunnel_agent::{
         handle_data_stream_with_policy_and_resolver, AgentStreamError, TargetAccessPolicy,
     },
 };
-use quic_tunnel_protocol::{DataStreamHeader, ServiceId, ServiceProtocol, SessionId, StreamId};
-use quic_tunnel_tunnel::stream::write_data_header;
+use mobilecode_connect_protocol::{
+    DataStreamHeader, ServiceId, ServiceProtocol, SessionId, StreamId,
+};
+use mobilecode_connect_tunnel::stream::write_data_header;
 use tokio::{
     io::{duplex, AsyncReadExt, AsyncWriteExt},
     net::TcpListener,

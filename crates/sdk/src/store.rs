@@ -4,7 +4,7 @@ use std::{
 };
 
 use async_trait::async_trait;
-use quic_tunnel_protocol::{MobileGrantCredential, UserId};
+use mobilecode_connect_protocol::{MobileGrantCredential, UserId};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

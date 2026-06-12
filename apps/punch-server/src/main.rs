@@ -2,7 +2,7 @@ use std::net::SocketAddr;
 
 use anyhow::{Context, Result};
 use clap::Parser;
-use quic_tunnel_punch::server::PunchServer;
+use mobilecode_connect_punch::server::PunchServer;
 
 #[derive(Debug, Parser)]
 #[command(name = "punch-server")]

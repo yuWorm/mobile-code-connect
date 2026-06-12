@@ -4,20 +4,22 @@ use std::{
     time::Duration,
 };
 
-use quic_tunnel_agent::{
+use mobilecode_connect_agent::{
     config::{AgentConfig, ServiceConfig},
     runtime::{Agent, AgentControlRuntime, AgentControlRuntimeConfig},
     service_registry::ServiceRegistry,
 };
-use quic_tunnel_control::{routes::routes, state::ControlState};
-use quic_tunnel_control_client::{ControlClientError, HttpControlClient, HttpControlClientOptions};
-use quic_tunnel_mobile_core::{
+use mobilecode_connect_control::{routes::routes, state::ControlState};
+use mobilecode_connect_control_client::{
+    ControlClientError, HttpControlClient, HttpControlClientOptions,
+};
+use mobilecode_connect_mobile_core::{
     client::{OpenServiceRequest, TunnelClient},
     config::TunnelConfig,
     forward::{ControlRelayConnectorConfig, ControlRelayStreamConnector},
 };
-use quic_tunnel_protocol::{ClientId, DeviceId, ServiceId, ServiceProtocol};
-use quic_tunnel_relay::{config::RelayConfig, runtime::RelayService};
+use mobilecode_connect_protocol::{ClientId, DeviceId, ServiceId, ServiceProtocol};
+use mobilecode_connect_relay::{config::RelayConfig, runtime::RelayService};
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::{TcpListener, TcpStream},

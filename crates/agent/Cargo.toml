@@ -1,15 +1,15 @@
 [package]
-name = "quic_tunnel_agent"
+name = "mobilecode_connect_agent"
 edition.workspace = true
 version.workspace = true
 license.workspace = true
 
 [dependencies]
 quinn.workspace = true
-quic_tunnel_control_client = { path = "../control-client" }
-quic_tunnel_punch = { path = "../punch" }
-quic_tunnel_tunnel = { path = "../tunnel" }
-quic_tunnel_protocol = { path = "../protocol" }
+mobilecode_connect_control_client = { path = "../control-client" }
+mobilecode_connect_punch = { path = "../punch" }
+mobilecode_connect_tunnel = { path = "../tunnel" }
+mobilecode_connect_protocol = { path = "../protocol" }
 libc = "0.2"
 rustls.workspace = true
 serde.workspace = true
@@ -20,4 +20,4 @@ uuid.workspace = true
 
 [dev-dependencies]
 axum.workspace = true
-quic_tunnel_control = { path = "../control" }
+mobilecode_connect_control = { path = "../control" }

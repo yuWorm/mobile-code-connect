@@ -1,7 +1,7 @@
-use quic_tunnel_protocol::{
+use mobilecode_connect_protocol::{
     ControlFrame, DataStreamHeader, PeerRole, RelayBindFrame, ServiceId, SessionId, StreamId,
 };
-use quic_tunnel_tunnel::stream::{
+use mobilecode_connect_tunnel::stream::{
     read_control_frame, read_data_header, write_control_frame, write_data_header,
 };
 use tokio::io::{duplex, AsyncReadExt, AsyncWriteExt};

@@ -5,7 +5,7 @@ use std::{
 
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use hmac::{Hmac, Mac};
-use quic_tunnel_protocol::{PeerRole, SessionId};
+use mobilecode_connect_protocol::{PeerRole, SessionId};
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use tokio::net::UdpSocket;

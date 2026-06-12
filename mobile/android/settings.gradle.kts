@@ -14,4 +14,4 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "QuicTunnelMobileSdk"
+rootProject.name = "MobileCodeConnectMobileSdk"

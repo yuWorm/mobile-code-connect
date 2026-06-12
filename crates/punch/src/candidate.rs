@@ -4,7 +4,7 @@ use std::{
     sync::{Arc, RwLock},
 };
 
-use quic_tunnel_protocol::{CandidateSource, CandidateType, PeerRole, SessionId};
+use mobilecode_connect_protocol::{CandidateSource, CandidateType, PeerRole, SessionId};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

@@ -12,8 +12,8 @@ pub use admin::AdminSdk;
 pub use auth::{AuthSdk, LoginInput, RegisterInput};
 pub use controller::{ControllerSdk, CreateSessionInput, RegisterControllerInput};
 pub use facade::{
-    EnsureBrowserServerLogin, EnsureDeviceCodeServerLogin, OpenMobileServiceInput,
-    OpenedMobileService, QuicTunnelSdk, QuicTunnelSdkBuilder,
+    EnsureBrowserServerLogin, EnsureDeviceCodeServerLogin, MobileCodeConnectSdk,
+    MobileCodeConnectSdkBuilder, OpenMobileServiceInput, OpenedMobileService,
 };
 pub use mobile::{
     classify_browser_proxy_url_with_defaults, classify_browser_proxy_url_with_domain_suffix,
@@ -22,8 +22,8 @@ pub use mobile::{
     MobileGrantPairingInput, MobileGrantPairingSession, MobileTunnelConfig, MobileTunnelSdk,
     OpenServiceInput, P2pOrRelayTunnelConfig,
 };
-pub use quic_tunnel_control_client::HttpControlClientOptions;
-pub use quic_tunnel_mobile_core::{
+pub use mobilecode_connect_control_client::HttpControlClientOptions;
+pub use mobilecode_connect_mobile_core::{
     path::TunnelPath,
     status::{TunnelStatus, TunnelTransportStats},
 };
@@ -40,17 +40,17 @@ pub use store::{
 #[derive(Debug, thiserror::Error)]
 pub enum SdkError {
     #[error("control client failed: {0}")]
-    Control(#[from] quic_tunnel_control_client::ControlClientError),
+    Control(#[from] mobilecode_connect_control_client::ControlClientError),
     #[error("token store failed: {0}")]
     TokenStore(#[from] store::TokenStoreError),
     #[error("server credential store failed: {0}")]
     ServerCredentialStore(#[from] server_auth::ServerCredentialStoreError),
     #[error("mobile tunnel failed: {0}")]
-    MobileTunnel(#[from] quic_tunnel_mobile_core::client::TunnelError),
+    MobileTunnel(#[from] mobilecode_connect_mobile_core::client::TunnelError),
     #[error("browser proxy failed: {0}")]
-    BrowserProxy(#[from] quic_tunnel_mobile_core::browser_proxy::BrowserProxyError),
+    BrowserProxy(#[from] mobilecode_connect_mobile_core::browser_proxy::BrowserProxyError),
     #[error("mobile grant failed: {0}")]
-    MobileGrant(#[from] quic_tunnel_protocol::MobileGrantError),
+    MobileGrant(#[from] mobilecode_connect_protocol::MobileGrantError),
     #[error("not authenticated")]
     NotAuthenticated,
     #[error("invalid sdk config: {reason}")]
@@ -74,7 +74,7 @@ pub enum SdkError {
 impl SdkError {
     pub fn control_status_code(&self) -> Option<u16> {
         match self {
-            Self::Control(quic_tunnel_control_client::ControlClientError::HttpStatus {
+            Self::Control(mobilecode_connect_control_client::ControlClientError::HttpStatus {
                 status_code,
                 ..
             }) => Some(status_code.as_u16()),

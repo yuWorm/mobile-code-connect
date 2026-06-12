@@ -50,14 +50,14 @@ run bash -n scripts/package-mobile-android.sh
 run bash -n scripts/install-relayd.sh
 run bash -n scripts/production-check.sh
 run scripts/gen-mobile-bindings.sh --language all
-run scripts/package-mobile-ios.sh --dry-run --ios-min-version 17.0 --targets aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios --xcframework-output target/mobile-package-dry-run/ios/quic_tunnel_mobile_coreFFI.xcframework
+run scripts/package-mobile-ios.sh --dry-run --ios-min-version 17.0 --targets aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios --xcframework-output target/mobile-package-dry-run/ios/mobilecode_connect_mobile_coreFFI.xcframework
 run scripts/package-mobile-android.sh --dry-run --gradle-task assembleRelease --aar-output-dir target/mobile-package-dry-run/android/aar
 
 run cargo fmt --check
-run cargo test -p quic_tunnel_mobile_core --lib mobile_grant_
-run cargo test -p quic_tunnel_mobile_core --test mobile_platform_wrappers
-run cargo test -p quic_tunnel_sdk --test live_workflow
-run cargo test -p quic_tunnel_mobile_core --test smoke_script
+run cargo test -p mobilecode_connect_mobile_core --lib mobile_grant_
+run cargo test -p mobilecode_connect_mobile_core --test mobile_platform_wrappers
+run cargo test -p mobilecode_connect_sdk --test live_workflow
+run cargo test -p mobilecode_connect_mobile_core --test smoke_script
 run cargo test -p mobile-cli
 run cargo test --workspace --no-run
 

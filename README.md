@@ -82,7 +82,7 @@ use `Authorization: Bearer <token>`. For compatibility with the local smoke
 stack, requests without a token still run as the seeded development user
 `user_001`.
 
-Rust applications should prefer the high-level `quic_tunnel_sdk` crate over
+Rust applications should prefer the high-level `mobilecode_connect_sdk` crate over
 calling every HTTP endpoint directly. `AuthSdk` handles register/login/password
 flows and token storage, `ControllerSdk` handles controller registration,
 device/service discovery, and session creation, and `MobileTunnelSdk` wraps the
@@ -95,7 +95,7 @@ session queries, plus server credentials, controlled devices, device access
 grants, and controller inventory. Use `MemoryTokenStore` for tests or
 short-lived tools and `FileTokenStore` for embedded apps that need to persist a
 user Control token across process restarts.
-For application-level wiring, `QuicTunnelSdk::builder().control_url(...).token_file(...).build()`
+For application-level wiring, `MobileCodeConnectSdk::builder().control_url(...).token_file(...).build()`
 shares one token store across `auth()`, `controller()`, `admin()`, and mobile
 tunnel helpers, so an embedded Rust app can log in once and reuse the same
 credential for controller/device/session/admin flows. Add
@@ -121,9 +121,9 @@ timeouts, 408, 429, or 5xx responses.
 
 ```rust
 use std::time::Duration;
-use quic_tunnel_sdk::HttpControlClientOptions;
+use mobilecode_connect_sdk::{HttpControlClientOptions, MobileCodeConnectSdk};
 
-let sdk = QuicTunnelSdk::builder()
+let sdk = MobileCodeConnectSdk::builder()
     .control_url("http://127.0.0.1:8080")
     .token_file("state/user-token.json")
     .server_credential_file("state/server-credential.json")
@@ -142,7 +142,7 @@ let server = sdk.server()?;
 let admin = sdk.admin()?;
 ```
 
-`quic_tunnel_mobile_core::ffi` exposes the first UniFFI-ready mobile SDK
+`mobilecode_connect_mobile_core::ffi` exposes the first UniFFI-ready mobile SDK
 surface for iOS and Android. For native callers that need a direct socket-like
 endpoint, the app creates `FfiMobileTunnel`, opens a `127.0.0.1:<port>` forward
 for one device/service, reads status, and closes the forward. Passing
@@ -151,7 +151,7 @@ returned `FfiForwardHandle` contains the actual port.
 
 Native apps can pair without logging into Control by importing the JSON invite
 as `FfiMobileInvitePayload`. The Swift/Kotlin wrappers expose
-`QuicTunnelMobileGrantPairingController`, which generates a random nonce and
+`MobileCodeConnectMobileGrantPairingController`, which generates a random nonce and
 wraps the low-level UniFFI start/poll calls. Native callers can also call those
 UniFFI functions directly:
 
@@ -171,7 +171,7 @@ When `result.status` is approved, `result.grant` contains a
 `FfiMobileGrantCredential` with the locally derived grant secret and optional
 agent P2P certificate fingerprint. Store that credential in platform secure
 storage, then pass it to `FfiMobileTunnel.startWithMobileGrant(...)`. The
-Swift/Kotlin wrappers include `QuicTunnelMobileGrantSecureStore`: iOS stores the
+Swift/Kotlin wrappers include `MobileCodeConnectMobileGrantSecureStore`: iOS stores the
 credential JSON in Keychain, and Android encrypts it with an Android Keystore
 AES-GCM key before writing app-private preferences. The shared UniFFI helpers
 `mobileGrantCredentialToJson(...)` and `mobileGrantCredentialFromJson(...)`
@@ -257,12 +257,12 @@ The mobile app owns applying the returned proxy endpoint to its embedded browser
 and clearing it when the browser/tunnel closes. The thin platform wrappers are
 checked in as source templates:
 
-- `mobile/ios/Sources/QuicTunnelMobileSdk/QuicTunnelBrowserProxyController.swift`
-- `mobile/ios/Sources/QuicTunnelMobileSdk/QuicTunnelMobileGrantPairingController.swift`
-- `mobile/ios/Sources/QuicTunnelMobileSdk/QuicTunnelMobileGrantSecureStore.swift`
-- `mobile/android/src/main/java/dev/quictunnel/mobile/QuicTunnelBrowserProxyController.kt`
-- `mobile/android/src/main/java/dev/quictunnel/mobile/QuicTunnelMobileGrantPairingController.kt`
-- `mobile/android/src/main/java/dev/quictunnel/mobile/QuicTunnelMobileGrantSecureStore.kt`
+- `mobile/ios/Sources/MobileCodeConnectMobileSdk/MobileCodeConnectBrowserProxyController.swift`
+- `mobile/ios/Sources/MobileCodeConnectMobileSdk/MobileCodeConnectMobileGrantPairingController.swift`
+- `mobile/ios/Sources/MobileCodeConnectMobileSdk/MobileCodeConnectMobileGrantSecureStore.swift`
+- `mobile/android/src/main/java/dev/mobilecode/connect/mobile/MobileCodeConnectBrowserProxyController.kt`
+- `mobile/android/src/main/java/dev/mobilecode/connect/mobile/MobileCodeConnectMobileGrantPairingController.kt`
+- `mobile/android/src/main/java/dev/mobilecode/connect/mobile/MobileCodeConnectMobileGrantSecureStore.kt`
 
 On iOS 17+, the wrapper creates a `Network.ProxyConfiguration` for the local
 HTTP CONNECT proxy and assigns it to
@@ -300,10 +300,10 @@ The platform package skeletons are checked in:
   `mobile/android/build.gradle.kts`
 
 For an iOS release, place the generated
-`Artifacts/quic_tunnel_mobile_coreFFI.xcframework` under `mobile/ios/`; the
-Swift package exports `QuicTunnelMobileSdk`, includes the generated UniFFI Swift
-source under `Sources/QuicTunnelMobileSdk/Generated`, and depends on the
-`quic_tunnel_mobile_coreFFI` binary target. For an Android release, copy
+`Artifacts/mobilecode_connect_mobile_coreFFI.xcframework` under `mobile/ios/`; the
+Swift package exports `MobileCodeConnectMobileSdk`, includes the generated UniFFI Swift
+source under `Sources/MobileCodeConnectMobileSdk/Generated`, and depends on the
+`mobilecode_connect_mobile_coreFFI` binary target. For an Android release, copy
 generated UniFFI Kotlin bindings into `mobile/android/src/main/uniffi/kotlin`
 and native `.so` libraries into `mobile/android/src/main/jniLibs/<abi>/`, then
 assemble the AAR from `mobile/android`.
@@ -341,13 +341,13 @@ linkers from `ANDROID_NDK_HOME`/`ANDROID_NDK_ROOT`; pass `--ndk-home`,
 SDK examples can be compiled and run directly from the workspace:
 
 ```bash
-cargo run -p quic_tunnel_sdk --example sdk_mock_workflow
+cargo run -p mobilecode_connect_sdk --example sdk_mock_workflow
 
 QUIC_TUNNEL_SDK_LIVE_RUN=1 \
 QUIC_TUNNEL_CONTROL_URL=http://127.0.0.1:8080 \
 QUIC_TUNNEL_SDK_EMAIL=member@example.com \
 QUIC_TUNNEL_SDK_PASSWORD=password-123 \
-cargo run -p quic_tunnel_sdk --example sdk_live_workflow
+cargo run -p mobilecode_connect_sdk --example sdk_live_workflow
 ```
 
 `sdk_mock_workflow` runs the complete user/controller/server/session sequence
@@ -427,9 +427,9 @@ agentd run --control https://control.example.com --credential-file agentd-creden
 Browser server login uses `/server-auth/browser/start`, user approval, and
 `/server-auth/browser/exchange`. Headless login uses `/server-auth/device/start`
 and `/server-auth/device/poll`. Rust applications should use
-`quic_tunnel_sdk::ServerAuthSdk` with `FileServerCredentialStore` or a custom
+`mobilecode_connect_sdk::ServerAuthSdk` with `FileServerCredentialStore` or a custom
 `ServerCredentialStore`; `agentd login` uses the same SDK flow. After login,
-`quic_tunnel_sdk::ServerSdk` can reuse that credential store for controlled
+`mobilecode_connect_sdk::ServerSdk` can reuse that credential store for controlled
 server registration and session lifecycle calls. The resulting
 `ControlRole::Agent` credential is scoped to one controlled server device. An
 Agent credential can register and update only its own device/services/P2P
@@ -1160,7 +1160,7 @@ cargo run -p mobile-cli -- pair \
 ```
 
 Open a local Mobile forward. In Control mode, `mobile-cli` uses
-`quic_tunnel_sdk::MobileTunnelSdk`; the SDK asks Control for a session before it
+`mobilecode_connect_sdk::MobileTunnelSdk`; the SDK asks Control for a session before it
 opens the P2P-or-Relay stream:
 
 ```bash

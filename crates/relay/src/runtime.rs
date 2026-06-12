@@ -5,9 +5,9 @@ use std::{
     sync::{Arc, RwLock},
 };
 
-use quic_tunnel_auth::TokenKey;
-use quic_tunnel_protocol::{ControlFrame, PeerRole, RelayBindFrame, SessionId};
-use quic_tunnel_tunnel::{
+use mobilecode_connect_auth::TokenKey;
+use mobilecode_connect_protocol::{ControlFrame, PeerRole, RelayBindFrame, SessionId};
+use mobilecode_connect_tunnel::{
     quic::{make_server_endpoint, QuicBiStream, ServerEndpoint},
     stream::{read_control_frame, write_control_frame},
 };

@@ -7,11 +7,11 @@ license.workspace = true
 [dependencies]
 anyhow.workspace = true
 clap.workspace = true
-quic_tunnel_auth = { path = "../../crates/auth" }
-quic_tunnel_control_client = { path = "../../crates/control-client" }
-quic_tunnel_mobile_core = { path = "../../crates/mobile-core" }
-quic_tunnel_protocol = { path = "../../crates/protocol" }
-quic_tunnel_sdk = { path = "../../crates/sdk" }
+mobilecode_connect_auth = { path = "../../crates/auth" }
+mobilecode_connect_control_client = { path = "../../crates/control-client" }
+mobilecode_connect_mobile_core = { path = "../../crates/mobile-core" }
+mobilecode_connect_protocol = { path = "../../crates/protocol" }
+mobilecode_connect_sdk = { path = "../../crates/sdk" }
 rustls.workspace = true
 serde.workspace = true
 serde_json.workspace = true

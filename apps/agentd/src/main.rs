@@ -7,21 +7,21 @@ use std::{
 
 use anyhow::{Context, Result};
 use clap::{Args, Parser, Subcommand};
-use quic_tunnel_agent::{
+use mobilecode_connect_agent::{
     config::{AgentConfig, ServiceConfig},
     mobile_grant::{CreateMobileInviteRequest, MobileGrantManager},
     relay_client::{RelayAgentClient, RelayAgentConfig},
     runtime::{Agent, AgentControlRuntime, AgentControlRuntimeConfig, AgentP2pRuntimeConfig},
     service_registry::ServiceRegistry,
 };
-use quic_tunnel_protocol::{
+use mobilecode_connect_protocol::{
     mobile_grant_certificate_fingerprint, DeviceId, MobileInvitePayload, ServiceId,
     ServiceProtocol, SessionId,
 };
-use quic_tunnel_sdk::server_auth::{
+use mobilecode_connect_sdk::server_auth::{
     FileServerCredentialStore, ServerAuthSdk, ServerCredentialStore, ServerLoginInput,
 };
-use quic_tunnel_tunnel::quic::{generate_self_signed_server_identity, P2pQuicIdentity};
+use mobilecode_connect_tunnel::quic::{generate_self_signed_server_identity, P2pQuicIdentity};
 use rustls::pki_types::CertificateDer;
 
 #[derive(Debug, Parser)]

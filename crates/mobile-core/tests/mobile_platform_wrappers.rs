@@ -65,13 +65,13 @@ fn run_workspace_command(args: &[&str]) -> String {
 #[test]
 fn ios_browser_proxy_wrapper_documents_webview_lifecycle() {
     let browser_proxy = read_workspace_file(
-        "mobile/ios/Sources/QuicTunnelMobileSdk/QuicTunnelBrowserProxyController.swift",
+        "mobile/ios/Sources/MobileCodeConnectMobileSdk/MobileCodeConnectBrowserProxyController.swift",
     );
     let pairing = read_workspace_file(
-        "mobile/ios/Sources/QuicTunnelMobileSdk/QuicTunnelMobileGrantPairingController.swift",
+        "mobile/ios/Sources/MobileCodeConnectMobileSdk/MobileCodeConnectMobileGrantPairingController.swift",
     );
     let secure_store = read_workspace_file(
-        "mobile/ios/Sources/QuicTunnelMobileSdk/QuicTunnelMobileGrantSecureStore.swift",
+        "mobile/ios/Sources/MobileCodeConnectMobileSdk/MobileCodeConnectMobileGrantSecureStore.swift",
     );
     let source = format!("{browser_proxy}\n{pairing}\n{secure_store}");
 
@@ -95,8 +95,8 @@ fn ios_browser_proxy_wrapper_documents_webview_lifecycle() {
             "directConnectTimeoutMs",
             "tunnelOpenTimeoutMs",
             "idleTimeoutMs",
-            "QuicTunnelMobileGrantPairingController",
-            "QuicTunnelMobileGrantSecureStore",
+            "MobileCodeConnectMobileGrantPairingController",
+            "MobileCodeConnectMobileGrantSecureStore",
             "SecItemAdd",
             "SecItemCopyMatching",
             "SecItemDelete",
@@ -122,13 +122,13 @@ fn ios_browser_proxy_wrapper_documents_webview_lifecycle() {
 #[test]
 fn android_browser_proxy_wrapper_documents_webview_lifecycle() {
     let browser_proxy = read_workspace_file(
-        "mobile/android/src/main/java/dev/quictunnel/mobile/QuicTunnelBrowserProxyController.kt",
+        "mobile/android/src/main/java/dev/mobilecode/connect/mobile/MobileCodeConnectBrowserProxyController.kt",
     );
     let pairing = read_workspace_file(
-        "mobile/android/src/main/java/dev/quictunnel/mobile/QuicTunnelMobileGrantPairingController.kt",
+        "mobile/android/src/main/java/dev/mobilecode/connect/mobile/MobileCodeConnectMobileGrantPairingController.kt",
     );
     let secure_store = read_workspace_file(
-        "mobile/android/src/main/java/dev/quictunnel/mobile/QuicTunnelMobileGrantSecureStore.kt",
+        "mobile/android/src/main/java/dev/mobilecode/connect/mobile/MobileCodeConnectMobileGrantSecureStore.kt",
     );
     let source = format!("{browser_proxy}\n{pairing}\n{secure_store}");
 
@@ -153,8 +153,8 @@ fn android_browser_proxy_wrapper_documents_webview_lifecycle() {
             "directConnectTimeoutMs",
             "tunnelOpenTimeoutMs",
             "idleTimeoutMs",
-            "QuicTunnelMobileGrantPairingController",
-            "QuicTunnelMobileGrantSecureStore",
+            "MobileCodeConnectMobileGrantPairingController",
+            "MobileCodeConnectMobileGrantSecureStore",
             "AndroidKeyStore",
             "KeyGenParameterSpec",
             "AES/GCM/NoPadding",
@@ -184,12 +184,12 @@ fn readme_points_to_platform_browser_proxy_wrappers() {
     assert_contains_all(
         &readme,
         &[
-            "mobile/ios/Sources/QuicTunnelMobileSdk/QuicTunnelBrowserProxyController.swift",
-            "mobile/ios/Sources/QuicTunnelMobileSdk/QuicTunnelMobileGrantPairingController.swift",
-            "mobile/ios/Sources/QuicTunnelMobileSdk/QuicTunnelMobileGrantSecureStore.swift",
-            "mobile/android/src/main/java/dev/quictunnel/mobile/QuicTunnelBrowserProxyController.kt",
-            "mobile/android/src/main/java/dev/quictunnel/mobile/QuicTunnelMobileGrantPairingController.kt",
-            "mobile/android/src/main/java/dev/quictunnel/mobile/QuicTunnelMobileGrantSecureStore.kt",
+            "mobile/ios/Sources/MobileCodeConnectMobileSdk/MobileCodeConnectBrowserProxyController.swift",
+            "mobile/ios/Sources/MobileCodeConnectMobileSdk/MobileCodeConnectMobileGrantPairingController.swift",
+            "mobile/ios/Sources/MobileCodeConnectMobileSdk/MobileCodeConnectMobileGrantSecureStore.swift",
+            "mobile/android/src/main/java/dev/mobilecode/connect/mobile/MobileCodeConnectBrowserProxyController.kt",
+            "mobile/android/src/main/java/dev/mobilecode/connect/mobile/MobileCodeConnectMobileGrantPairingController.kt",
+            "mobile/android/src/main/java/dev/mobilecode/connect/mobile/MobileCodeConnectMobileGrantSecureStore.kt",
         ],
     );
 }
@@ -202,14 +202,14 @@ fn ios_swift_package_declares_sdk_and_native_core_artifact() {
         &manifest,
         &[
             "swift-tools-version: 5.9",
-            "QuicTunnelMobileSdk",
+            "MobileCodeConnectMobileSdk",
             ".iOS(.v17)",
             ".macOS(.v14)",
             ".library(",
             ".binaryTarget(",
-            "quic_tunnel_mobile_coreFFI",
-            "Artifacts/quic_tunnel_mobile_coreFFI.xcframework",
-            "Sources/QuicTunnelMobileSdk",
+            "mobilecode_connect_mobile_coreFFI",
+            "Artifacts/mobilecode_connect_mobile_coreFFI.xcframework",
+            "Sources/MobileCodeConnectMobileSdk",
         ],
     );
 }
@@ -225,10 +225,10 @@ fn android_gradle_library_declares_webview_proxy_sdk_inputs() {
     assert_contains_all(
         &combined,
         &[
-            "rootProject.name = \"QuicTunnelMobileSdk\"",
+            "rootProject.name = \"MobileCodeConnectMobileSdk\"",
             "com.android.library",
             "org.jetbrains.kotlin.android",
-            "namespace = \"dev.quictunnel.mobile\"",
+            "namespace = \"dev.mobilecode.connect.mobile\"",
             "compileSdk = 37",
             "minSdk = 23",
             "src/main/uniffi/kotlin",
@@ -236,8 +236,8 @@ fn android_gradle_library_declares_webview_proxy_sdk_inputs() {
             "consumer-rules.pro",
             "androidx.webkit:webkit:1.14.0",
             "net.java.dev.jna:jna:5.17.0@aar",
-            "uniffi.quic_tunnel_mobile_core",
-            "dev.quictunnel.mobile",
+            "uniffi.mobilecode_connect_mobile_core",
+            "dev.mobilecode.connect.mobile",
             "<manifest",
         ],
     );
@@ -253,7 +253,7 @@ fn readme_points_to_platform_package_manifests() {
             "mobile/ios/Package.swift",
             "mobile/android/build.gradle.kts",
             "mobile/android/settings.gradle.kts",
-            "Artifacts/quic_tunnel_mobile_coreFFI.xcframework",
+            "Artifacts/mobilecode_connect_mobile_coreFFI.xcframework",
             "src/main/uniffi/kotlin",
             "src/main/jniLibs",
         ],
@@ -276,17 +276,17 @@ fn mobile_packaging_scripts_stage_native_artifacts_and_bindings() {
             "--xcframework-output",
             "IPHONEOS_DEPLOYMENT_TARGET",
             "lipo -create",
-            "libquic_tunnel_mobile_core_simulator.a",
+            "libmobilecode_connect_mobile_core_simulator.a",
             "mobile-package-manifest.json",
             "sha256_file",
-            "cargo build -p quic_tunnel_mobile_core --release --target",
+            "cargo build -p mobilecode_connect_mobile_core --release --target",
             "scripts/gen-mobile-bindings.sh --language swift",
-            "quic_tunnel_mobile_core.swift",
-            "quic_tunnel_mobile_coreFFI.h",
+            "mobilecode_connect_mobile_core.swift",
+            "mobilecode_connect_mobile_coreFFI.h",
             "module.modulemap",
             "xcodebuild -create-xcframework",
-            "Artifacts/quic_tunnel_mobile_coreFFI.xcframework",
-            "Sources/QuicTunnelMobileSdk/Generated",
+            "Artifacts/mobilecode_connect_mobile_coreFFI.xcframework",
+            "Sources/MobileCodeConnectMobileSdk/Generated",
         ],
     );
 
@@ -300,11 +300,11 @@ fn mobile_packaging_scripts_stage_native_artifacts_and_bindings() {
             "i686-linux-android",
             "arm64-v8a",
             "armeabi-v7a",
-            "cargo build -p quic_tunnel_mobile_core --release --target",
+            "cargo build -p mobilecode_connect_mobile_core --release --target",
             "scripts/gen-mobile-bindings.sh --language kotlin",
             "src/main/uniffi/kotlin",
             "src/main/jniLibs",
-            "libquic_tunnel_mobile_core.so",
+            "libmobilecode_connect_mobile_core.so",
             "--gradle-task",
             "--aar-output-dir",
             "--no-strip",
@@ -361,16 +361,16 @@ fn ios_packaging_script_dry_run_plans_deployment_target_and_simulator_fat_librar
         &ios,
         &[
             "IPHONEOS_DEPLOYMENT_TARGET=17.0",
-            "cargo build -p quic_tunnel_mobile_core --release --target aarch64-apple-ios",
-            "cargo build -p quic_tunnel_mobile_core --release --target aarch64-apple-ios-sim",
-            "cargo build -p quic_tunnel_mobile_core --release --target x86_64-apple-ios",
+            "cargo build -p mobilecode_connect_mobile_core --release --target aarch64-apple-ios",
+            "cargo build -p mobilecode_connect_mobile_core --release --target aarch64-apple-ios-sim",
+            "cargo build -p mobilecode_connect_mobile_core --release --target x86_64-apple-ios",
             "lipo -create",
-            "target/aarch64-apple-ios-sim/release/libquic_tunnel_mobile_core.a",
-            "target/x86_64-apple-ios/release/libquic_tunnel_mobile_core.a",
-            "libquic_tunnel_mobile_core_simulator.a",
+            "target/aarch64-apple-ios-sim/release/libmobilecode_connect_mobile_core.a",
+            "target/x86_64-apple-ios/release/libmobilecode_connect_mobile_core.a",
+            "libmobilecode_connect_mobile_core_simulator.a",
             "xcodebuild -create-xcframework",
-            "target/aarch64-apple-ios/release/libquic_tunnel_mobile_core.a",
-            "target/mobile-package-dry-run/ios/libquic_tunnel_mobile_core_simulator.a",
+            "target/aarch64-apple-ios/release/libmobilecode_connect_mobile_core.a",
+            "target/mobile-package-dry-run/ios/libmobilecode_connect_mobile_core_simulator.a",
         ],
     );
 }
@@ -406,7 +406,7 @@ fn ios_packaging_script_dry_run_plans_custom_xcframework_output_and_manifest() {
         "scripts/package-mobile-ios.sh",
         "--dry-run",
         "--xcframework-output",
-        "target/mobile-package-dry-run/ios/QuicTunnelMobileCoreFFI.xcframework",
+        "target/mobile-package-dry-run/ios/MobileCodeConnectMobileCoreFFI.xcframework",
         "--targets",
         "aarch64-apple-ios",
         "--staging-dir",
@@ -416,9 +416,9 @@ fn ios_packaging_script_dry_run_plans_custom_xcframework_output_and_manifest() {
     assert_contains_all(
         &ios,
         &[
-            "XCFRAMEWORK_OUTPUT=target/mobile-package-dry-run/ios/QuicTunnelMobileCoreFFI.xcframework",
+            "XCFRAMEWORK_OUTPUT=target/mobile-package-dry-run/ios/MobileCodeConnectMobileCoreFFI.xcframework",
             "xcodebuild -create-xcframework",
-            "QuicTunnelMobileCoreFFI.xcframework",
+            "MobileCodeConnectMobileCoreFFI.xcframework",
             "dry-run: write target/mobile-package-dry-run/ios/mobile-package-manifest.json with sha256 entries",
         ],
     );
@@ -475,7 +475,7 @@ fn readme_documents_mobile_packaging_scripts() {
             "directFallbackPolicy",
             "LocalNetworkAndDomain",
             "FfiBrowserProxy.stats()",
-            "quic_tunnel_mobile_coreFFI.xcframework",
+            "mobilecode_connect_mobile_coreFFI.xcframework",
             "assembleRelease",
         ],
     );
@@ -498,11 +498,11 @@ fn mobile_packaging_scripts_support_toolchain_free_dry_run() {
         &[
             "dry-run",
             "IPHONEOS_DEPLOYMENT_TARGET=17.0",
-            "cargo build -p quic_tunnel_mobile_core --release --target aarch64-apple-ios",
+            "cargo build -p mobilecode_connect_mobile_core --release --target aarch64-apple-ios",
             "scripts/gen-mobile-bindings.sh --language swift",
-            "quic_tunnel_mobile_core.swift",
+            "mobilecode_connect_mobile_core.swift",
             "xcodebuild -create-xcframework",
-            "Artifacts/quic_tunnel_mobile_coreFFI.xcframework",
+            "Artifacts/mobilecode_connect_mobile_coreFFI.xcframework",
         ],
     );
 
@@ -526,8 +526,8 @@ fn mobile_packaging_scripts_support_toolchain_free_dry_run() {
         &android,
         &[
             "dry-run",
-            "cargo build -p quic_tunnel_mobile_core --release --target aarch64-linux-android",
-            "cargo build -p quic_tunnel_mobile_core --release --target x86_64-linux-android",
+            "cargo build -p mobilecode_connect_mobile_core --release --target aarch64-linux-android",
+            "cargo build -p mobilecode_connect_mobile_core --release --target x86_64-linux-android",
             "scripts/gen-mobile-bindings.sh --language kotlin",
             "ANDROID_NDK_HOME=/opt/android-ndk",
             "CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER=/opt/android-ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang",
@@ -537,7 +537,7 @@ fn mobile_packaging_scripts_support_toolchain_free_dry_run() {
             "RANLIB_aarch64_linux_android=/opt/android-ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ranlib",
             "arm64-v8a",
             "x86_64",
-            "libquic_tunnel_mobile_core.so",
+            "libmobilecode_connect_mobile_core.so",
             "GRADLE_TASK=assembleRelease",
             "assembleRelease",
         ],
