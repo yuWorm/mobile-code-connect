@@ -7,7 +7,7 @@ license.workspace = true
 [dependencies]
 anyhow.workspace = true
 clap.workspace = true
-quic_tunnel_punch = { path = "../../crates/punch" }
+mobilecode_connect_punch = { path = "../../crates/punch" }
 tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true

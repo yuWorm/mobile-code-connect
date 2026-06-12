@@ -1,5 +1,5 @@
 [package]
-name = "quic_tunnel_punch"
+name = "mobilecode_connect_punch"
 edition.workspace = true
 version.workspace = true
 license.workspace = true
@@ -7,7 +7,7 @@ license.workspace = true
 [dependencies]
 base64.workspace = true
 hmac.workspace = true
-quic_tunnel_protocol = { path = "../protocol" }
+mobilecode_connect_protocol = { path = "../protocol" }
 serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true

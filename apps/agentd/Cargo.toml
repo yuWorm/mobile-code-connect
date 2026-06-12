@@ -7,10 +7,10 @@ license.workspace = true
 [dependencies]
 anyhow.workspace = true
 clap.workspace = true
-quic_tunnel_agent = { path = "../../crates/agent" }
-quic_tunnel_protocol = { path = "../../crates/protocol" }
-quic_tunnel_sdk = { path = "../../crates/sdk" }
-quic_tunnel_tunnel = { path = "../../crates/tunnel" }
+mobilecode_connect_agent = { path = "../../crates/agent" }
+mobilecode_connect_protocol = { path = "../../crates/protocol" }
+mobilecode_connect_sdk = { path = "../../crates/sdk" }
+mobilecode_connect_tunnel = { path = "../../crates/tunnel" }
 rustls.workspace = true
 serde_json.workspace = true
 tokio.workspace = true

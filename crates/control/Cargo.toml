@@ -1,5 +1,5 @@
 [package]
-name = "quic_tunnel_control"
+name = "mobilecode_connect_control"
 edition.workspace = true
 version.workspace = true
 license.workspace = true
@@ -8,9 +8,9 @@ license.workspace = true
 async-trait.workspace = true
 axum.workspace = true
 base64.workspace = true
-quic_tunnel_auth = { path = "../auth" }
-quic_tunnel_control_client = { path = "../control-client" }
-quic_tunnel_protocol = { path = "../protocol" }
+mobilecode_connect_auth = { path = "../auth" }
+mobilecode_connect_control_client = { path = "../control-client" }
+mobilecode_connect_protocol = { path = "../protocol" }
 rusqlite.workspace = true
 serde.workspace = true
 serde_json.workspace = true
