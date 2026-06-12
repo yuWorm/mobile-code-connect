@@ -26,7 +26,7 @@ use rustls::pki_types::CertificateDer;
 
 #[derive(Debug, Parser)]
 #[command(name = "agentd")]
-#[command(about = "Standalone PC Agent for the Rust QUIC tunnel")]
+#[command(about = "Standalone PC Agent for MobileCode Connect")]
 struct Cli {
     #[command(subcommand)]
     command: Option<AgentdCommand>,

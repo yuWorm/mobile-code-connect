@@ -326,7 +326,7 @@ fi
 
 cat >"$unit_file" <<UNIT
 [Unit]
-Description=QUIC Tunnel Relay
+Description=MobileCode Connect Relay
 After=network-online.target
 Wants=network-online.target
 

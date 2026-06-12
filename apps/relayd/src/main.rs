@@ -21,7 +21,7 @@ use tokio::sync::watch;
 
 #[derive(Debug, Parser)]
 #[command(name = "relayd")]
-#[command(about = "Standalone Relay service for the Rust QUIC tunnel")]
+#[command(about = "Standalone Relay service for MobileCode Connect")]
 struct Cli {
     #[arg(long, default_value = "127.0.0.1:4443")]
     bind: SocketAddr,

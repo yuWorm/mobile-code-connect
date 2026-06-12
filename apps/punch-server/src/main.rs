@@ -6,7 +6,7 @@ use quic_tunnel_punch::server::PunchServer;
 
 #[derive(Debug, Parser)]
 #[command(name = "punch-server")]
-#[command(about = "Standalone UDP Punch service for QUIC tunnel candidate discovery")]
+#[command(about = "Standalone UDP Punch service for MobileCode Connect candidate discovery")]
 struct Cli {
     #[arg(long, default_value = "127.0.0.1:3478")]
     bind: SocketAddr,

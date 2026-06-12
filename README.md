@@ -1,7 +1,9 @@
-# QUIC Tunnel
+# MobileCode Connect
 
-Rust workspace for embeddable Agent/Mobile SDK crates and standalone Relay,
-Control, Punch, and Admin API services.
+MobileCode Connect is the device-service connectivity layer for the
+mobile-code service. It packages embeddable Agent/Mobile SDK crates and
+standalone Relay, Control, Punch, and Admin API services around a Rust QUIC
+tunnel core.
 
 Initial verification after crate skeletons exist:
 

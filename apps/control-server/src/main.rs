@@ -11,7 +11,7 @@ use quic_tunnel_control_client::RegisterUserRequest;
 
 #[derive(Debug, Parser)]
 #[command(name = "control-server")]
-#[command(about = "Control plane API for the Rust QUIC tunnel")]
+#[command(about = "Control plane API for MobileCode Connect")]
 struct Cli {
     #[arg(long, default_value = "127.0.0.1:4242")]
     listen: String,

@@ -1,8 +1,8 @@
-# QUIC P2P Tunnel MVP PRD（Rust-first 版）
+# MobileCode Connect MVP PRD（Rust-first 版）
 
 ## 1. 目标
 
-本 PRD 用于验证一条最小可用链路：
+本 PRD 用于验证 MobileCode Connect 给 mobile-code 服务使用的一条最小可用链路：
 
 ```text
 Mobile App
@@ -199,7 +199,7 @@ MVP 阶段先提供 `mobile-cli` 跑通链路，再封装 iOS/Android。
 |  Rust Mobile SDK core        |
 |  Local Port Forward          |
 |  UDP Punch                   |
-|  QUIC Tunnel                 |
+|  MobileCode Connect          |
 |  Relay Fallback              |
 +--------------+--------------+
                |
@@ -233,7 +233,7 @@ MVP 阶段先提供 `mobile-cli` 跑通链路，再封装 iOS/Android。
 +-----------------------------+
 |  Rust PC Agent               |
 |  Service Registry            |
-|  QUIC Tunnel                 |
+|  MobileCode Connect          |
 |  Local TCP Forward           |
 +--------------+--------------+
                |

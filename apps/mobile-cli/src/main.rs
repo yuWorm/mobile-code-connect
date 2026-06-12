@@ -28,7 +28,7 @@ use serde::Serialize;
 
 #[derive(Debug, Parser)]
 #[command(name = "mobile-cli")]
-#[command(about = "Test client for the Rust QUIC tunnel mobile core")]
+#[command(about = "Test mobile client for MobileCode Connect")]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
