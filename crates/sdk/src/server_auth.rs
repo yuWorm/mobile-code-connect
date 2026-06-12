@@ -5,13 +5,13 @@ use std::{
 };
 
 use async_trait::async_trait;
-use quic_tunnel_control_client::{
+use mobilecode_connect_control_client::{
     BrowserServerAuthExchangeRequest, BrowserServerAuthStartResponse, ControlClientError,
     DeviceServerAuthPollResponse, DeviceServerAuthStartResponse, HttpControlClient,
     HttpControlClientOptions, PollServerAuthRequest, ServerAuthStatus, ServerCredentialResponse,
     StartServerAuthRequest,
 };
-use quic_tunnel_protocol::DeviceId;
+use mobilecode_connect_protocol::DeviceId;
 use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
 

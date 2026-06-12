@@ -1,8 +1,8 @@
 use std::{net::SocketAddr, time::Duration};
 
-use quic_tunnel_control_client::{ControlClientError, StatusCode};
-use quic_tunnel_protocol::{ClientId, DeviceId, ServiceId, UserId};
-use quic_tunnel_sdk::{
+use mobilecode_connect_control_client::{ControlClientError, StatusCode};
+use mobilecode_connect_protocol::{ClientId, DeviceId, ServiceId, UserId};
+use mobilecode_connect_sdk::{
     server_auth::ServerCredentialStore,
     store::{StoredToken, TokenStore},
     CreateSessionInput, EnsureBrowserServerLogin, EnsureDeviceCodeServerLogin,

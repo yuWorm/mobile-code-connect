@@ -1,4 +1,4 @@
-use quic_tunnel_tunnel::quic::{
+use mobilecode_connect_tunnel::quic::{
     generate_self_signed_server_identity, make_client_endpoint,
     make_client_endpoint_from_std_socket, make_server_endpoint,
     make_server_endpoint_from_std_socket, make_server_endpoint_from_std_socket_with_identity,

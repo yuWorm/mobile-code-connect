@@ -4,9 +4,9 @@ use std::{
     time::Instant,
 };
 
-use quic_tunnel_auth::TokenError;
-use quic_tunnel_protocol::{RelayLimits, SessionId, TrafficStats};
-use quic_tunnel_tunnel::{quic::QuicError, stream::TunnelStreamError};
+use mobilecode_connect_auth::TokenError;
+use mobilecode_connect_protocol::{RelayLimits, SessionId, TrafficStats};
+use mobilecode_connect_tunnel::{quic::QuicError, stream::TunnelStreamError};
 
 use crate::bind::{
     RelayBindRequest, RelayBindStatus, RelayPeer, RelayPeerRole, RelayTokenVerifier,

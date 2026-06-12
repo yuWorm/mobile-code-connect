@@ -5,8 +5,8 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use quic_tunnel_auth::{ControlRole, ControlTokenClaims, TokenKey, TokenSigner};
-use quic_tunnel_control_client::{
+use mobilecode_connect_auth::{ControlRole, ControlTokenClaims, TokenKey, TokenSigner};
+use mobilecode_connect_control_client::{
     AdminSessionSummary, AgentSessionAssignment, AgentSessionStatus, ApproveMobilePairingRequest,
     ApprovedMobileGrantMetadata, AssignUserPlanRequest, AuditLogEntry, AuthResponse,
     BrowserServerAuthApprovalResponse, BrowserServerAuthExchangeRequest,
@@ -29,7 +29,7 @@ use quic_tunnel_control_client::{
     UpdateServerCredentialStatusRequest, UpdateUserPlanRequest, UpdateUserRoleRequest,
     UpdateUserStatusRequest, UserDetail, UserSummary, UserUsagePeriod, UserUsageSummary,
 };
-use quic_tunnel_protocol::{
+use mobilecode_connect_protocol::{
     ClientId, Device, DeviceId, DeviceStatus, GrantSessionRequest, MobilePairingRequest,
     PendingGrantSessionStatus, PendingPairingStatus, RelayLimits, Service, ServiceId, SessionId,
     UserId,

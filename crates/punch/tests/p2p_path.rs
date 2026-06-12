@@ -3,8 +3,8 @@ use std::{
     time::Duration,
 };
 
-use quic_tunnel_protocol::{PeerRole, SessionId};
-use quic_tunnel_punch::{
+use mobilecode_connect_protocol::{PeerRole, SessionId};
+use mobilecode_connect_punch::{
     probe::{establish_p2p_path, P2pPathConfig},
     server::PunchServer,
 };

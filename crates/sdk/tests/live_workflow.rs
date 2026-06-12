@@ -4,8 +4,8 @@ use axum::{
     http::{Method, Request},
     Router,
 };
-use quic_tunnel_control::{routes::routes, state::ControlState};
-use quic_tunnel_control_client::{
+use mobilecode_connect_control::{routes::routes, state::ControlState};
+use mobilecode_connect_control_client::{
     AgentSessionAssignment, AgentSessionStatus, AuthResponse, BrowserServerAuthApprovalResponse,
     BrowserServerAuthExchangeRequest, BrowserServerAuthStartResponse, ControlClientError,
     ControllerDevice, CreateSessionRequest, CreateSessionResponse, DeviceServerAuthPollResponse,
@@ -13,11 +13,11 @@ use quic_tunnel_control_client::{
     RegisterControllerDeviceRequest, RegisterP2pCertificateRequest, RegisterUserRequest,
     ServerCredentialResponse, StartServerAuthRequest, UpdatePasswordRequest,
 };
-use quic_tunnel_protocol::{
+use mobilecode_connect_protocol::{
     ClientId, Device, DeviceId, DeviceStatus, Service, ServiceId, ServiceProtocol, SessionId,
     UserId,
 };
-use quic_tunnel_sdk::{
+use mobilecode_connect_sdk::{
     auth::AuthSdk,
     client::ControlApi,
     controller::ControllerApi,

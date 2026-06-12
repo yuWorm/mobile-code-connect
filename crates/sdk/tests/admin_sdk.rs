@@ -1,12 +1,12 @@
 use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
-use quic_tunnel_auth::ControlRole;
-use quic_tunnel_protocol::{
+use mobilecode_connect_auth::ControlRole;
+use mobilecode_connect_protocol::{
     ClientId, Device, DeviceId, DeviceStatus, RelayLimits, ServiceId, SessionId, TrafficStats,
     UserId,
 };
-use quic_tunnel_sdk::{
+use mobilecode_connect_sdk::{
     admin::{
         AdminApi, AdminListQuery, AdminSdk, AdminSessionSummary, AuditLogEntry, ControllerDevice,
         CreateRelayBootstrapRequest, CreateRelayCredentialRequest, CreateUserRequest,
@@ -88,14 +88,14 @@ impl AdminApi for FakeAdminApi {
 
     async fn dashboard(
         &mut self,
-    ) -> Result<DashboardSummary, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<DashboardSummary, mobilecode_connect_control_client::ControlClientError> {
         Ok(DashboardSummary::default())
     }
 
     async fn list_users(
         &mut self,
         query: Option<AdminListQuery>,
-    ) -> Result<Page<UserSummary>, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<Page<UserSummary>, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -107,7 +107,7 @@ impl AdminApi for FakeAdminApi {
     async fn create_user(
         &mut self,
         request: CreateUserRequest,
-    ) -> Result<UserSummary, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<UserSummary, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -119,7 +119,7 @@ impl AdminApi for FakeAdminApi {
     async fn user(
         &mut self,
         user_id: &UserId,
-    ) -> Result<UserDetail, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<UserDetail, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -132,7 +132,7 @@ impl AdminApi for FakeAdminApi {
         &mut self,
         user_id: &UserId,
         request: UpdateUserStatusRequest,
-    ) -> Result<UserSummary, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<UserSummary, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -145,7 +145,7 @@ impl AdminApi for FakeAdminApi {
         &mut self,
         user_id: &UserId,
         request: UpdateUserRoleRequest,
-    ) -> Result<UserSummary, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<UserSummary, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -157,7 +157,7 @@ impl AdminApi for FakeAdminApi {
     async fn audit_logs(
         &mut self,
         query: Option<AdminListQuery>,
-    ) -> Result<Page<AuditLogEntry>, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<Page<AuditLogEntry>, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -169,7 +169,7 @@ impl AdminApi for FakeAdminApi {
     async fn user_usage_summaries(
         &mut self,
         query: Option<AdminListQuery>,
-    ) -> Result<Page<UserUsageSummary>, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<Page<UserUsageSummary>, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -181,7 +181,7 @@ impl AdminApi for FakeAdminApi {
     async fn report_relay_session_usage(
         &mut self,
         request: ReportRelaySessionUsageRequest,
-    ) -> Result<(), quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<(), mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -193,7 +193,7 @@ impl AdminApi for FakeAdminApi {
     async fn reset_user_usage_period(
         &mut self,
         user_id: &UserId,
-    ) -> Result<UserUsagePeriod, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<UserUsagePeriod, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -207,14 +207,14 @@ impl AdminApi for FakeAdminApi {
 
     async fn current_plan(
         &mut self,
-    ) -> Result<Plan, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<Plan, mobilecode_connect_control_client::ControlClientError> {
         Ok(plan("free"))
     }
 
     async fn plan_catalog(
         &mut self,
         query: Option<AdminListQuery>,
-    ) -> Result<Page<Plan>, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<Page<Plan>, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -226,7 +226,7 @@ impl AdminApi for FakeAdminApi {
     async fn update_catalog_plan(
         &mut self,
         request: UpdatePlanCatalogRequest,
-    ) -> Result<Plan, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<Plan, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -239,7 +239,7 @@ impl AdminApi for FakeAdminApi {
         &mut self,
         user_id: &UserId,
         plan_id: String,
-    ) -> Result<Plan, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<Plan, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -252,7 +252,7 @@ impl AdminApi for FakeAdminApi {
         &mut self,
         user_id: &UserId,
         request: UpdateUserPlanRequest,
-    ) -> Result<Plan, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<Plan, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -264,7 +264,7 @@ impl AdminApi for FakeAdminApi {
     async fn list_relay_credentials(
         &mut self,
         query: Option<AdminListQuery>,
-    ) -> Result<Page<RelayCredential>, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<Page<RelayCredential>, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -276,7 +276,7 @@ impl AdminApi for FakeAdminApi {
     async fn create_relay_credential(
         &mut self,
         request: CreateRelayCredentialRequest,
-    ) -> Result<RelayCredential, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<RelayCredential, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -289,7 +289,7 @@ impl AdminApi for FakeAdminApi {
         &mut self,
         relay_id: &str,
         request: UpdateRelayCredentialStatusRequest,
-    ) -> Result<RelayCredential, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<RelayCredential, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -301,7 +301,7 @@ impl AdminApi for FakeAdminApi {
     async fn rotate_relay_credential(
         &mut self,
         relay_id: &str,
-    ) -> Result<RelayCredential, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<RelayCredential, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -313,7 +313,7 @@ impl AdminApi for FakeAdminApi {
     async fn create_relay_bootstrap(
         &mut self,
         request: CreateRelayBootstrapRequest,
-    ) -> Result<RelayBootstrapResponse, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<RelayBootstrapResponse, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -325,7 +325,7 @@ impl AdminApi for FakeAdminApi {
     async fn register_relay(
         &mut self,
         request: RegisterRelayRequest,
-    ) -> Result<RelayNode, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<RelayNode, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -338,7 +338,7 @@ impl AdminApi for FakeAdminApi {
         &mut self,
         relay_id: &str,
         request: UpdateRelayRequest,
-    ) -> Result<RelayNode, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<RelayNode, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -351,7 +351,7 @@ impl AdminApi for FakeAdminApi {
         &mut self,
         relay_id: &str,
         request: ReportRelayHealthRequest,
-    ) -> Result<RelayNode, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<RelayNode, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -363,7 +363,7 @@ impl AdminApi for FakeAdminApi {
     async fn remove_relay(
         &mut self,
         relay_id: &str,
-    ) -> Result<(), quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<(), mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -375,7 +375,7 @@ impl AdminApi for FakeAdminApi {
     async fn list_relays(
         &mut self,
         query: Option<AdminListQuery>,
-    ) -> Result<Page<RelayNode>, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<Page<RelayNode>, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -387,7 +387,8 @@ impl AdminApi for FakeAdminApi {
     async fn admin_sessions(
         &mut self,
         query: Option<AdminListQuery>,
-    ) -> Result<Page<AdminSessionSummary>, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<Page<AdminSessionSummary>, mobilecode_connect_control_client::ControlClientError>
+    {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -399,7 +400,8 @@ impl AdminApi for FakeAdminApi {
     async fn list_server_credentials(
         &mut self,
         query: Option<AdminListQuery>,
-    ) -> Result<Page<ServerCredentialSummary>, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<Page<ServerCredentialSummary>, mobilecode_connect_control_client::ControlClientError>
+    {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -411,7 +413,8 @@ impl AdminApi for FakeAdminApi {
     async fn server_credential(
         &mut self,
         credential_id: &str,
-    ) -> Result<ServerCredentialSummary, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<ServerCredentialSummary, mobilecode_connect_control_client::ControlClientError>
+    {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -424,7 +427,8 @@ impl AdminApi for FakeAdminApi {
         &mut self,
         credential_id: &str,
         request: UpdateServerCredentialStatusRequest,
-    ) -> Result<ServerCredentialSummary, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<ServerCredentialSummary, mobilecode_connect_control_client::ControlClientError>
+    {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -436,7 +440,8 @@ impl AdminApi for FakeAdminApi {
     async fn rotate_server_credential(
         &mut self,
         credential_id: &str,
-    ) -> Result<ServerCredentialResponse, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<ServerCredentialResponse, mobilecode_connect_control_client::ControlClientError>
+    {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -448,7 +453,7 @@ impl AdminApi for FakeAdminApi {
     async fn list_controllers(
         &mut self,
         query: Option<AdminListQuery>,
-    ) -> Result<Page<ControllerDevice>, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<Page<ControllerDevice>, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -460,7 +465,7 @@ impl AdminApi for FakeAdminApi {
     async fn remove_controller(
         &mut self,
         client_id: &ClientId,
-    ) -> Result<(), quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<(), mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -472,7 +477,7 @@ impl AdminApi for FakeAdminApi {
     async fn list_controlled_devices(
         &mut self,
         query: Option<AdminListQuery>,
-    ) -> Result<Page<Device>, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<Page<Device>, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -484,7 +489,7 @@ impl AdminApi for FakeAdminApi {
     async fn controlled_device(
         &mut self,
         device_id: &DeviceId,
-    ) -> Result<Device, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<Device, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -497,7 +502,8 @@ impl AdminApi for FakeAdminApi {
         &mut self,
         device_id: &DeviceId,
         query: Option<AdminListQuery>,
-    ) -> Result<Page<DeviceAccessGrant>, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<Page<DeviceAccessGrant>, mobilecode_connect_control_client::ControlClientError>
+    {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -510,7 +516,7 @@ impl AdminApi for FakeAdminApi {
         &mut self,
         device_id: &DeviceId,
         request: GrantDeviceAccessRequest,
-    ) -> Result<DeviceAccessGrant, quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<DeviceAccessGrant, mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -523,7 +529,7 @@ impl AdminApi for FakeAdminApi {
         &mut self,
         device_id: &DeviceId,
         user_id: &UserId,
-    ) -> Result<(), quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<(), mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -535,7 +541,7 @@ impl AdminApi for FakeAdminApi {
     async fn remove_controlled_device(
         &mut self,
         device_id: &DeviceId,
-    ) -> Result<(), quic_tunnel_control_client::ControlClientError> {
+    ) -> Result<(), mobilecode_connect_control_client::ControlClientError> {
         self.state
             .lock()
             .expect("fake admin state poisoned")
@@ -1219,7 +1225,7 @@ fn admin_session() -> AdminSessionSummary {
         service_id: ServiceId::new("svc_web"),
         service_name: "Web".to_string(),
         client_id: ClientId::new("phone_001"),
-        status: quic_tunnel_control_client::AgentSessionStatus::Bound,
+        status: mobilecode_connect_control_client::AgentSessionStatus::Bound,
         relay_addr: "127.0.0.1:4443".to_string(),
         punch_addr: "127.0.0.1:3478".to_string(),
         expire_at: 1000,

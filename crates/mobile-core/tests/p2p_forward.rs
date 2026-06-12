@@ -4,21 +4,23 @@ use std::{
     time::Duration,
 };
 
-use quic_tunnel_agent::{
+use mobilecode_connect_agent::{
     config::ServiceConfig, p2p_client::P2pAgentClient, service_registry::ServiceRegistry,
 };
-use quic_tunnel_control_client::HttpControlClientOptions;
-use quic_tunnel_mobile_core::{
+use mobilecode_connect_control_client::HttpControlClientOptions;
+use mobilecode_connect_mobile_core::{
     client::{OpenServiceRequest, TunnelClient},
     config::TunnelConfig,
     forward::P2pStreamConnector,
 };
-use quic_tunnel_protocol::{ClientId, DeviceId, PeerRole, ServiceId, ServiceProtocol, SessionId};
-use quic_tunnel_punch::{
+use mobilecode_connect_protocol::{
+    ClientId, DeviceId, PeerRole, ServiceId, ServiceProtocol, SessionId,
+};
+use mobilecode_connect_punch::{
     probe::{establish_p2p_path, P2pPathConfig},
     server::PunchServer,
 };
-use quic_tunnel_tunnel::quic::generate_self_signed_server_identity;
+use mobilecode_connect_tunnel::quic::generate_self_signed_server_identity;
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::{TcpListener, TcpStream},

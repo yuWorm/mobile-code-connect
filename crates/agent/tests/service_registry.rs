@@ -1,8 +1,8 @@
-use quic_tunnel_agent::{
+use mobilecode_connect_agent::{
     config::ServiceConfig,
     service_registry::{ServiceRegistry, ServiceRegistryError},
 };
-use quic_tunnel_protocol::{ServiceId, ServiceProtocol};
+use mobilecode_connect_protocol::{ServiceId, ServiceProtocol};
 
 fn service(id: &str, port: u16) -> ServiceConfig {
     ServiceConfig {

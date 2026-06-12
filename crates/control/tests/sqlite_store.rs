@@ -3,9 +3,9 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use quic_tunnel_auth::{ControlRole, TokenKey, TokenSigner};
-use quic_tunnel_control::state::ControlState;
-use quic_tunnel_control_client::{
+use mobilecode_connect_auth::{ControlRole, TokenKey, TokenSigner};
+use mobilecode_connect_control::state::ControlState;
+use mobilecode_connect_control_client::{
     AgentSessionAssignment, AgentSessionStatus, AssignUserPlanRequest, CreateRelayBootstrapRequest,
     CreateRelayCredentialRequest, CreateUserRequest, GrantDeviceAccessRequest, LoginRequest,
     OAuthIdentity, OAuthProvider, RegisterControllerDeviceRequest, RegisterRelayRequest,
@@ -13,8 +13,8 @@ use quic_tunnel_control_client::{
     ReportRelaySessionUsageRequest, UpdatePlanCatalogRequest, UpdateRelayCredentialStatusRequest,
     UpdateRelayRequest, UpdateUserRoleRequest,
 };
-use quic_tunnel_control_client::{Plan, UpdateUserPlanRequest};
-use quic_tunnel_protocol::{
+use mobilecode_connect_control_client::{Plan, UpdateUserPlanRequest};
+use mobilecode_connect_protocol::{
     ClientId, Device, DeviceId, DeviceStatus, RelayLimits, Service, ServiceId, ServiceProtocol,
     SessionId, TrafficStats, UserId,
 };

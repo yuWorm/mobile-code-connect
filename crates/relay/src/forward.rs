@@ -1,4 +1,4 @@
-use quic_tunnel_tunnel::{
+use mobilecode_connect_tunnel::{
     copy::{copy_bidirectional_with_stats, CopyOutcome},
     stats::AtomicTrafficStats,
     stream::{read_data_header, write_data_header, TunnelStreamError},

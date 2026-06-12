@@ -5,10 +5,10 @@ use std::{
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
-use quic_tunnel_protocol::{
+use mobilecode_connect_protocol::{
     ClientId, Device, DeviceId, DeviceStatus, Service, ServiceId, ServiceProtocol,
 };
-use quic_tunnel_sdk::{
+use mobilecode_connect_sdk::{
     CreateSessionInput, EnsureBrowserServerLogin, EnsureDeviceCodeServerLogin, LoginInput,
     QuicTunnelSdk, RegisterControllerInput, RegisterInput, ServerLoginInput,
     ServerRegistrationInput, StoredToken,

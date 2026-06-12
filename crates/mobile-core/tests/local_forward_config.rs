@@ -1,12 +1,12 @@
 use std::{net::SocketAddr, time::Duration};
 
-use quic_tunnel_control_client::HttpControlClientOptions;
-use quic_tunnel_mobile_core::{
+use mobilecode_connect_control_client::HttpControlClientOptions;
+use mobilecode_connect_mobile_core::{
     client::{ControlP2pOrRelayClientConfig, OpenServiceRequest, TunnelClient, TunnelError},
     config::TunnelConfig,
     path::{PathSelector, TunnelPath},
 };
-use quic_tunnel_protocol::{ClientId, DeviceId, ServiceId};
+use mobilecode_connect_protocol::{ClientId, DeviceId, ServiceId};
 use rustls::pki_types::CertificateDer;
 
 fn config() -> TunnelConfig {

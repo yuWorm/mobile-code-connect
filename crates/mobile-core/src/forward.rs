@@ -7,17 +7,17 @@ use std::{
 };
 
 use async_trait::async_trait;
-use quic_tunnel_control_client::{
+use mobilecode_connect_control_client::{
     ControlClientError, CreateSessionRequest, CreateSessionResponse, HttpControlClient,
     HttpControlClientOptions,
 };
-use quic_tunnel_protocol::{
+use mobilecode_connect_protocol::{
     mobile_grant_certificate_fingerprint, ClientId, ControlFrame, DataStreamHeader, DeviceId,
     MobileGrantCredential, PeerRole, PendingGrantSessionStatus, RelayBindFrame, ServiceId,
     SessionId, StreamId,
 };
-use quic_tunnel_punch::probe::{establish_p2p_path, P2pPath, P2pPathConfig, P2pPathError};
-use quic_tunnel_tunnel::{
+use mobilecode_connect_punch::probe::{establish_p2p_path, P2pPath, P2pPathConfig, P2pPathError};
+use mobilecode_connect_tunnel::{
     copy::copy_bidirectional_with_stats,
     quic::{
         make_client_endpoint, make_client_endpoint_from_std_socket,
@@ -964,7 +964,7 @@ impl<T> AsyncReadWrite for T where T: tokio::io::AsyncRead + tokio::io::AsyncWri
 #[cfg(test)]
 mod tests {
     use super::*;
-    use quic_tunnel_protocol::mobile_grant_certificate_fingerprint;
+    use mobilecode_connect_protocol::mobile_grant_certificate_fingerprint;
 
     #[test]
     fn grant_session_accepts_matching_agent_p2p_fingerprint() {

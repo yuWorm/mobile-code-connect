@@ -4,17 +4,17 @@ use std::{
     time::Duration,
 };
 
-use quic_tunnel_agent::{
+use mobilecode_connect_agent::{
     config::{AgentConfig, ServiceConfig},
     mobile_grant::{CreateMobileInviteRequest, MobileGrantManager},
     runtime::{Agent, AgentControlRuntime, AgentControlRuntimeConfig, AgentP2pRuntimeConfig},
     service_registry::ServiceRegistry,
 };
-use quic_tunnel_control::{routes::routes, state::ControlState};
-use quic_tunnel_control_client::{
+use mobilecode_connect_control::{routes::routes, state::ControlState};
+use mobilecode_connect_control_client::{
     CreateSessionRequest, HttpControlClient, HttpControlClientOptions,
 };
-use quic_tunnel_mobile_core::{
+use mobilecode_connect_mobile_core::{
     browser_proxy::{browser_proxy_host, BrowserProxyTarget},
     client::{OpenServiceRequest, TunnelClient},
     config::TunnelConfig,
@@ -24,16 +24,16 @@ use quic_tunnel_mobile_core::{
         P2pStreamConnector, StreamConnector,
     },
 };
-use quic_tunnel_protocol::{
+use mobilecode_connect_protocol::{
     derive_mobile_grant_secret, mobile_grant_certificate_fingerprint, ClientId, DeviceId,
     MobileGrantCredential, MobilePairingRequest, PeerRole, PendingPairingStatus, ServiceId,
     ServiceProtocol, SessionId,
 };
-use quic_tunnel_punch::{
+use mobilecode_connect_punch::{
     probe::{establish_p2p_path, P2pPathConfig},
     server::PunchServer,
 };
-use quic_tunnel_tunnel::quic::generate_self_signed_server_identity;
+use mobilecode_connect_tunnel::quic::generate_self_signed_server_identity;
 use rustls::pki_types::CertificateDer;
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
@@ -441,7 +441,7 @@ async fn mobile_grant_browser_proxy_reaches_agent_service_over_p2p_or_relay() {
             control_client_options: HttpControlClientOptions::default(),
         },
         grant,
-        quic_tunnel_mobile_core::client::ControlP2pOrRelayClientConfig {
+        mobilecode_connect_mobile_core::client::ControlP2pOrRelayClientConfig {
             relay_server_cert: CertificateDer::from(vec![1, 2, 3]),
             bind_addr: local_addr(0),
             candidate_timeout: Duration::from_secs(1),

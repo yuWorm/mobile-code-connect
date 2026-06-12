@@ -3,8 +3,10 @@ use std::{
     time::Duration,
 };
 
-use quic_tunnel_control_client::{ControlClientError, HttpControlClient, HttpControlClientOptions};
-use quic_tunnel_protocol::{
+use mobilecode_connect_control_client::{
+    ControlClientError, HttpControlClient, HttpControlClientOptions,
+};
+use mobilecode_connect_protocol::{
     derive_mobile_grant_secret, ClientId, DeviceId, MobileGrantCredential, MobileGrantError,
     MobileInvitePayload, MobilePairingRequest, PendingPairingStatus, ServiceId,
 };

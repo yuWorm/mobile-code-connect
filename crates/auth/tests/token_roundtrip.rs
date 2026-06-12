@@ -1,7 +1,7 @@
-use quic_tunnel_auth::{
+use mobilecode_connect_auth::{
     ControlRole, ControlTokenClaims, RelayTokenClaims, TokenError, TokenKey, TokenSigner,
 };
-use quic_tunnel_protocol::{ClientId, DeviceId, ServiceId, SessionId, UserId};
+use mobilecode_connect_protocol::{ClientId, DeviceId, ServiceId, SessionId, UserId};
 
 fn relay_claims(exp: u64) -> RelayTokenClaims {
     RelayTokenClaims {

@@ -1,10 +1,10 @@
 use std::path::PathBuf;
 
 use async_trait::async_trait;
-use quic_tunnel_control_client::{
+use mobilecode_connect_control_client::{
     AgentSessionAssignment, ControlClientError, HttpControlClient, HttpControlClientOptions,
 };
-use quic_tunnel_protocol::{Device, DeviceId, Service, SessionId};
+use mobilecode_connect_protocol::{Device, DeviceId, Service, SessionId};
 use tokio::sync::{Mutex, MutexGuard};
 
 use crate::{

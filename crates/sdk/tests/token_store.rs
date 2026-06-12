@@ -1,5 +1,5 @@
-use quic_tunnel_protocol::UserId;
-use quic_tunnel_sdk::{
+use mobilecode_connect_protocol::UserId;
+use mobilecode_connect_sdk::{
     auth::AuthSdk,
     store::{FileTokenStore, StoredToken, TokenStore},
 };

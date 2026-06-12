@@ -1,12 +1,14 @@
 use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
-use quic_tunnel_control_client::{AgentSessionAssignment, AgentSessionStatus, ControlClientError};
-use quic_tunnel_protocol::{
+use mobilecode_connect_control_client::{
+    AgentSessionAssignment, AgentSessionStatus, ControlClientError,
+};
+use mobilecode_connect_protocol::{
     ClientId, Device, DeviceId, DeviceStatus, Service, ServiceId, ServiceProtocol, SessionId,
     UserId,
 };
-use quic_tunnel_sdk::{
+use mobilecode_connect_sdk::{
     server::{ServerApi, ServerRegistrationInput, ServerSdk},
     server_auth::{MemoryServerCredentialStore, ServerCredentialStore, StoredServerCredential},
     SdkError,

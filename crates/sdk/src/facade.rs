@@ -1,10 +1,10 @@
 use std::path::PathBuf;
 
-use quic_tunnel_control_client::{
+use mobilecode_connect_control_client::{
     ControllerDevice, CreateSessionResponse, HttpControlClient, HttpControlClientOptions,
 };
-use quic_tunnel_mobile_core::forward::LocalForwardHandle;
-use quic_tunnel_protocol::{ClientId, Device, DeviceId, Service, ServiceId};
+use mobilecode_connect_mobile_core::forward::LocalForwardHandle;
+use mobilecode_connect_protocol::{ClientId, Device, DeviceId, Service, ServiceId};
 use rustls::pki_types::CertificateDer;
 
 use crate::{

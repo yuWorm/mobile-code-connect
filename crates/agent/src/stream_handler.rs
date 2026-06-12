@@ -3,8 +3,8 @@ use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
 };
 
-use quic_tunnel_protocol::ServiceId;
-use quic_tunnel_tunnel::stream::{read_data_header, TunnelStreamError};
+use mobilecode_connect_protocol::ServiceId;
+use mobilecode_connect_tunnel::stream::{read_data_header, TunnelStreamError};
 use tokio::{
     io::{self, AsyncRead, AsyncWrite},
     net::{lookup_host, TcpStream},

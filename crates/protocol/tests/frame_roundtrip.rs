@@ -1,4 +1,4 @@
-use quic_tunnel_protocol::{DataStreamHeader, ServiceId, SessionId, StreamId};
+use mobilecode_connect_protocol::{DataStreamHeader, ServiceId, SessionId, StreamId};
 
 #[test]
 fn data_stream_header_roundtrips_with_length_prefix() {

@@ -3,15 +3,15 @@ use axum::{
     body::{to_bytes, Body},
     http::{Method, Request, StatusCode},
 };
-use quic_tunnel_auth::{ControlRole, TokenKey, TokenSigner};
-use quic_tunnel_control::{
+use mobilecode_connect_auth::{ControlRole, TokenKey, TokenSigner};
+use mobilecode_connect_control::{
     oauth::{
         GitHubOAuthClient, GitHubOAuthConfig, GitHubOAuthToken, GitHubUserProfile, OAuthError,
     },
     routes::routes,
     state::ControlState,
 };
-use quic_tunnel_control_client::{
+use mobilecode_connect_control_client::{
     AdminSessionSummary, ApproveGrantSessionRequest, ApproveMobilePairingRequest,
     ApprovedMobileGrantMetadata, AssignUserPlanRequest, AuditLogEntry, AuthResponse,
     BrowserServerAuthApprovalResponse, BrowserServerAuthExchangeRequest,
@@ -31,7 +31,7 @@ use quic_tunnel_control_client::{
     UpdateServerCredentialStatusRequest, UpdateUserPlanRequest, UpdateUserRoleRequest,
     UpdateUserStatusRequest, UserDetail, UserSummary, UserUsagePeriod, UserUsageSummary,
 };
-use quic_tunnel_protocol::{
+use mobilecode_connect_protocol::{
     ClientId, Device, DeviceId, DeviceStatus, GrantSessionRequest, MobilePairingRequest,
     PendingGrantSessionStatus, PendingPairingStatus, RelayLimits, Service, ServiceId,
     ServiceProtocol, SessionId, TrafficStats, UserId,
@@ -1369,7 +1369,7 @@ async fn agent_credential_authorizes_only_own_device() {
             Method::POST,
             "/agent/devices/agent_owned/p2p-cert",
             Some(&credential.server_token),
-            &quic_tunnel_control_client::RegisterP2pCertificateRequest {
+            &mobilecode_connect_control_client::RegisterP2pCertificateRequest {
                 certificate_der: vec![1, 2, 3],
             },
         )
@@ -1383,7 +1383,7 @@ async fn agent_credential_authorizes_only_own_device() {
             Method::POST,
             "/agent/devices/agent_other/p2p-cert",
             Some(&credential.server_token),
-            &quic_tunnel_control_client::RegisterP2pCertificateRequest {
+            &mobilecode_connect_control_client::RegisterP2pCertificateRequest {
                 certificate_der: vec![1, 2, 3],
             },
         )
@@ -1662,7 +1662,7 @@ async fn agent_grant_session_waits_for_agent_approval_before_creating_session() 
     )
     .await;
     assert_eq!(assignments.status(), StatusCode::OK);
-    let assignments: Vec<quic_tunnel_control_client::AgentSessionAssignment> =
+    let assignments: Vec<mobilecode_connect_control_client::AgentSessionAssignment> =
         json(assignments).await;
     assert_eq!(assignments.len(), 1);
     assert_eq!(assignments[0].session_id, approved_session.session_id);
@@ -1784,7 +1784,7 @@ async fn admin_dashboard_summary_reports_control_plane_totals() {
         Method::POST,
         "/sessions",
         Some(&auth.access_token),
-        &quic_tunnel_control_client::CreateSessionRequest {
+        &mobilecode_connect_control_client::CreateSessionRequest {
             client_id: "phone_dashboard".to_string(),
             device_id: DeviceId::new("server_dashboard"),
             service_id: ServiceId::new("svc_dashboard"),
@@ -1792,7 +1792,8 @@ async fn admin_dashboard_summary_reports_control_plane_totals() {
     )
     .await;
     assert_eq!(session_response.status(), StatusCode::OK);
-    let session: quic_tunnel_control_client::CreateSessionResponse = json(session_response).await;
+    let session: mobilecode_connect_control_client::CreateSessionResponse =
+        json(session_response).await;
 
     let report = request_json(
         app.clone(),
@@ -1924,7 +1925,7 @@ async fn user_registers_logs_in_and_creates_session_with_plan_limits_and_pool_re
         Method::POST,
         "/sessions",
         Some(&auth.access_token),
-        &quic_tunnel_control_client::CreateSessionRequest {
+        &mobilecode_connect_control_client::CreateSessionRequest {
             client_id: "phone_001".to_string(),
             device_id: DeviceId::new("server_001"),
             service_id: ServiceId::new("svc_web_3000"),
@@ -1932,7 +1933,8 @@ async fn user_registers_logs_in_and_creates_session_with_plan_limits_and_pool_re
     )
     .await;
     assert_eq!(session_response.status(), StatusCode::OK);
-    let session: quic_tunnel_control_client::CreateSessionResponse = json(session_response).await;
+    let session: mobilecode_connect_control_client::CreateSessionResponse =
+        json(session_response).await;
     assert_eq!(session.relay_addr, "relay-west.example.com:4443");
 
     let claims = TokenSigner::new(TokenKey::new("dev-secret"))
@@ -1987,7 +1989,7 @@ async fn session_state_routes_require_owner_or_admin_token() {
         Method::POST,
         "/sessions",
         Some(&owner.access_token),
-        &quic_tunnel_control_client::CreateSessionRequest {
+        &mobilecode_connect_control_client::CreateSessionRequest {
             client_id: "phone_session_auth".to_string(),
             device_id: DeviceId::new("server_session_auth"),
             service_id: ServiceId::new("svc_session_auth"),
@@ -1995,7 +1997,8 @@ async fn session_state_routes_require_owner_or_admin_token() {
     )
     .await;
     assert_eq!(session_response.status(), StatusCode::OK);
-    let session: quic_tunnel_control_client::CreateSessionResponse = json(session_response).await;
+    let session: mobilecode_connect_control_client::CreateSessionResponse =
+        json(session_response).await;
 
     assert_eq!(
         get(
@@ -2145,7 +2148,7 @@ async fn admin_grants_user_access_to_controlled_device_without_agent_privileges(
             Method::POST,
             "/sessions",
             Some(&grantee.access_token),
-            &quic_tunnel_control_client::CreateSessionRequest {
+            &mobilecode_connect_control_client::CreateSessionRequest {
                 client_id: "phone_grantee".to_string(),
                 device_id: DeviceId::new("server_shared"),
                 service_id: ServiceId::new("svc_shared"),
@@ -2215,7 +2218,7 @@ async fn admin_grants_user_access_to_controlled_device_without_agent_privileges(
         Method::POST,
         "/sessions",
         Some(&grantee.access_token),
-        &quic_tunnel_control_client::CreateSessionRequest {
+        &mobilecode_connect_control_client::CreateSessionRequest {
             client_id: "phone_grantee".to_string(),
             device_id: DeviceId::new("server_shared"),
             service_id: ServiceId::new("svc_shared"),
@@ -2223,7 +2226,8 @@ async fn admin_grants_user_access_to_controlled_device_without_agent_privileges(
     )
     .await;
     assert_eq!(session_response.status(), StatusCode::OK);
-    let session: quic_tunnel_control_client::CreateSessionResponse = json(session_response).await;
+    let session: mobilecode_connect_control_client::CreateSessionResponse =
+        json(session_response).await;
     let claims = TokenSigner::new(TokenKey::new("dev-secret"))
         .verify_relay(&session.relay_token, 1_767_000_000)
         .unwrap();
@@ -2316,7 +2320,7 @@ async fn admin_lists_and_closes_control_sessions() {
         Method::POST,
         "/sessions",
         Some(&owner.access_token),
-        &quic_tunnel_control_client::CreateSessionRequest {
+        &mobilecode_connect_control_client::CreateSessionRequest {
             client_id: "phone_admin_session".to_string(),
             device_id: DeviceId::new("server_admin_session"),
             service_id: ServiceId::new("svc_admin_session"),
@@ -2324,7 +2328,8 @@ async fn admin_lists_and_closes_control_sessions() {
     )
     .await;
     assert_eq!(session_response.status(), StatusCode::OK);
-    let session: quic_tunnel_control_client::CreateSessionResponse = json(session_response).await;
+    let session: mobilecode_connect_control_client::CreateSessionResponse =
+        json(session_response).await;
 
     assert_eq!(
         get(app.clone(), "/sessions", &owner.access_token)
@@ -2350,7 +2355,7 @@ async fn admin_lists_and_closes_control_sessions() {
     assert_eq!(summary.client_id.as_str(), "phone_admin_session");
     assert_eq!(
         summary.status,
-        quic_tunnel_control_client::AgentSessionStatus::Pending
+        mobilecode_connect_control_client::AgentSessionStatus::Pending
     );
     assert_eq!(summary.relay_addr, "relay.example.com:4443");
     assert_eq!(summary.expire_at, session.expire_at);
@@ -2371,7 +2376,7 @@ async fn admin_lists_and_closes_control_sessions() {
         .unwrap();
     assert_eq!(
         summary.status,
-        quic_tunnel_control_client::AgentSessionStatus::Closed
+        mobilecode_connect_control_client::AgentSessionStatus::Closed
     );
 }
 
@@ -2934,7 +2939,7 @@ async fn admin_usage_summary_reports_user_sessions_and_granted_relay_quota() {
         Method::POST,
         "/sessions",
         Some(&auth.access_token),
-        &quic_tunnel_control_client::CreateSessionRequest {
+        &mobilecode_connect_control_client::CreateSessionRequest {
             client_id: "phone_usage".to_string(),
             device_id: DeviceId::new("server_usage"),
             service_id: ServiceId::new("svc_usage"),
@@ -3027,7 +3032,7 @@ async fn relay_reports_actual_session_usage_to_control_summary() {
         Method::POST,
         "/sessions",
         Some(&auth.access_token),
-        &quic_tunnel_control_client::CreateSessionRequest {
+        &mobilecode_connect_control_client::CreateSessionRequest {
             client_id: "phone_actual_usage".to_string(),
             device_id: DeviceId::new("server_actual_usage"),
             service_id: ServiceId::new("svc_actual_usage"),
@@ -3035,7 +3040,8 @@ async fn relay_reports_actual_session_usage_to_control_summary() {
     )
     .await;
     assert_eq!(session_response.status(), StatusCode::OK);
-    let session: quic_tunnel_control_client::CreateSessionResponse = json(session_response).await;
+    let session: mobilecode_connect_control_client::CreateSessionResponse =
+        json(session_response).await;
 
     let report = ReportRelaySessionUsageRequest {
         relay_id: "relay_usage".to_string(),
@@ -3164,7 +3170,7 @@ async fn plan_relay_traffic_quota_blocks_new_sessions_after_actual_usage_exhaust
         Method::POST,
         "/sessions",
         Some(&auth.access_token),
-        &quic_tunnel_control_client::CreateSessionRequest {
+        &mobilecode_connect_control_client::CreateSessionRequest {
             client_id: "phone_quota_limit".to_string(),
             device_id: DeviceId::new("server_quota_limit"),
             service_id: ServiceId::new("svc_quota_limit"),
@@ -3172,7 +3178,7 @@ async fn plan_relay_traffic_quota_blocks_new_sessions_after_actual_usage_exhaust
     )
     .await;
     assert_eq!(first_session.status(), StatusCode::OK);
-    let first_session: quic_tunnel_control_client::CreateSessionResponse =
+    let first_session: mobilecode_connect_control_client::CreateSessionResponse =
         json(first_session).await;
 
     let report = request_json(
@@ -3203,7 +3209,7 @@ async fn plan_relay_traffic_quota_blocks_new_sessions_after_actual_usage_exhaust
         Method::POST,
         "/sessions",
         Some(&auth.access_token),
-        &quic_tunnel_control_client::CreateSessionRequest {
+        &mobilecode_connect_control_client::CreateSessionRequest {
             client_id: "phone_quota_limit".to_string(),
             device_id: DeviceId::new("server_quota_limit"),
             service_id: ServiceId::new("svc_quota_limit"),
@@ -3275,7 +3281,7 @@ async fn admin_resets_user_usage_period_and_allows_new_sessions() {
         Method::POST,
         "/sessions",
         Some(&auth.access_token),
-        &quic_tunnel_control_client::CreateSessionRequest {
+        &mobilecode_connect_control_client::CreateSessionRequest {
             client_id: "phone_quota_reset".to_string(),
             device_id: DeviceId::new("server_quota_reset"),
             service_id: ServiceId::new("svc_quota_reset"),
@@ -3283,7 +3289,7 @@ async fn admin_resets_user_usage_period_and_allows_new_sessions() {
     )
     .await;
     assert_eq!(first_session.status(), StatusCode::OK);
-    let first_session: quic_tunnel_control_client::CreateSessionResponse =
+    let first_session: mobilecode_connect_control_client::CreateSessionResponse =
         json(first_session).await;
 
     let report = request_json(
@@ -3314,7 +3320,7 @@ async fn admin_resets_user_usage_period_and_allows_new_sessions() {
         Method::POST,
         "/sessions",
         Some(&auth.access_token),
-        &quic_tunnel_control_client::CreateSessionRequest {
+        &mobilecode_connect_control_client::CreateSessionRequest {
             client_id: "phone_quota_reset".to_string(),
             device_id: DeviceId::new("server_quota_reset"),
             service_id: ServiceId::new("svc_quota_reset"),
@@ -3363,7 +3369,7 @@ async fn admin_resets_user_usage_period_and_allows_new_sessions() {
         Method::POST,
         "/sessions",
         Some(&auth.access_token),
-        &quic_tunnel_control_client::CreateSessionRequest {
+        &mobilecode_connect_control_client::CreateSessionRequest {
             client_id: "phone_quota_reset".to_string(),
             device_id: DeviceId::new("server_quota_reset"),
             service_id: ServiceId::new("svc_quota_reset"),
@@ -3456,7 +3462,7 @@ async fn admin_usage_summary_supports_sort_limit_and_offset() {
             Method::POST,
             "/sessions",
             Some(&auth.access_token),
-            &quic_tunnel_control_client::CreateSessionRequest {
+            &mobilecode_connect_control_client::CreateSessionRequest {
                 client_id: client_id.to_string(),
                 device_id: DeviceId::new(device_id),
                 service_id: ServiceId::new(service_id),
@@ -3464,7 +3470,7 @@ async fn admin_usage_summary_supports_sort_limit_and_offset() {
         )
         .await;
         assert_eq!(session_response.status(), StatusCode::OK);
-        let session: quic_tunnel_control_client::CreateSessionResponse =
+        let session: mobilecode_connect_control_client::CreateSessionResponse =
             json(session_response).await;
         reports.push(RelaySessionUsageReport {
             session_id: session.session_id.clone(),
@@ -3603,7 +3609,7 @@ async fn controller_management_lists_and_removes_controller_devices() {
         assert_eq!(response.status(), StatusCode::OK);
     }
 
-    let controllers: Page<quic_tunnel_control_client::ControllerDevice> =
+    let controllers: Page<mobilecode_connect_control_client::ControllerDevice> =
         json(get(app.clone(), "/controllers", &auth.access_token).await).await;
     assert_eq!(controllers.items.len(), 2);
     assert!(controllers
@@ -3614,7 +3620,7 @@ async fn controller_management_lists_and_removes_controller_devices() {
     let delete_response = delete(app.clone(), "/controllers/phone_001", &auth.access_token).await;
     assert_eq!(delete_response.status(), StatusCode::NO_CONTENT);
 
-    let controllers: Page<quic_tunnel_control_client::ControllerDevice> =
+    let controllers: Page<mobilecode_connect_control_client::ControllerDevice> =
         json(get(app.clone(), "/controllers", &auth.access_token).await).await;
     assert_eq!(controllers.items.len(), 1);
     assert!(!controllers
@@ -3700,7 +3706,7 @@ async fn controlled_device_management_lists_gets_and_removes_devices() {
         Method::POST,
         "/sessions",
         Some(&auth.access_token),
-        &quic_tunnel_control_client::CreateSessionRequest {
+        &mobilecode_connect_control_client::CreateSessionRequest {
             client_id: "phone_001".to_string(),
             device_id: DeviceId::new("server_001"),
             service_id: ServiceId::new("svc_web"),
@@ -4379,7 +4385,7 @@ async fn relay_pool_updates_health_capacity_and_removes_relays() {
         Method::POST,
         "/sessions",
         Some(&auth.access_token),
-        &quic_tunnel_control_client::CreateSessionRequest {
+        &mobilecode_connect_control_client::CreateSessionRequest {
             client_id: "phone_ops".to_string(),
             device_id: DeviceId::new("server_relay_ops"),
             service_id: ServiceId::new("svc_relay_ops"),
@@ -4387,7 +4393,8 @@ async fn relay_pool_updates_health_capacity_and_removes_relays() {
     )
     .await;
     assert_eq!(session_response.status(), StatusCode::OK);
-    let session: quic_tunnel_control_client::CreateSessionResponse = json(session_response).await;
+    let session: mobilecode_connect_control_client::CreateSessionResponse =
+        json(session_response).await;
     assert_eq!(session.relay_addr, "relay-a.example.com:4443");
 
     let delete_response = delete(app.clone(), "/relays/relay_b", &admin_token).await;
@@ -4771,7 +4778,7 @@ async fn stale_relay_heartbeat_marks_relay_unavailable_for_sessions() {
         Method::POST,
         "/sessions",
         Some(&auth.access_token),
-        &quic_tunnel_control_client::CreateSessionRequest {
+        &mobilecode_connect_control_client::CreateSessionRequest {
             client_id: "phone_stale".to_string(),
             device_id: DeviceId::new("server_stale"),
             service_id: ServiceId::new("svc_stale"),
@@ -4870,7 +4877,7 @@ async fn plan_management_updates_controller_limit_and_session_relay_limits() {
         Method::POST,
         "/sessions",
         Some(&auth.access_token),
-        &quic_tunnel_control_client::CreateSessionRequest {
+        &mobilecode_connect_control_client::CreateSessionRequest {
             client_id: "phone_001".to_string(),
             device_id: DeviceId::new("server_team"),
             service_id: ServiceId::new("svc_team"),
@@ -4878,7 +4885,8 @@ async fn plan_management_updates_controller_limit_and_session_relay_limits() {
     )
     .await;
     assert_eq!(session_response.status(), StatusCode::OK);
-    let session: quic_tunnel_control_client::CreateSessionResponse = json(session_response).await;
+    let session: mobilecode_connect_control_client::CreateSessionResponse =
+        json(session_response).await;
     let claims = TokenSigner::new(TokenKey::new("dev-secret"))
         .verify_relay(&session.relay_token, 1_767_000_000)
         .unwrap();

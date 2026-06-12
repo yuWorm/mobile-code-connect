@@ -1,6 +1,6 @@
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
-use quic_tunnel_tunnel::quic::{make_client_endpoint, make_server_endpoint, QuicBiStream};
+use mobilecode_connect_tunnel::quic::{make_client_endpoint, make_server_endpoint, QuicBiStream};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 #[tokio::test]

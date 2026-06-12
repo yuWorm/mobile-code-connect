@@ -1,6 +1,6 @@
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use hmac::{Hmac, Mac};
-use quic_tunnel_protocol::{ClientId, DeviceId, ServiceId, SessionId, UserId};
+use mobilecode_connect_protocol::{ClientId, DeviceId, ServiceId, SessionId, UserId};
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 

@@ -4,7 +4,7 @@ use std::{
     sync::{Arc, RwLock},
 };
 
-use quic_tunnel_protocol::{
+use mobilecode_connect_protocol::{
     derive_mobile_grant_secret, mobile_grant_certificate_fingerprint, ClientId, DeviceId,
     GrantSessionRequest, MobileGrantCredential, MobileInvitePayload, MobilePairingRequest,
     ServiceId,
@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CreateMobileInviteRequest {
     pub control_url: String,
-    pub device_id: quic_tunnel_protocol::DeviceId,
+    pub device_id: mobilecode_connect_protocol::DeviceId,
     pub allowed_services: Vec<ServiceId>,
     pub ttl_sec: u64,
     pub max_uses: u32,
@@ -426,7 +426,7 @@ fn write_state_file(path: &Path, state: &MobileGrantState) -> Result<(), MobileG
 fn derive_grant_secret(
     invite_secret: &str,
     grant_id: &str,
-    client_id: &quic_tunnel_protocol::ClientId,
+    client_id: &mobilecode_connect_protocol::ClientId,
 ) -> Result<String, MobileGrantManagerError> {
     derive_mobile_grant_secret(invite_secret, grant_id, client_id)
         .map_err(|_| MobileGrantManagerError::InvalidProof)

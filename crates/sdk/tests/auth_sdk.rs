@@ -1,11 +1,11 @@
 use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
-use quic_tunnel_control_client::{
+use mobilecode_connect_control_client::{
     AuthResponse, ControlClientError, LoginRequest, RegisterUserRequest, UpdatePasswordRequest,
 };
-use quic_tunnel_protocol::UserId;
-use quic_tunnel_sdk::{
+use mobilecode_connect_protocol::UserId;
+use mobilecode_connect_sdk::{
     auth::{AuthSdk, LoginInput, RegisterInput},
     client::ControlApi,
     store::{MemoryTokenStore, StoredToken, TokenStore},

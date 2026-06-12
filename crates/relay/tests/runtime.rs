@@ -1,6 +1,6 @@
-use quic_tunnel_auth::{RelayTokenClaims, TokenKey, TokenSigner};
-use quic_tunnel_protocol::{ClientId, DeviceId, ServiceId, SessionId, UserId};
-use quic_tunnel_relay::{
+use mobilecode_connect_auth::{RelayTokenClaims, TokenKey, TokenSigner};
+use mobilecode_connect_protocol::{ClientId, DeviceId, ServiceId, SessionId, UserId};
+use mobilecode_connect_relay::{
     bind::{RelayBindRequest, RelayBindStatus, RelayPeerRole},
     config::RelayConfig,
     runtime::RelayService,

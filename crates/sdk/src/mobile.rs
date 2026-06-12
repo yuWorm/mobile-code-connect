@@ -1,7 +1,7 @@
 use std::{fmt, net::SocketAddr, time::Duration};
 
-use quic_tunnel_control_client::{HttpControlClient, HttpControlClientOptions};
-use quic_tunnel_mobile_core::{
+use mobilecode_connect_control_client::{HttpControlClient, HttpControlClientOptions};
+use mobilecode_connect_mobile_core::{
     browser_proxy::{
         browser_proxy_host, classify_browser_proxy_url, BrowserProxy,
         BrowserProxyConfig as CoreBrowserProxyConfig,
@@ -15,7 +15,7 @@ use quic_tunnel_mobile_core::{
     forward::LocalForwardHandle,
     status::TunnelStatus,
 };
-use quic_tunnel_protocol::{
+use mobilecode_connect_protocol::{
     derive_mobile_grant_secret, ClientId, DeviceId, MobileGrantCredential, MobileInvitePayload,
     MobilePairingRequest, PendingPairingStatus, ServiceId,
 };

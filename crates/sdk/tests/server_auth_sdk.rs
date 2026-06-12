@@ -4,13 +4,13 @@ use std::{
 };
 
 use async_trait::async_trait;
-use quic_tunnel_control_client::{
+use mobilecode_connect_control_client::{
     BrowserServerAuthExchangeRequest, BrowserServerAuthStartResponse, ControlClientError,
     DeviceServerAuthPollResponse, DeviceServerAuthStartResponse, PollServerAuthRequest,
     ServerAuthStatus, ServerCredentialResponse, StartServerAuthRequest,
 };
-use quic_tunnel_protocol::DeviceId;
-use quic_tunnel_sdk::server_auth::{
+use mobilecode_connect_protocol::DeviceId;
+use mobilecode_connect_sdk::server_auth::{
     FileServerCredentialStore, MemoryServerCredentialStore, ServerAuthApi, ServerAuthSdk,
     ServerCredentialStore, ServerLoginInput, StoredServerCredential,
 };

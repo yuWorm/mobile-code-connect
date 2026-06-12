@@ -1,7 +1,7 @@
-use quic_tunnel_agent::mobile_grant::{
+use mobilecode_connect_agent::mobile_grant::{
     CreateMobileInviteRequest, MobileGrantManager, MobileGrantManagerError,
 };
-use quic_tunnel_protocol::{ClientId, DeviceId, MobilePairingRequest, ServiceId};
+use mobilecode_connect_protocol::{ClientId, DeviceId, MobilePairingRequest, ServiceId};
 
 #[test]
 fn mobile_grant_manager_approves_verifies_and_revokes_grants() {
@@ -324,7 +324,7 @@ fn invite(
     device_id: DeviceId,
     service_id: ServiceId,
     max_uses: u32,
-) -> quic_tunnel_protocol::MobileInvitePayload {
+) -> mobilecode_connect_protocol::MobileInvitePayload {
     manager
         .create_invite(
             CreateMobileInviteRequest {
@@ -341,7 +341,7 @@ fn invite(
 }
 
 fn pairing_request(
-    invite: &quic_tunnel_protocol::MobileInvitePayload,
+    invite: &mobilecode_connect_protocol::MobileInvitePayload,
     device_id: DeviceId,
     client_id: ClientId,
     requested_services: Vec<ServiceId>,

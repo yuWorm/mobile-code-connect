@@ -4,9 +4,9 @@ use axum::{
     body::{to_bytes, Body},
     http::{Method, Request, StatusCode},
 };
-use quic_tunnel_auth::{RelayTokenClaims, TokenKey, TokenSigner};
-use quic_tunnel_protocol::{ClientId, DeviceId, ServiceId, SessionId, UserId};
-use quic_tunnel_relay::{
+use mobilecode_connect_auth::{RelayTokenClaims, TokenKey, TokenSigner};
+use mobilecode_connect_protocol::{ClientId, DeviceId, ServiceId, SessionId, UserId};
+use mobilecode_connect_relay::{
     admin::{routes, RelayAdminHealth, RelayAdminSession},
     bind::{RelayBindRequest, RelayPeerRole, SharedKeyRelayTokenVerifier},
     session::RelaySessionStore,

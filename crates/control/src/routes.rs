@@ -5,8 +5,8 @@ use axum::{
     routing::{delete, get, post},
     Json, Router,
 };
-use quic_tunnel_auth::{ControlRole, ControlTokenClaims};
-use quic_tunnel_control_client::{
+use mobilecode_connect_auth::{ControlRole, ControlTokenClaims};
+use mobilecode_connect_control_client::{
     AdminListQuery, AdminSessionSummary, ApproveMobilePairingRequest, AssignUserPlanRequest,
     AuditLogEntry, AuthResponse, BrowserServerAuthApprovalResponse,
     BrowserServerAuthExchangeRequest, BrowserServerAuthStartResponse, ControllerDevice,
@@ -25,7 +25,7 @@ use quic_tunnel_control_client::{
     UpdateServerCredentialStatusRequest, UpdateUserPlanRequest, UpdateUserRoleRequest,
     UpdateUserStatusRequest, UserDetail, UserSummary, UserUsagePeriod, UserUsageSummary,
 };
-use quic_tunnel_protocol::{
+use mobilecode_connect_protocol::{
     Device, DeviceId, GrantSessionRequest, MobilePairingRequest, Service, SessionId, UserId,
 };
 use serde::Deserialize;
@@ -652,7 +652,7 @@ async fn list_users(
 async fn create_user(
     State(state): State<ControlState>,
     headers: HeaderMap,
-    Json(request): Json<quic_tunnel_control_client::CreateUserRequest>,
+    Json(request): Json<mobilecode_connect_control_client::CreateUserRequest>,
 ) -> Result<Json<UserSummary>, StatusCode> {
     let actor = admin_claims_from_headers(&state, &headers)?;
     let user = state
@@ -1397,7 +1397,7 @@ async fn approve_grant_session(
     State(state): State<ControlState>,
     headers: HeaderMap,
     Path(pending_session_id): Path<String>,
-    Json(_request): Json<quic_tunnel_control_client::ApproveGrantSessionRequest>,
+    Json(_request): Json<mobilecode_connect_control_client::ApproveGrantSessionRequest>,
 ) -> Result<Json<GrantSessionPollResponse>, StatusCode> {
     let claims = control_claims_from_headers(&state, &headers)?;
     let device_id = state
@@ -1521,7 +1521,7 @@ async fn create_session(
 fn user_id_from_headers(
     state: &ControlState,
     headers: &HeaderMap,
-) -> Result<quic_tunnel_protocol::UserId, StatusCode> {
+) -> Result<mobilecode_connect_protocol::UserId, StatusCode> {
     let claims = control_claims_from_headers(state, headers)?;
     if matches!(claims.role, ControlRole::Relay | ControlRole::Agent) {
         return Err(StatusCode::FORBIDDEN);
@@ -1533,7 +1533,7 @@ fn agent_route_user_for_device_from_headers(
     state: &ControlState,
     headers: &HeaderMap,
     device_id: &DeviceId,
-) -> Result<quic_tunnel_protocol::UserId, StatusCode> {
+) -> Result<mobilecode_connect_protocol::UserId, StatusCode> {
     let claims = control_claims_from_headers(state, headers)?;
     match claims.role {
         ControlRole::Admin => Ok(claims.user_id),
@@ -1553,7 +1553,7 @@ fn agent_route_user_for_device_from_headers(
 fn logged_in_user_id_from_headers(
     state: &ControlState,
     headers: &HeaderMap,
-) -> Result<quic_tunnel_protocol::UserId, StatusCode> {
+) -> Result<mobilecode_connect_protocol::UserId, StatusCode> {
     if !headers.contains_key("authorization") {
         return Err(StatusCode::UNAUTHORIZED);
     }

@@ -6,13 +6,13 @@ use std::{
 
 use anyhow::{bail, Context, Result};
 use clap::Parser;
-use quic_tunnel_control_client::{
+use mobilecode_connect_control_client::{
     HttpControlClient, RegisterRelayRequest, RelayBootstrapExchangeRequest,
     RelayBootstrapExchangeResponse, RelayCommand, RelayCommandKind, RelayCommandStatus,
     RelayHealthReport, RelayHealthStatus, RelaySessionSnapshot, RelaySessionUsageReport,
     ReportRelayCommandResultRequest, ReportRelayHealthRequest, ReportRelaySessionUsageRequest,
 };
-use quic_tunnel_relay::{
+use mobilecode_connect_relay::{
     config::RelayConfig,
     runtime::RelayService,
     session::{RelaySession, RelaySessionState, RelaySessionStore},
@@ -618,14 +618,14 @@ fn init_tracing() {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use quic_tunnel_auth::{RelayTokenClaims, TokenKey, TokenSigner};
-    use quic_tunnel_control_client::{
+    use mobilecode_connect_auth::{RelayTokenClaims, TokenKey, TokenSigner};
+    use mobilecode_connect_control_client::{
         RelayCommand, RelayCommandKind, RelayCommandStatus, RelayHealthStatus,
     };
-    use quic_tunnel_protocol::{
+    use mobilecode_connect_protocol::{
         ClientId, DeviceId, RelayLimits, ServiceId, SessionId, TrafficStats, UserId,
     };
-    use quic_tunnel_relay::{
+    use mobilecode_connect_relay::{
         bind::{
             RelayBindRequest, RelayBindStatus, RelayPeer, RelayPeerRole,
             SharedKeyRelayTokenVerifier,
@@ -807,7 +807,7 @@ mod tests {
         assert_eq!(bootstrap.bootstrap_id, "rb_001");
         assert_eq!(bootstrap.bootstrap_token, "shown-once");
 
-        let response = quic_tunnel_control_client::RelayBootstrapExchangeResponse {
+        let response = mobilecode_connect_control_client::RelayBootstrapExchangeResponse {
             control_url: "https://control.example.com".to_string(),
             control_token: "relay-control-token".to_string(),
             relay_id: "relay_bootstrap".to_string(),
@@ -831,7 +831,7 @@ mod tests {
 
     #[test]
     fn bootstrap_registration_ignores_legacy_admin_addr_from_control_response() {
-        let response = quic_tunnel_control_client::RelayBootstrapExchangeResponse {
+        let response = mobilecode_connect_control_client::RelayBootstrapExchangeResponse {
             control_url: "https://control.example.com".to_string(),
             control_token: "relay-control-token".to_string(),
             relay_id: "relay_bootstrap".to_string(),
@@ -1091,7 +1091,7 @@ mod tests {
     #[tokio::test]
     #[ignore = "binds a local TCP listener; run outside the sandbox"]
     async fn relayd_registers_itself_with_control() {
-        let state = quic_tunnel_control::state::ControlState::new(
+        let state = mobilecode_connect_control::state::ControlState::new(
             "dev-secret",
             "seed-relay.example.com:4443",
             "punch.example.com:3478",
@@ -1102,7 +1102,7 @@ mod tests {
         let control_addr = listener.local_addr().unwrap();
         let control_url = format!("http://{control_addr}");
         let server = tokio::spawn(async move {
-            axum::serve(listener, quic_tunnel_control::routes::routes(state))
+            axum::serve(listener, mobilecode_connect_control::routes::routes(state))
                 .await
                 .unwrap();
         });
@@ -1117,7 +1117,7 @@ mod tests {
 
         register_with_control(registration).await.unwrap();
 
-        let client = quic_tunnel_control_client::HttpControlClient::with_bearer_token(
+        let client = mobilecode_connect_control_client::HttpControlClient::with_bearer_token(
             control_url,
             admin_token,
         )

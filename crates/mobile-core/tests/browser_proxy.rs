@@ -1,7 +1,7 @@
 use std::{future, sync::Arc};
 
 use async_trait::async_trait;
-use quic_tunnel_mobile_core::{
+use mobilecode_connect_mobile_core::{
     browser_proxy::{
         browser_proxy_host, classify_browser_proxy_url, parse_qtunnel_host, BrowserProxy,
         BrowserProxyConfig, BrowserProxyDirectFallbackPolicy, BrowserProxyStats,

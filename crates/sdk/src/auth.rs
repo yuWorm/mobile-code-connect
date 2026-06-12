@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use quic_tunnel_control_client::{
+use mobilecode_connect_control_client::{
     AuthResponse, HttpControlClient, HttpControlClientOptions, LoginRequest, RegisterUserRequest,
     UpdatePasswordRequest,
 };

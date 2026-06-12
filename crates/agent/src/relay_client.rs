@@ -3,8 +3,8 @@ use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr},
 };
 
-use quic_tunnel_protocol::{ControlFrame, PeerRole, RelayBindFrame, SessionId};
-use quic_tunnel_tunnel::{
+use mobilecode_connect_protocol::{ControlFrame, PeerRole, RelayBindFrame, SessionId};
+use mobilecode_connect_tunnel::{
     quic::{make_client_endpoint, QuicBiStream, QuicError},
     stream::{read_control_frame, write_control_frame, TunnelStreamError},
 };

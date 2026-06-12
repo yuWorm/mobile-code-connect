@@ -2,21 +2,21 @@ use std::{net::SocketAddr, path::PathBuf, sync::Arc, time::Duration};
 
 use anyhow::{Context, Result};
 use clap::{Args, Parser, Subcommand};
-use quic_tunnel_auth::ControlRole;
-use quic_tunnel_control_client::{
+use mobilecode_connect_auth::ControlRole;
+use mobilecode_connect_control_client::{
     AdminListQuery, AssignUserPlanRequest, CreateRelayBootstrapRequest, CreateUserRequest,
     GrantDeviceAccessRequest, HttpControlClient, HttpControlClientOptions, RegisterRelayRequest,
     UpdateRelayRequest, UpdateUserStatusRequest,
 };
-use quic_tunnel_mobile_core::{
+use mobilecode_connect_mobile_core::{
     client::{OpenServiceRequest, TunnelClient},
     config::TunnelConfig,
     forward::{RelayConnectorConfig, RelayStreamConnector, StreamConnector},
 };
-use quic_tunnel_protocol::{
+use mobilecode_connect_protocol::{
     ClientId, DeviceId, MobileGrantCredential, MobileInvitePayload, ServiceId, SessionId, UserId,
 };
-use quic_tunnel_sdk::{
+use mobilecode_connect_sdk::{
     mobile::{
         MobileGrantPairingInput, MobileTunnelConfig, MobileTunnelSdk, OpenServiceInput,
         P2pOrRelayTunnelConfig,
@@ -1107,7 +1107,7 @@ mod tests {
         assert_eq!(user_args.common.control, "http://127.0.0.1:4242");
         assert_eq!(request.email, "member@example.com");
         assert_eq!(request.display_name, "Member");
-        assert_eq!(request.role, quic_tunnel_auth::ControlRole::Admin);
+        assert_eq!(request.role, mobilecode_connect_auth::ControlRole::Admin);
         assert!(!request.enabled);
     }
 

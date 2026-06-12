@@ -10,8 +10,8 @@ use std::{
     time::Duration,
 };
 
-use quic_tunnel_protocol::{DeviceId, ServiceId};
-use quic_tunnel_tunnel::stats::AtomicTrafficStats;
+use mobilecode_connect_protocol::{DeviceId, ServiceId};
+use mobilecode_connect_tunnel::stats::AtomicTrafficStats;
 use tokio::{
     io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, ReadBuf},
     net::{TcpListener, TcpStream},

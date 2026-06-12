@@ -1,4 +1,4 @@
-use quic_tunnel_protocol::{DeviceId, ServiceId, ServiceProtocol};
+use mobilecode_connect_protocol::{DeviceId, ServiceId, ServiceProtocol};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

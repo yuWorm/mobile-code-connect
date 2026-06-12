@@ -1,15 +1,15 @@
-use quic_tunnel_agent::{
+use mobilecode_connect_agent::{
     config::{AgentConfig, ServiceConfig},
     mobile_grant::{CreateMobileInviteRequest, MobileGrantManager},
     runtime::{Agent, AgentControlRuntime, AgentControlRuntimeConfig},
     service_registry::ServiceRegistry,
 };
-use quic_tunnel_control::{routes::routes, state::ControlState};
-use quic_tunnel_control_client::{
+use mobilecode_connect_control::{routes::routes, state::ControlState};
+use mobilecode_connect_control_client::{
     AgentSessionAssignment, AgentSessionStatus, CreateSessionRequest, HttpControlClient,
     RegisterUserRequest,
 };
-use quic_tunnel_protocol::{
+use mobilecode_connect_protocol::{
     derive_mobile_grant_secret, ClientId, Device, DeviceId, DeviceStatus, MobileGrantCredential,
     MobilePairingRequest, PendingGrantSessionStatus, PendingPairingStatus, Service, ServiceId,
     ServiceProtocol, SessionId, UserId,

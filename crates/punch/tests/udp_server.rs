@@ -1,7 +1,7 @@
 use std::time::Duration;
 
-use quic_tunnel_protocol::{CandidateSource, CandidateType, PeerRole, SessionId};
-use quic_tunnel_punch::{
+use mobilecode_connect_protocol::{CandidateSource, CandidateType, PeerRole, SessionId};
+use mobilecode_connect_punch::{
     probe::{PunchHello, PunchPacket},
     server::{PunchServer, PUNCH_BUFFER_SIZE},
 };

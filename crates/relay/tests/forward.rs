@@ -1,6 +1,6 @@
-use quic_tunnel_protocol::{DataStreamHeader, ServiceId, SessionId, StreamId};
-use quic_tunnel_relay::{forward::forward_stream_pair_with_limit, limiter::RelayLimiter};
-use quic_tunnel_tunnel::stream::{read_data_header, write_data_header};
+use mobilecode_connect_protocol::{DataStreamHeader, ServiceId, SessionId, StreamId};
+use mobilecode_connect_relay::{forward::forward_stream_pair_with_limit, limiter::RelayLimiter};
+use mobilecode_connect_tunnel::stream::{read_data_header, write_data_header};
 use tokio::io::{duplex, AsyncReadExt, AsyncWriteExt};
 
 fn header() -> DataStreamHeader {

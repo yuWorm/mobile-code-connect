@@ -1,5 +1,5 @@
-use quic_tunnel_auth::{RelayTokenClaims, TokenError, TokenKey, TokenSigner};
-use quic_tunnel_protocol::SessionId;
+use mobilecode_connect_auth::{RelayTokenClaims, TokenError, TokenKey, TokenSigner};
+use mobilecode_connect_protocol::SessionId;
 
 use crate::session::RelayError;
 

@@ -5,7 +5,7 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
-use quic_tunnel_protocol::{RelayLimits, SessionId, TrafficStats};
+use mobilecode_connect_protocol::{RelayLimits, SessionId, TrafficStats};
 use serde::{Deserialize, Serialize};
 
 use crate::runtime::RelayConnectionStore;

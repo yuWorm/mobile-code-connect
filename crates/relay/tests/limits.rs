@@ -1,9 +1,9 @@
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use quic_tunnel_auth::{RelayTokenClaims, TokenKey, TokenSigner};
-use quic_tunnel_protocol::{ClientId, DeviceId, ServiceId, SessionId, UserId};
-use quic_tunnel_relay::{
+use mobilecode_connect_auth::{RelayTokenClaims, TokenKey, TokenSigner};
+use mobilecode_connect_protocol::{ClientId, DeviceId, ServiceId, SessionId, UserId};
+use mobilecode_connect_relay::{
     bind::{RelayBindRequest, RelayPeerRole, SharedKeyRelayTokenVerifier},
     limiter::RelayLimiter,
     session::{RelayError, RelaySessionState, RelaySessionStore},

@@ -1,7 +1,9 @@
 use std::{net::SocketAddr, time::Duration};
 
-use quic_tunnel_protocol::SessionId;
-use quic_tunnel_punch::probe::{run_probe, PunchAck, PunchPacket, PunchProbe, PunchProbeConfig};
+use mobilecode_connect_protocol::SessionId;
+use mobilecode_connect_punch::probe::{
+    run_probe, PunchAck, PunchPacket, PunchProbe, PunchProbeConfig,
+};
 use tokio::net::UdpSocket;
 
 #[test]

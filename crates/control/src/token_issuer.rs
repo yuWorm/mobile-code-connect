@@ -1,8 +1,8 @@
-use quic_tunnel_auth::{
+use mobilecode_connect_auth::{
     AccessTokenClaims, ControlRole, ControlTokenClaims, RelayTokenClaims, TokenError, TokenKey,
     TokenSigner,
 };
-use quic_tunnel_protocol::{ClientId, DeviceId, RelayLimits, ServiceId, SessionId, UserId};
+use mobilecode_connect_protocol::{ClientId, DeviceId, RelayLimits, ServiceId, SessionId, UserId};
 
 #[derive(Debug, Clone)]
 pub struct TokenIssuer {

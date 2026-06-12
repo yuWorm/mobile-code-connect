@@ -1,7 +1,7 @@
 use std::future::Future;
 
-use quic_tunnel_punch::probe::P2pPath;
-use quic_tunnel_tunnel::quic::{
+use mobilecode_connect_punch::probe::P2pPath;
+use mobilecode_connect_tunnel::quic::{
     make_server_endpoint_from_std_socket, make_server_endpoint_from_std_socket_with_identity,
     P2pQuicIdentity, QuicBiStream, QuicError,
 };

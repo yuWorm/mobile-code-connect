@@ -1,10 +1,10 @@
-use quic_tunnel_control::{routes::routes, state::ControlState};
-use quic_tunnel_control_client::ApproveMobilePairingRequest;
-use quic_tunnel_protocol::{
+use mobilecode_connect_control::{routes::routes, state::ControlState};
+use mobilecode_connect_control_client::ApproveMobilePairingRequest;
+use mobilecode_connect_protocol::{
     derive_mobile_grant_secret, ClientId, Device, DeviceId, DeviceStatus, MobileGrantCredential,
     MobileInvitePayload, ServiceId, UserId,
 };
-use quic_tunnel_sdk::{
+use mobilecode_connect_sdk::{
     mobile::{
         BrowserProxyConfig, BrowserProxyDirectFallbackPolicy, BrowserProxyRouteKind,
         BrowserProxyUrlKind, MobileTunnelConfig, MobileTunnelSdk, OpenServiceInput,
@@ -187,7 +187,7 @@ async fn mobile_tunnel_sdk_pairs_mobile_grant_and_stores_credential() {
     .await
     .unwrap();
 
-    let agent = quic_tunnel_control_client::HttpControlClient::new(control_url).unwrap();
+    let agent = mobilecode_connect_control_client::HttpControlClient::new(control_url).unwrap();
     let approved = agent
         .approve_mobile_pairing(
             &pairing.pending_pairing_id,
