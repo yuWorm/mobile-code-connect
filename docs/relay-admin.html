@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QUIC Relay Admin Test</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --line: #d8dee8;
+      --text: #152033;
+      --muted: #5d6878;
+      --accent: #0f62d8;
+      --danger: #b42318;
+      --ok: #067647;
+      --warn: #b54708;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 24px auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0 10px;
+      color: var(--text);
+      font: inherit;
+      background: #fff;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    button {
+      min-width: 36px;
+      height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 0 12px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    button.danger {
+      border-color: #f1b8b2;
+      color: var(--danger);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    .status {
+      min-height: 22px;
+      margin: 12px 0 0;
+      color: var(--muted);
+    }
+
+    .status.ok {
+      color: var(--ok);
+    }
+
+    .status.err {
+      color: var(--danger);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fbfcfe;
+      min-width: 0;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 4px;
+      overflow-wrap: anywhere;
+      font-size: 18px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+      background: #fff;
+    }
+
+    th,
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      background: #fbfcfe;
+    }
+
+    tbody tr {
+      cursor: pointer;
+    }
+
+    tbody tr:hover,
+    tbody tr.selected {
+      background: #eef5ff;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      border-radius: 999px;
+      padding: 0 8px;
+      background: #eef1f6;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .badge.ok {
+      background: #e7f6ec;
+      color: var(--ok);
+    }
+
+    .badge.warn {
+      background: #fff4e5;
+      color: var(--warn);
+    }
+
+    .badge.err {
+      background: #fee4e2;
+      color: var(--danger);
+    }
+
+    pre {
+      margin: 12px 0 0;
+      min-height: 140px;
+      max-height: 340px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #101828;
+      color: #f9fafb;
+      font-size: 12px;
+    }
+
+    iframe {
+      width: 100%;
+      height: 360px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    @media (max-width: 760px) {
+      main {
+        width: min(100% - 20px, 1120px);
+        margin: 16px auto;
+      }
+
+      .grid,
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      section {
+        padding: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>QUIC Relay Admin Test</h1>
+    </header>
+
+    <section>
+      <h2>连接</h2>
+      <div class="grid">
+        <label>
+          Admin API
+          <input id="adminBase" value="http://127.0.0.1:9090">
+        </label>
+        <label>
+          Session ID
+          <input id="sessionId" value="">
+        </label>
+        <label>
+          Tunnel URL
+          <input id="tunnelUrl" value="http://127.0.0.1:18080">
+        </label>
+      </div>
+      <div class="actions">
+        <button class="primary" id="refreshSessions">刷新 Sessions</button>
+        <button id="loadSession">查看选中</button>
+        <button id="toggleAuto">自动刷新</button>
+        <button class="danger" id="disconnect">强制断开</button>
+      </div>
+      <p class="status" id="status"></p>
+    </section>
+
+    <section>
+      <h2>Health</h2>
+      <div class="actions">
+        <button id="refreshHealth">刷新 Health</button>
+      </div>
+      <div class="stats">
+        <div class="metric"><span>Status</span><strong id="healthStatus">-</strong></div>
+        <div class="metric"><span>Sessions</span><strong id="healthSessions">0</strong></div>
+        <div class="metric"><span>Streams</span><strong id="healthStreams">0</strong></div>
+        <div class="metric"><span>Uplink</span><strong id="healthUplink">0 B</strong></div>
+        <div class="metric"><span>Downlink</span><strong id="healthDownlink">0 B</strong></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Sessions</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Session</th>
+              <th>State</th>
+              <th>Mobile</th>
+              <th>Agent</th>
+              <th>Total</th>
+              <th>Streams</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="sessionList">
+            <tr><td colspan="7">未加载</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>Session 详情</h2>
+      <div class="stats">
+        <div class="metric"><span>Uplink</span><strong id="uplink">0 B</strong></div>
+        <div class="metric"><span>Downlink</span><strong id="downlink">0 B</strong></div>
+        <div class="metric"><span>Total</span><strong id="total">0 B</strong></div>
+        <div class="metric"><span>Active Streams</span><strong id="streams">0</strong></div>
+        <div class="metric"><span>Duration</span><strong id="duration">0s</strong></div>
+      </div>
+      <pre id="rawStats">{}</pre>
+    </section>
+
+    <section>
+      <h2>本地端口测试</h2>
+      <div class="actions">
+        <button class="primary" id="testFetch">Fetch 测试</button>
+        <button id="openFrame">加载到 iframe</button>
+        <button id="openTab">新标签打开</button>
+      </div>
+      <pre id="testResult">未测试</pre>
+      <iframe id="preview" title="Tunnel Preview"></iframe>
+    </section>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let autoTimer = null;
+    let sessions = [];
+
+    if (window.location.protocol === "http:" || window.location.protocol === "https:") {
+      $("adminBase").value = window.location.origin;
+    }
+
+    function baseURL() {
+      return $("adminBase").value.trim().replace(/\/+$/, "");
+    }
+
+    function sessionsURL() {
+      return `${baseURL()}/admin/sessions`;
+    }
+
+    function healthURL() {
+      return `${baseURL()}/admin/health`;
+    }
+
+    function sessionURL(sessionId) {
+      return `${sessionsURL()}/${encodeURIComponent(sessionId)}`;
+    }
+
+    function selectedSessionId() {
+      return $("sessionId").value.trim();
+    }
+
+    function setSelectedSessionId(sessionId) {
+      $("sessionId").value = sessionId || "";
+    }
+
+    function setStatus(message, kind = "") {
+      const el = $("status");
+      el.textContent = message;
+      el.className = `status ${kind}`;
+    }
+
+    function pick(obj, ...keys) {
+      for (const key of keys) {
+        if (obj && obj[key] !== undefined && obj[key] !== null) return obj[key];
+      }
+      return undefined;
+    }
+
+    function sessionIdOf(session) {
+      return String(pick(session, "session_id", "sessionId", "SessionID") || "");
+    }
+
+    function statsOf(session) {
+      return session?.stats || session?.Stats || {};
+    }
+
+    function formatBytes(value) {
+      const n = Number(value || 0);
+      if (n < 1024) return `${n} B`;
+      if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+      if (n < 1024 * 1024 * 1024) return `${(n / 1024 / 1024).toFixed(2)} MB`;
+      return `${(n / 1024 / 1024 / 1024).toFixed(2)} GB`;
+    }
+
+    function formatDuration(value) {
+      const seconds = Number(value || 0);
+      if (seconds < 60) return `${seconds}s`;
+      if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+      return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
+    }
+
+    function badge(text, kind = "") {
+      const safeText = String(text);
+      return `<span class="badge ${kind}">${safeText}</span>`;
+    }
+
+    function stateKind(state) {
+      if (state === "ready") return "ok";
+      if (state === "waiting") return "warn";
+      if (state === "closed") return "err";
+      return "";
+    }
+
+    function boundBadge(value) {
+      return badge(value ? "bound" : "none", value ? "ok" : "warn");
+    }
+
+    function renderSessionList(items) {
+      const tbody = $("sessionList");
+      const selected = selectedSessionId();
+      if (!items.length) {
+        tbody.innerHTML = `<tr><td colspan="7">暂无 session</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = items.map((session) => {
+        const sessionId = sessionIdOf(session);
+        const stats = statsOf(session);
+        const state = String(pick(session, "state", "State") || "-");
+        const total = pick(stats, "total_bytes", "TotalBytes") || 0;
+        const streams = pick(stats, "active_streams", "ActiveStreams") || 0;
+        const isSelected = sessionId === selected ? " selected" : "";
+        return `
+          <tr class="${isSelected}" data-session-id="${sessionId}">
+            <td>${sessionId}</td>
+            <td>${badge(state, stateKind(state))}</td>
+            <td>${boundBadge(Boolean(pick(session, "mobile_bound", "MobileBound")))}</td>
+            <td>${boundBadge(Boolean(pick(session, "agent_bound", "AgentBound")))}</td>
+            <td>${formatBytes(total)}</td>
+            <td>${streams}</td>
+            <td><button data-session-id="${sessionId}" type="button">查看</button></td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function renderHealth(health) {
+      $("healthStatus").textContent = String(pick(health, "status", "Status") || "-");
+      $("healthSessions").textContent = String(pick(health, "active_sessions", "ActiveSessions") || 0);
+      $("healthStreams").textContent = String(pick(health, "active_streams", "ActiveStreams") || 0);
+      $("healthUplink").textContent = formatBytes(pick(health, "total_uplink_bytes", "TotalUplinkBytes"));
+      $("healthDownlink").textContent = formatBytes(pick(health, "total_downlink_bytes", "TotalDownlinkBytes"));
+    }
+
+    function renderSessionDetail(session) {
+      const stats = statsOf(session);
+      $("uplink").textContent = formatBytes(pick(stats, "uplink_bytes", "UplinkBytes"));
+      $("downlink").textContent = formatBytes(pick(stats, "downlink_bytes", "DownlinkBytes"));
+      $("total").textContent = formatBytes(pick(stats, "total_bytes", "TotalBytes"));
+      $("streams").textContent = String(pick(stats, "active_streams", "ActiveStreams") || 0);
+      $("duration").textContent = formatDuration(pick(stats, "duration_sec", "Duration"));
+      $("rawStats").textContent = JSON.stringify(session, null, 2);
+    }
+
+    async function loadSessions() {
+      setStatus("读取 sessions...");
+      const res = await fetch(sessionsURL(), { cache: "no-store" });
+      if (!res.ok) throw new Error(`sessions HTTP ${res.status}`);
+      const body = await res.json();
+      if (!Array.isArray(body)) throw new Error("sessions response is not an array");
+
+      sessions = body;
+      const current = selectedSessionId();
+      const next = sessions.find((session) => sessionIdOf(session) === current) || sessions[0];
+      if (next) {
+        setSelectedSessionId(sessionIdOf(next));
+        renderSessionDetail(next);
+      } else {
+        setSelectedSessionId("");
+        renderSessionDetail({});
+      }
+      renderSessionList(sessions);
+      setStatus(`sessions 已更新：${new Date().toLocaleTimeString()}`, "ok");
+    }
+
+    async function loadHealth() {
+      const res = await fetch(healthURL(), { cache: "no-store" });
+      if (!res.ok) throw new Error(`health HTTP ${res.status}`);
+      renderHealth(await res.json());
+      setStatus(`health 已更新：${new Date().toLocaleTimeString()}`, "ok");
+    }
+
+    async function loadSession() {
+      const sessionId = selectedSessionId();
+      if (!sessionId) throw new Error("请先选择或输入 Session ID");
+      setStatus(`读取 ${sessionId}...`);
+      const res = await fetch(sessionURL(sessionId), { cache: "no-store" });
+      if (!res.ok) throw new Error(`session HTTP ${res.status}`);
+      const session = await res.json();
+      renderSessionDetail(session);
+      setStatus(`${sessionId} 已更新：${new Date().toLocaleTimeString()}`, "ok");
+    }
+
+    async function disconnectSession() {
+      const sessionId = selectedSessionId();
+      if (!sessionId) throw new Error("请先选择或输入 Session ID");
+      if (!confirm(`确定断开 ${sessionId}？`)) return;
+      const res = await fetch(`${sessionURL(sessionId)}/disconnect`, { method: "POST" });
+      if (!res.ok) throw new Error(`disconnect HTTP ${res.status}`);
+      const session = await res.json();
+      renderSessionDetail(session);
+      await loadSessions().catch(() => {});
+      setStatus(`${sessionId} 已断开`, "ok");
+    }
+
+    async function guarded(fn) {
+      try {
+        await fn();
+      } catch (err) {
+        setStatus(err.message || String(err), "err");
+      }
+    }
+
+    $("refreshSessions").addEventListener("click", () => guarded(loadSessions));
+    $("refreshHealth").addEventListener("click", () => guarded(loadHealth));
+    $("loadSession").addEventListener("click", () => guarded(loadSession));
+    $("disconnect").addEventListener("click", () => guarded(disconnectSession));
+
+    $("sessionList").addEventListener("click", (event) => {
+      const row = event.target.closest("[data-session-id]");
+      if (!row) return;
+      setSelectedSessionId(row.dataset.sessionId);
+      renderSessionList(sessions);
+      guarded(loadSession);
+    });
+
+    $("toggleAuto").addEventListener("click", () => {
+      if (autoTimer) {
+        clearInterval(autoTimer);
+        autoTimer = null;
+        $("toggleAuto").textContent = "自动刷新";
+        setStatus("自动刷新已关闭");
+        return;
+      }
+      autoTimer = setInterval(() => guarded(loadSessions), 2000);
+      $("toggleAuto").textContent = "停止刷新";
+      guarded(loadSessions);
+    });
+
+    $("testFetch").addEventListener("click", () => guarded(async () => {
+      const url = $("tunnelUrl").value.trim();
+      $("testResult").textContent = "请求中...";
+      const started = performance.now();
+      const res = await fetch(url, { cache: "no-store" });
+      const body = await res.text();
+      const elapsed = Math.round(performance.now() - started);
+      $("testResult").textContent = [
+        `HTTP ${res.status} ${res.statusText}`,
+        `${elapsed} ms`,
+        "",
+        body.slice(0, 4000),
+      ].join("\n");
+      setStatus("Tunnel fetch 完成", "ok");
+      await loadSession().catch(() => {});
+    }));
+
+    $("openFrame").addEventListener("click", () => {
+      $("preview").src = $("tunnelUrl").value.trim();
+      setStatus("iframe 已加载 Tunnel URL", "ok");
+    });
+
+    $("openTab").addEventListener("click", () => {
+      window.open($("tunnelUrl").value.trim(), "_blank", "noopener,noreferrer");
+    });
+  </script>
+</body>
+</html>

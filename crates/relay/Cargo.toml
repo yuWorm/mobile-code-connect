@@ -1,0 +1,25 @@
+[package]
+name = "quic_tunnel_relay"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[dependencies]
+async-trait.workspace = true
+axum.workspace = true
+quinn.workspace = true
+quic_tunnel_auth = { path = "../auth" }
+quic_tunnel_protocol = { path = "../protocol" }
+quic_tunnel_tunnel = { path = "../tunnel" }
+rustls.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+
+[dev-dependencies]
+quic_tunnel_agent = { path = "../agent" }
+quic_tunnel_control = { path = "../control" }
+quic_tunnel_control_client = { path = "../control-client" }
+quic_tunnel_mobile_core = { path = "../mobile-core" }
+serde_json.workspace = true
+tower.workspace = true

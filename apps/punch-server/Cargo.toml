@@ -1,0 +1,13 @@
+[package]
+name = "punch-server"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+quic_tunnel_punch = { path = "../../crates/punch" }
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true

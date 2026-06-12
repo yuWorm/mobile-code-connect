@@ -1,0 +1,1978 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Control Admin</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --ink: #17202a;
+      --muted: #667085;
+      --line: #d7dde5;
+      --brand: #0f766e;
+      --brand-dark: #0b5f59;
+      --danger: #b42318;
+      --warn: #a15c07;
+      --soft: #e9f5f3;
+      --shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 24px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    h1, h2, h3, p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    h2 {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+      gap: 16px;
+      padding: 16px;
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+
+    aside,
+    section {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .fields {
+      display: grid;
+      gap: 10px;
+    }
+
+    .inline {
+      display: flex;
+      gap: 8px;
+      align-items: end;
+      flex-wrap: wrap;
+    }
+
+    label {
+      display: grid;
+      gap: 5px;
+      min-width: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 7px 9px;
+      background: #ffffff;
+      color: var(--ink);
+      font: inherit;
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+    }
+
+    button {
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 7px 10px;
+      background: #ffffff;
+      color: var(--ink);
+      font: inherit;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    button.primary {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #ffffff;
+    }
+
+    button.primary:hover {
+      background: var(--brand-dark);
+    }
+
+    button.danger {
+      color: var(--danger);
+      border-color: #f0b8b2;
+      background: #fff7f6;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.58;
+    }
+
+    .token-box {
+      display: grid;
+      gap: 8px;
+    }
+
+    .status {
+      min-height: 26px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 6px 8px;
+      background: #ffffff;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .status.ok {
+      color: var(--brand-dark);
+      background: var(--soft);
+      border-color: #b7dfd9;
+    }
+
+    .status.err {
+      color: var(--danger);
+      background: #fff7f6;
+      border-color: #f0b8b2;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th,
+    td {
+      padding: 8px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      overflow-wrap: anywhere;
+    }
+
+    th {
+      background: #f1f4f7;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #eef2f6;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+
+    .pill.ok {
+      color: var(--brand-dark);
+      background: var(--soft);
+    }
+
+    .pill.warn {
+      color: var(--warn);
+      background: #fff6e5;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .wide {
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 980px) {
+      main,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Control Admin</h1>
+      <p id="headerStatus" class="pill">No user token</p>
+      <p id="currentIdentity" class="pill warn">No signed identity</p>
+    </div>
+    <div class="toolbar">
+      <button id="refreshAll" class="primary">Refresh</button>
+      <button id="clearUserToken">Clear User</button>
+      <button id="clearAdminToken">Clear Admin</button>
+      <button id="clearTokens">Clear Tokens</button>
+    </div>
+  </header>
+
+  <main>
+    <aside>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Connection</h2>
+        </div>
+        <div class="fields">
+          <label>Control URL
+            <input id="controlBase" autocomplete="off">
+          </label>
+          <div id="globalStatus" class="status">Ready</div>
+        </div>
+      </div>
+
+      <div class="panel" id="authPanel">
+        <div class="panel-head">
+          <h2>Login</h2>
+        </div>
+        <div class="fields">
+          <label>Email
+            <input id="email" autocomplete="username" value="admin@example.com">
+          </label>
+          <label>Password
+            <input id="password" type="password" autocomplete="current-password" value="admin-password-123">
+          </label>
+          <label>Display name
+            <input id="displayName" value="Admin">
+          </label>
+          <div class="inline">
+            <button id="loginUser" class="primary">Login</button>
+            <button id="registerUser">Register</button>
+          </div>
+          <label>User token
+            <textarea id="userToken" spellcheck="false"></textarea>
+          </label>
+          <div id="authStatus" class="status">Not signed in</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Admin Token</h2>
+        </div>
+        <div class="token-box">
+          <label>Bearer token
+            <textarea id="adminToken" spellcheck="false"></textarea>
+          </label>
+          <div class="inline">
+            <button id="copyUserToAdmin">Use User Token As Admin</button>
+          </div>
+          <div id="adminStatus" class="status">Paste an admin token for global management</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>List Query</h2>
+        </div>
+        <div class="fields">
+          <label>Search
+            <input id="listQuery" autocomplete="off" placeholder="email, id, name">
+          </label>
+          <div class="inline">
+            <label>Sort
+              <input id="listSort" autocomplete="off" placeholder="email, -created_epoch_sec">
+            </label>
+            <label>Limit
+              <input id="listLimit" type="number" min="0" placeholder="All">
+            </label>
+            <label>Offset
+              <input id="listOffset" type="number" min="0" value="0">
+            </label>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <section>
+      <div class="grid">
+        <div class="panel wide" id="dashboardPanel">
+          <div class="panel-head">
+            <h2>Dashboard</h2>
+            <button id="loadDashboard">Load</button>
+          </div>
+          <div class="fields">
+            <div id="dashboardStatus" class="status">Dashboard ready</div>
+            <table>
+              <thead>
+                <tr><th>Metric</th><th>Value</th></tr>
+              </thead>
+              <tbody id="dashboardMetricsTable"></tbody>
+            </table>
+            <table>
+              <thead>
+                <tr><th>Time</th><th>Actor</th><th>Action</th><th>Target</th><th>Message</th></tr>
+              </thead>
+              <tbody id="dashboardAuditTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel wide" id="operationsPanel">
+          <div class="panel-head">
+            <h2>Operations</h2>
+            <button id="clearOperationLog">Clear</button>
+          </div>
+          <div class="fields">
+            <div id="operationStatus" class="status">Operation log ready</div>
+            <table>
+              <thead>
+                <tr><th>Time</th><th>Result</th><th>Area</th><th>Operation</th><th>Message</th></tr>
+              </thead>
+              <tbody id="operationLogTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel wide" id="usersPanel">
+          <div class="panel-head">
+            <h2>Users</h2>
+            <button id="loadUsers">Load</button>
+          </div>
+          <div class="fields">
+            <div class="inline">
+              <label>User ID
+                <input id="managedUserId" autocomplete="off" value="user_001">
+              </label>
+              <label>Email
+                <input id="managedEmail" autocomplete="off" value="new-user@example.com">
+              </label>
+              <label>Password
+                <input id="managedPassword" type="password" autocomplete="new-password" value="password-123">
+              </label>
+              <label>Name
+                <input id="managedDisplayName" value="New User">
+              </label>
+            </div>
+            <div class="inline">
+              <label>Role
+                <select id="managedRole">
+                  <option value="user">user</option>
+                  <option value="admin">admin</option>
+                </select>
+              </label>
+              <label>Enabled
+                <select id="managedEnabled">
+                  <option value="true">enabled</option>
+                  <option value="false">disabled</option>
+                </select>
+              </label>
+              <button id="createManagedUser" class="primary">Create User</button>
+              <button id="loadUserDetail">Detail</button>
+              <button id="updateUserRole">Update Role</button>
+              <button id="enableUser">Enable</button>
+              <button id="disableUser" class="danger">Disable</button>
+            </div>
+            <div id="userStatus" class="status">User management ready</div>
+            <table>
+              <thead>
+                <tr><th>User</th><th>Email</th><th>Name</th><th>Role</th><th>Status</th><th>Plan</th><th>Controllers</th><th>Devices</th><th>Action</th></tr>
+              </thead>
+              <tbody id="usersTable"></tbody>
+            </table>
+            <table>
+              <thead>
+                <tr><th>Detail</th><th>Value</th></tr>
+              </thead>
+              <tbody id="userDetailTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel wide" id="usagePanel">
+          <div class="panel-head">
+            <h2>Usage</h2>
+            <button id="loadUsage">Load</button>
+          </div>
+          <div class="fields">
+            <div class="inline">
+              <label>
+                Sort
+                <select id="usageSort">
+                  <option value="email">Email</option>
+                  <option value="actual_total_bytes">Actual Total</option>
+                  <option value="relay_quota_granted_bytes">Granted Quota</option>
+                  <option value="session_count">Sessions</option>
+                </select>
+              </label>
+              <label>
+                Limit
+                <input id="usageLimit" type="number" min="0" placeholder="All">
+              </label>
+              <label>
+                Offset
+                <input id="usageOffset" type="number" min="0" value="0">
+              </label>
+              <label>
+                Reset User ID
+                <input id="usageResetUserId" autocomplete="off" placeholder="user_...">
+              </label>
+              <button id="resetUsagePeriod" class="danger">Reset Usage</button>
+            </div>
+            <div id="usageStatus" class="status">Usage summary ready</div>
+            <table>
+              <thead>
+                <tr><th>User</th><th>Email</th><th>Plan</th><th>Period Start</th><th>Controllers</th><th>Devices</th><th>Sessions</th><th>Pending</th><th>Bound</th><th>Granted Quota</th><th>Actual Up</th><th>Actual Down</th><th>Actual Total</th></tr>
+              </thead>
+              <tbody id="usageTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel wide" id="sessionsPanel">
+          <div class="panel-head">
+            <h2>Sessions</h2>
+            <button id="loadSessions">Load</button>
+          </div>
+          <div class="fields">
+            <div class="inline">
+              <label>
+                Session ID
+                <input id="adminSessionId" placeholder="sess_...">
+              </label>
+              <button id="closeAdminSession" class="danger">Close</button>
+            </div>
+            <div id="sessionStatus" class="status">Session management ready</div>
+            <table>
+              <thead>
+                <tr><th>Session</th><th>Status</th><th>User</th><th>Device</th><th>Service</th><th>Client</th><th>Relay</th><th>Expire</th></tr>
+              </thead>
+              <tbody id="sessionsTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel wide" id="auditLogsPanel">
+          <div class="panel-head">
+            <h2>Audit Logs</h2>
+            <button id="loadAuditLogs">Load</button>
+          </div>
+          <div class="fields">
+            <div id="auditStatus" class="status">Audit log ready</div>
+            <table>
+              <thead>
+                <tr><th>Time</th><th>Actor</th><th>Action</th><th>Target</th><th>Message</th></tr>
+              </thead>
+              <tbody id="auditLogsTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel" id="planEditor">
+          <div class="panel-head">
+            <h2>Plan</h2>
+            <button id="loadCurrentPlan">Current</button>
+          </div>
+          <div class="fields">
+            <label>User ID
+              <input id="planUserId" autocomplete="off" value="user_001">
+            </label>
+            <div class="inline">
+              <label>Plan ID
+                <input id="planId" value="team">
+              </label>
+              <label>Name
+                <input id="planName" value="Team">
+              </label>
+            </div>
+            <div class="inline">
+              <label>Controllers
+                <input id="maxControllers" type="number" min="0" value="4">
+              </label>
+              <label>Max streams
+                <input id="maxStreams" type="number" min="0" value="12">
+              </label>
+            </div>
+            <div class="inline">
+              <label>Max bps
+                <input id="maxBps" type="number" min="0" value="8192">
+              </label>
+              <label>Duration sec
+                <input id="maxDurationSec" type="number" min="0" value="3600">
+              </label>
+              <label>Quota bytes
+                <input id="trafficQuotaBytes" type="number" min="0" value="2097152">
+              </label>
+            </div>
+            <div class="inline">
+              <button id="loadUserPlan">Load User</button>
+              <button id="saveUserPlan" class="primary">Save Plan</button>
+            </div>
+            <div id="planStatus" class="status">Plan editor ready</div>
+          </div>
+        </div>
+
+        <div class="panel wide" id="planCatalog">
+          <div class="panel-head">
+            <h2>Plan Catalog</h2>
+            <button id="loadPlanCatalog">Load</button>
+          </div>
+          <div class="fields">
+            <div class="inline">
+              <label>Plan ID
+                <input id="catalogPlanId" value="team">
+              </label>
+              <label>Name
+                <input id="catalogPlanName" value="Team">
+              </label>
+              <label>User ID
+                <input id="catalogUserId" autocomplete="off" value="user_001">
+              </label>
+            </div>
+            <div class="inline">
+              <label>Controllers
+                <input id="catalogMaxControllers" type="number" min="1" value="4">
+              </label>
+              <label>Max streams
+                <input id="catalogMaxStreams" type="number" min="1" value="12">
+              </label>
+              <label>Max bps
+                <input id="catalogMaxBps" type="number" min="0" value="8192">
+              </label>
+            </div>
+            <div class="inline">
+              <label>Duration sec
+                <input id="catalogMaxDurationSec" type="number" min="1" value="3600">
+              </label>
+              <label>Quota bytes
+                <input id="catalogTrafficQuotaBytes" type="number" min="1" value="2097152">
+              </label>
+              <button id="loadCatalogPlan">Load Plan</button>
+              <button id="saveCatalogPlan" class="primary">Save Template</button>
+              <button id="assignCatalogPlan">Assign</button>
+            </div>
+            <div id="catalogStatus" class="status">Plan catalog ready</div>
+            <table>
+              <thead>
+                <tr><th>Plan</th><th>Name</th><th>Controllers</th><th>Streams</th><th>Max bps</th><th>Quota</th><th>Action</th></tr>
+              </thead>
+              <tbody id="planCatalogTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel" id="controllersPanel">
+          <div class="panel-head">
+            <h2>Controllers</h2>
+            <button id="loadControllers">Load</button>
+          </div>
+          <div class="fields">
+            <div class="inline">
+              <label>Client ID
+                <input id="controllerClientId" value="phone_001">
+              </label>
+              <label>Name
+                <input id="controllerName" value="Phone">
+              </label>
+            </div>
+            <div class="inline">
+              <button id="registerController" class="primary">Add</button>
+              <button id="removeController" class="danger">Remove</button>
+            </div>
+            <div id="controllerStatus" class="status">Controller panel ready</div>
+            <table>
+              <thead>
+                <tr><th>Client</th><th>Name</th><th>User</th></tr>
+              </thead>
+              <tbody id="controllersTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel wide" id="relayPool">
+          <div class="panel-head">
+            <h2>Relay Pool</h2>
+            <button id="loadRelays">Load</button>
+          </div>
+          <div class="fields">
+            <div class="inline">
+              <label>Relay ID
+                <input id="relayId" value="relay_cn_001">
+              </label>
+              <label>Relay address
+                <input id="relayAddr" value="127.0.0.1:4443">
+              </label>
+            </div>
+            <div class="inline">
+              <label>Capacity streams
+                <input id="relayCapacity" type="number" min="1" value="64">
+              </label>
+              <label>Health
+                <select id="relayHealthy">
+                  <option value="true">healthy</option>
+                  <option value="false">unhealthy</option>
+                </select>
+              </label>
+              <button id="registerRelay" class="primary">Register</button>
+              <button id="updateRelay">Update</button>
+              <button id="deleteRelay" class="danger">Delete</button>
+            </div>
+            <div id="relayStatus" class="status">Relay pool ready</div>
+            <table>
+              <thead>
+                <tr><th>Relay</th><th>Address</th><th>Capacity</th><th>Health</th><th>Last Seen</th><th>Action</th></tr>
+              </thead>
+              <tbody id="relaysTable"></tbody>
+            </table>
+            <div class="inline">
+              <button id="loadRelaySessions">Load Sessions</button>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Session</th><th>State</th><th>Peers</th><th>Streams</th><th>Bytes</th><th>Last Seen</th><th>Action</th></tr>
+              </thead>
+              <tbody id="relaySessionsTable"></tbody>
+            </table>
+            <div class="inline">
+              <label>Credential Relay ID
+                <input id="relayCredentialId" value="relay_cn_001">
+              </label>
+              <label>Credential status
+                <select id="relayCredentialEnabled">
+                  <option value="true">enabled</option>
+                  <option value="false">disabled</option>
+                </select>
+              </label>
+              <button id="loadRelayCredentials">Load Credentials</button>
+              <button id="createRelayCredential" class="primary">Create Credential</button>
+              <button id="loadRelayCredential">Load Credential</button>
+              <button id="updateRelayCredentialStatus">Update Status</button>
+              <button id="rotateRelayCredential">Rotate</button>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Relay</th><th>Status</th><th>Token Version</th><th>Action</th></tr>
+              </thead>
+              <tbody id="relayCredentialsTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel wide" id="devicesPanel">
+          <div class="panel-head">
+            <h2>Controlled Devices</h2>
+            <button id="loadDevices">Load</button>
+          </div>
+          <div class="fields">
+            <div class="inline">
+              <label>Device ID
+                <input id="deviceId" value="server_001">
+              </label>
+              <label>Access User ID
+                <input id="deviceAccessUserId" autocomplete="off" placeholder="user_...">
+              </label>
+              <button id="loadServices">Services</button>
+              <button id="removeDevice" class="danger">Remove Device</button>
+            </div>
+            <div class="inline">
+              <button id="loadDeviceAccessGrants">Load Access</button>
+              <button id="grantDeviceAccess" class="primary">Grant Access</button>
+              <button id="revokeDeviceAccess" class="danger">Revoke Access</button>
+            </div>
+            <div id="deviceStatus" class="status">Device panel ready</div>
+            <table>
+              <thead>
+                <tr><th>Device</th><th>Name</th><th>Status</th><th>Version</th><th>Action</th></tr>
+              </thead>
+              <tbody id="devicesTable"></tbody>
+            </table>
+            <table>
+              <thead>
+                <tr><th>Detail</th><th>Value</th></tr>
+              </thead>
+              <tbody id="deviceDetailTable"></tbody>
+            </table>
+            <table>
+              <thead>
+                <tr><th>Device</th><th>User</th><th>Action</th></tr>
+              </thead>
+              <tbody id="deviceAccessTable"></tbody>
+            </table>
+            <table>
+              <thead>
+                <tr><th>Service</th><th>Protocol</th><th>Target</th><th>Device</th></tr>
+              </thead>
+              <tbody id="servicesTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const store = window.localStorage;
+    let usersById = new Map();
+    let plansById = new Map();
+    let relaysById = new Map();
+    let relayCredentialsById = new Map();
+    let devicesById = new Map();
+    let operationLog = [];
+
+    $("controlBase").value = store.getItem("controlAdmin.base") || window.location.origin;
+    $("userToken").value = store.getItem("controlAdmin.userToken") || "";
+    $("adminToken").value = store.getItem("controlAdmin.adminToken") || "";
+
+    function baseURL() {
+      const value = $("controlBase").value.trim().replace(/\/+$/, "");
+      store.setItem("controlAdmin.base", value);
+      return value || window.location.origin;
+    }
+
+    function saveTokens() {
+      store.setItem("controlAdmin.userToken", $("userToken").value.trim());
+      store.setItem("controlAdmin.adminToken", $("adminToken").value.trim());
+      updateHeader();
+    }
+
+    function token(kind) {
+      return $(kind === "admin" ? "adminToken" : "userToken").value.trim();
+    }
+
+    function controlTokenClaims(accessToken) {
+      const payload = accessToken.split(".")[0];
+      if (!payload) return null;
+      try {
+        const normalized = payload.replaceAll("-", "+").replaceAll("_", "/");
+        const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+        return JSON.parse(atob(padded));
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function controlTokenRole(accessToken) {
+      return controlTokenClaims(accessToken)?.role || "";
+    }
+
+    function tokenLabel(kind) {
+      const value = token(kind);
+      if (!value) return `${kind}: not set`;
+      const claims = controlTokenClaims(value);
+      if (!claims) return `${kind}: invalid token`;
+      return `${kind}: ${claims.role || "unknown"} ${claims.subject || claims.user_id || ""}`.trim();
+    }
+
+    function requireToken(kind) {
+      const value = token(kind);
+      if (!value) {
+        throw new Error(`${kind === "admin" ? "Admin" : "User"} token required`);
+      }
+      const claims = controlTokenClaims(value);
+      if (!claims) {
+        throw new Error(`${kind === "admin" ? "Admin" : "User"} token is not a signed Control token`);
+      }
+      if (kind === "admin" && claims.role !== "admin") {
+        throw new Error("Admin role token required");
+      }
+      return claims;
+    }
+
+    function copyUserTokenToAdmin() {
+      const claims = requireToken("user");
+      if (claims.role !== "admin") {
+        throw new Error("Current user token is not an admin role token");
+      }
+      $("adminToken").value = $("userToken").value.trim();
+      saveTokens();
+      setStatus("adminStatus", "Admin token copied from user token");
+    }
+
+    function clearToken(kind) {
+      $(kind === "admin" ? "adminToken" : "userToken").value = "";
+      saveTokens();
+      setStatus("globalStatus", `${kind === "admin" ? "Admin" : "User"} token cleared`);
+    }
+
+    function headers(kind) {
+      const bearer = token(kind);
+      const result = { "content-type": "application/json" };
+      if (bearer) result.authorization = `Bearer ${bearer}`;
+      return result;
+    }
+
+    function setStatus(id, message, ok = true) {
+      const node = $(id);
+      node.textContent = message;
+      node.classList.toggle("ok", ok);
+      node.classList.toggle("err", !ok);
+    }
+
+    function updateHeader() {
+      const user = token("user");
+      const admin = token("admin");
+      $("headerStatus").textContent = [tokenLabel("user"), tokenLabel("admin")].join(" / ");
+      $("headerStatus").className = user || admin ? "pill ok" : "pill warn";
+      $("currentIdentity").textContent = tokenLabel("user");
+      $("currentIdentity").className = user ? "pill ok" : "pill warn";
+      if (admin && controlTokenRole(admin) === "admin") {
+        setStatus("adminStatus", tokenLabel("admin"));
+      } else if (admin) {
+        setStatus("adminStatus", "Admin token field does not contain an admin role token", false);
+      } else {
+        setStatus("adminStatus", "Paste an admin token for global management");
+      }
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(`${baseURL()}${path}`, options);
+      const text = await response.text();
+      let body = text;
+      if (text) {
+        try {
+          body = JSON.parse(text);
+        } catch (_) {
+          body = text;
+        }
+      }
+      if (!response.ok) {
+        throw new Error(`${response.status} ${response.statusText}${text ? `: ${text}` : ""}`);
+      }
+      return body;
+    }
+
+    function renderRows(target, rows, columns) {
+      $(target).innerHTML = rows.map((row) => {
+        const cells = columns.map((column) => `<td>${escapeHtml(String(column(row) ?? ""))}</td>`);
+        return `<tr>${cells.join("")}</tr>`;
+      }).join("");
+    }
+
+    function renderUserRows(users) {
+      usersById = new Map(users.map((user) => [String(user.user_id), user]));
+      $("usersTable").innerHTML = users.map((user) => {
+        const userId = escapeHtml(String(user.user_id));
+        return `<tr>
+          <td>${userId}</td>
+          <td>${escapeHtml(String(user.email ?? ""))}</td>
+          <td>${escapeHtml(String(user.display_name ?? ""))}</td>
+          <td>${escapeHtml(String(user.role ?? ""))}</td>
+          <td>${escapeHtml(user.enabled ? "enabled" : "disabled")}</td>
+          <td>${escapeHtml(String(user.plan_id ?? ""))}</td>
+          <td>${escapeHtml(String(user.controller_count ?? 0))}</td>
+          <td>${escapeHtml(String(user.device_count ?? 0))}</td>
+          <td><button data-select-user-id="${userId}">Select</button></td>
+        </tr>`;
+      }).join("");
+    }
+
+    function renderPlanCatalogRows(plans) {
+      plansById = new Map(plans.map((plan) => [String(plan.plan_id), plan]));
+      $("planCatalogTable").innerHTML = plans.map((plan) => {
+        const planId = escapeHtml(String(plan.plan_id));
+        return `<tr>
+          <td>${planId}</td>
+          <td>${escapeHtml(String(plan.name ?? ""))}</td>
+          <td>${escapeHtml(String(plan.max_controller_devices ?? 0))}</td>
+          <td>${escapeHtml(String(plan.relay_limits?.max_streams ?? 0))}</td>
+          <td>${escapeHtml(String(plan.relay_limits?.max_bps ?? 0))}</td>
+          <td>${escapeHtml(String(plan.relay_limits?.traffic_quota_bytes ?? 0))}</td>
+          <td><button data-select-plan-id="${planId}">Use</button></td>
+        </tr>`;
+      }).join("");
+    }
+
+    function renderOperationLog() {
+      renderRows("operationLogTable", operationLog, [
+        (row) => row.time,
+        (row) => row.ok ? "ok" : "error",
+        (row) => row.statusId,
+        (row) => row.name,
+        (row) => row.message,
+      ]);
+    }
+
+    function recordOperation(name, statusId, ok, message) {
+      operationLog.unshift({
+        time: new Date().toLocaleTimeString(),
+        name,
+        statusId,
+        ok,
+        message,
+      });
+      operationLog = operationLog.slice(0, 20);
+      renderOperationLog();
+      setStatus("operationStatus", message, ok);
+    }
+
+    function clearOperationLog() {
+      operationLog = [];
+      renderOperationLog();
+      setStatus("operationStatus", "Operation log cleared");
+    }
+
+    function renderRelayRows(relays) {
+      relaysById = new Map(relays.map((relay) => [String(relay.relay_id), relay]));
+      $("relaysTable").innerHTML = relays.map((relay) => {
+        const relayId = escapeHtml(String(relay.relay_id));
+        return `<tr>
+          <td>${relayId}</td>
+          <td>${escapeHtml(String(relay.relay_addr ?? ""))}</td>
+          <td>${escapeHtml(String(relay.capacity_streams ?? 0))}</td>
+          <td>${escapeHtml(relay.healthy ? "healthy" : "unhealthy")}</td>
+          <td>${escapeHtml(String(relay.last_seen_epoch_sec || ""))}</td>
+          <td><button data-select-relay-id="${relayId}">Select</button></td>
+        </tr>`;
+      }).join("");
+    }
+
+    function renderRelaySessionRows(sessions) {
+      $("relaySessionsTable").innerHTML = sessions.map((session) => {
+        const sessionId = escapeHtml(String(session.session_id));
+        const mobile = session.mobile_bound ? "mobile" : "no mobile";
+        const agent = session.agent_bound ? "agent" : "no agent";
+        return `<tr>
+          <td>${sessionId}</td>
+          <td>${escapeHtml(String(session.state ?? ""))}</td>
+          <td>${escapeHtml(`${mobile} / ${agent}`)}</td>
+          <td>${escapeHtml(String(session.stats?.active_streams ?? 0))}</td>
+          <td>${escapeHtml(String(session.stats?.total_bytes ?? 0))}</td>
+          <td>${escapeHtml(String(session.last_seen_epoch_sec || ""))}</td>
+          <td><button data-disconnect-relay-session-id="${sessionId}">Disconnect</button></td>
+        </tr>`;
+      }).join("");
+    }
+
+    function renderRelayCredentialRows(credentials) {
+      relayCredentialsById = new Map(credentials.map((credential) => [String(credential.relay_id), credential]));
+      $("relayCredentialsTable").innerHTML = credentials.map((credential) => {
+        const relayId = escapeHtml(String(credential.relay_id));
+        return `<tr>
+          <td>${relayId}</td>
+          <td>${escapeHtml(credential.enabled ? "enabled" : "disabled")}</td>
+          <td>${escapeHtml(String(credential.token_version ?? 0))}</td>
+          <td><button data-select-relay-credential-id="${relayId}">Select</button></td>
+        </tr>`;
+      }).join("");
+    }
+
+    function renderDeviceRows(devices) {
+      devicesById = new Map(devices.map((device) => [String(device.device_id), device]));
+      $("devicesTable").innerHTML = devices.map((device) => {
+        const deviceId = escapeHtml(String(device.device_id));
+        return `<tr>
+          <td>${deviceId}</td>
+          <td>${escapeHtml(String(device.name ?? ""))}</td>
+          <td>${escapeHtml(String(device.status ?? ""))}</td>
+          <td>${escapeHtml(String(device.agent_version ?? ""))}</td>
+          <td><button data-select-device-id="${deviceId}">Select</button></td>
+        </tr>`;
+      }).join("");
+    }
+
+    function renderDeviceAccessRows(grants) {
+      $("deviceAccessTable").innerHTML = grants.map((grant) => {
+        const deviceId = escapeHtml(String(grant.device_id));
+        const userId = escapeHtml(String(grant.user_id));
+        return `<tr>
+          <td>${deviceId}</td>
+          <td>${userId}</td>
+          <td><button data-select-device-access-device-id="${deviceId}" data-select-device-access-user-id="${userId}">Select</button></td>
+        </tr>`;
+      }).join("");
+    }
+
+    function pageItems(page) {
+      if (!page || !Array.isArray(page.items)) {
+        throw new Error("Expected paginated list response");
+      }
+      return page.items;
+    }
+
+    function pageCount(page, rows) {
+      return `${rows.length}/${page.total ?? rows.length}`;
+    }
+
+    function listPath(path, extra = {}) {
+      const params = new URLSearchParams();
+      const q = $("listQuery").value.trim();
+      const sort = $("listSort").value.trim();
+      const limit = $("listLimit").value.trim();
+      const offset = $("listOffset").value.trim();
+      if (q) params.set("q", q);
+      if (sort) params.set("sort", sort);
+      if (limit) params.set("limit", limit);
+      if (offset && offset !== "0") params.set("offset", offset);
+      Object.entries(extra).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && String(value).trim() !== "") {
+          params.set(key, value);
+        }
+      });
+      const query = params.toString();
+      return query ? `${path}?${query}` : path;
+    }
+
+    function escapeHtml(value) {
+      return value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function numberValue(id) {
+      return Number($(id).value || 0);
+    }
+
+    function formatBytes(value) {
+      const bytes = Number(value || 0);
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KiB`;
+      if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MiB`;
+      return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GiB`;
+    }
+
+    function planPayload() {
+      return {
+        plan: {
+          plan_id: $("planId").value.trim(),
+          name: $("planName").value.trim(),
+          max_controller_devices: numberValue("maxControllers"),
+          relay_limits: {
+            max_bps: numberValue("maxBps"),
+            max_streams: numberValue("maxStreams"),
+            max_duration_sec: numberValue("maxDurationSec"),
+            traffic_quota_bytes: numberValue("trafficQuotaBytes"),
+          },
+        },
+      };
+    }
+
+    function fillPlan(plan) {
+      $("planId").value = plan.plan_id;
+      $("planName").value = plan.name;
+      $("maxControllers").value = plan.max_controller_devices;
+      $("maxBps").value = plan.relay_limits.max_bps;
+      $("maxStreams").value = plan.relay_limits.max_streams;
+      $("maxDurationSec").value = plan.relay_limits.max_duration_sec;
+      $("trafficQuotaBytes").value = plan.relay_limits.traffic_quota_bytes;
+    }
+
+    function catalogPlanPayload() {
+      return {
+        plan: {
+          plan_id: $("catalogPlanId").value.trim(),
+          name: $("catalogPlanName").value.trim(),
+          max_controller_devices: numberValue("catalogMaxControllers"),
+          relay_limits: {
+            max_bps: numberValue("catalogMaxBps"),
+            max_streams: numberValue("catalogMaxStreams"),
+            max_duration_sec: numberValue("catalogMaxDurationSec"),
+            traffic_quota_bytes: numberValue("catalogTrafficQuotaBytes"),
+          },
+        },
+      };
+    }
+
+    function fillCatalogPlan(plan) {
+      $("catalogPlanId").value = plan.plan_id;
+      $("catalogPlanName").value = plan.name;
+      $("catalogMaxControllers").value = plan.max_controller_devices;
+      $("catalogMaxBps").value = plan.relay_limits.max_bps;
+      $("catalogMaxStreams").value = plan.relay_limits.max_streams;
+      $("catalogMaxDurationSec").value = plan.relay_limits.max_duration_sec;
+      $("catalogTrafficQuotaBytes").value = plan.relay_limits.traffic_quota_bytes;
+    }
+
+    function setLinkedUserInputs(userId) {
+      $("managedUserId").value = userId;
+      $("planUserId").value = userId;
+      $("catalogUserId").value = userId;
+      $("usageResetUserId").value = userId;
+      $("deviceAccessUserId").value = userId;
+    }
+
+    function selectManagedUser(user) {
+      const userId = String(user.user_id || "");
+      setLinkedUserInputs(userId);
+      $("managedEmail").value = user.email || "";
+      $("managedDisplayName").value = user.display_name || "";
+      $("managedRole").value = user.role || "user";
+      $("managedEnabled").value = user.enabled ? "true" : "false";
+      renderRows("userDetailTable", [
+        { label: "User", value: userId },
+        { label: "Email", value: user.email || "" },
+        { label: "Plan", value: user.plan_id || "" },
+        { label: "Controllers", value: user.controller_count ?? 0 },
+        { label: "Controlled devices", value: user.device_count ?? 0 },
+      ], [
+        (row) => row.label,
+        (row) => row.value,
+      ]);
+      setStatus("userStatus", `Selected ${user.email || userId}`);
+    }
+
+    function selectCatalogPlan(plan) {
+      fillCatalogPlan(plan);
+      fillPlan(plan);
+      setStatus("catalogStatus", `Selected template ${plan.plan_id}`);
+      setStatus("planStatus", `Editing template ${plan.plan_id}`);
+    }
+
+    function selectRelay(relay) {
+      $("relayId").value = relay.relay_id || "";
+      $("relayAddr").value = relay.relay_addr || "";
+      $("relayCapacity").value = relay.capacity_streams || 1;
+      $("relayHealthy").value = relay.healthy ? "true" : "false";
+      $("relayCredentialId").value = relay.relay_id || "";
+      setStatus("relayStatus", `Selected relay ${relay.relay_id}`);
+    }
+
+    function selectRelayCredential(credential) {
+      fillRelayCredential(credential);
+      $("relayId").value = credential.relay_id || "";
+      setStatus("relayStatus", `Selected credential ${credential.relay_id} v${credential.token_version}`);
+    }
+
+    function selectControlledDevice(device) {
+      $("deviceId").value = device.device_id || "";
+      renderRows("deviceDetailTable", [
+        { label: "Device", value: device.device_id || "" },
+        { label: "Name", value: device.name || "" },
+        { label: "Status", value: device.status || "" },
+        { label: "Agent version", value: device.agent_version || "" },
+      ], [
+        (row) => row.label,
+        (row) => row.value,
+      ]);
+      setStatus("deviceStatus", `Selected device ${device.device_id}`);
+    }
+
+    function selectDeviceAccessGrant(grant) {
+      $("deviceId").value = grant.device_id || "";
+      $("deviceAccessUserId").value = grant.user_id || "";
+      setStatus("deviceStatus", `Selected access ${grant.user_id}`);
+    }
+
+    function renderUserDetail(detail) {
+      const controllers = detail.controllers
+        .map((controller) => `${controller.client_id} (${controller.name})`)
+        .join(", ");
+      const devices = detail.devices
+        .map((device) => `${device.device_id} (${device.name}, ${device.status})`)
+        .join(", ");
+      renderRows("userDetailTable", [
+        { label: "User", value: detail.user.user_id },
+        { label: "Email", value: detail.user.email },
+        { label: "Role", value: detail.user.role },
+        { label: "Status", value: detail.user.enabled ? "enabled" : "disabled" },
+        { label: "Plan", value: `${detail.plan.plan_id} (${detail.plan.name})` },
+        { label: "Controller limit", value: detail.plan.max_controller_devices },
+        { label: "Relay quota", value: detail.plan.relay_limits.traffic_quota_bytes },
+        { label: "Controllers", value: controllers || "none" },
+        { label: "Controlled devices", value: devices || "none" },
+      ], [
+        (row) => row.label,
+        (row) => row.value,
+      ]);
+    }
+
+    async function auth(path, payload) {
+      const response = await api(path, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      $("userToken").value = response.access_token;
+      if (controlTokenRole(response.access_token) === "admin") {
+        $("adminToken").value = response.access_token;
+      }
+      $("planUserId").value = response.user_id;
+      $("catalogUserId").value = response.user_id;
+      saveTokens();
+      setStatus("authStatus", `Signed in as ${response.user_id}`);
+      return response;
+    }
+
+    async function login() {
+      await auth("/auth/login", {
+        email: $("email").value.trim(),
+        password: $("password").value,
+      });
+    }
+
+    async function register() {
+      await auth("/auth/register", {
+        email: $("email").value.trim(),
+        password: $("password").value,
+        display_name: $("displayName").value.trim(),
+      });
+    }
+
+    async function loadCurrentPlan() {
+      const plan = await api("/plans/current", { headers: headers("user") });
+      fillPlan(plan);
+      setStatus("planStatus", `Loaded current plan ${plan.plan_id}`);
+    }
+
+    async function loadUserPlan() {
+      requireToken("admin");
+      const userId = $("planUserId").value.trim();
+      const plan = await api(`/plans/users/${encodeURIComponent(userId)}`, { headers: headers("admin") });
+      fillPlan(plan);
+      setStatus("planStatus", `Loaded plan for ${userId}`);
+    }
+
+    async function saveUserPlan() {
+      requireToken("admin");
+      const userId = $("planUserId").value.trim();
+      const plan = await api(`/plans/users/${encodeURIComponent(userId)}`, {
+        method: "POST",
+        headers: headers("admin"),
+        body: JSON.stringify(planPayload()),
+      });
+      fillPlan(plan);
+      setStatus("planStatus", `Saved plan for ${userId}`);
+    }
+
+    async function loadPlanCatalog() {
+      requireToken("admin");
+      const page = await api(listPath("/plans/catalog"), { headers: headers("admin") });
+      const plans = pageItems(page);
+      renderPlanCatalogRows(plans);
+      setStatus("catalogStatus", `Loaded ${pageCount(page, plans)} plan(s)`);
+    }
+
+    async function loadCatalogPlan() {
+      requireToken("admin");
+      const planId = $("catalogPlanId").value.trim();
+      const plan = await api(`/plans/catalog/${encodeURIComponent(planId)}`, { headers: headers("admin") });
+      fillCatalogPlan(plan);
+      fillPlan(plan);
+      setStatus("catalogStatus", `Loaded template ${plan.plan_id}`);
+    }
+
+    async function saveCatalogPlan() {
+      requireToken("admin");
+      const plan = await api("/plans/catalog", {
+        method: "POST",
+        headers: headers("admin"),
+        body: JSON.stringify(catalogPlanPayload()),
+      });
+      fillCatalogPlan(plan);
+      fillPlan(plan);
+      setStatus("catalogStatus", `Saved template ${plan.plan_id}`);
+      await loadPlanCatalog();
+    }
+
+    async function assignCatalogPlan() {
+      requireToken("admin");
+      const userId = $("catalogUserId").value.trim();
+      const planId = $("catalogPlanId").value.trim();
+      const plan = await api(`/plans/users/${encodeURIComponent(userId)}/assign`, {
+        method: "POST",
+        headers: headers("admin"),
+        body: JSON.stringify({ plan_id: planId }),
+      });
+      $("planUserId").value = userId;
+      setLinkedUserInputs(userId);
+      fillPlan(plan);
+      setStatus("catalogStatus", `Assigned ${plan.plan_id} to ${userId}`);
+      setStatus("planStatus", `Loaded assigned plan for ${userId}`);
+      await loadUsers();
+      await loadUserDetail();
+    }
+
+    async function loadDashboard() {
+      requireToken("admin");
+      const summary = await api("/dashboard", { headers: headers("admin") });
+      renderRows("dashboardMetricsTable", [
+        { metric: "Users", value: `${summary.users.enabled}/${summary.users.total} enabled` },
+        { metric: "Admins", value: summary.users.admins },
+        { metric: "Controlled devices", value: `${summary.devices.online}/${summary.devices.total} online` },
+        { metric: "Controllers", value: summary.controllers.total },
+        {
+          metric: "Sessions",
+          value: `${summary.sessions.pending} pending / ${summary.sessions.bound} bound / ${summary.sessions.closed} closed / ${summary.sessions.total} total`,
+        },
+        { metric: "Relays", value: `${summary.relays.healthy}/${summary.relays.total} healthy` },
+        { metric: "Relay traffic", value: formatBytes(summary.usage.actual_total_bytes) },
+      ], [
+        (row) => row.metric,
+        (row) => row.value,
+      ]);
+      const logs = Array.isArray(summary.recent_audit_logs) ? summary.recent_audit_logs : [];
+      renderRows("dashboardAuditTable", logs, [
+        (row) => row.created_epoch_sec,
+        (row) => `${row.actor_subject} (${row.actor_role})`,
+        (row) => row.action,
+        (row) => `${row.target_type}:${row.target_id}`,
+        (row) => row.message,
+      ]);
+      setStatus("dashboardStatus", `Loaded dashboard with ${logs.length} recent audit log(s)`);
+    }
+
+    async function loadUsers() {
+      requireToken("admin");
+      const page = await api(listPath("/users"), { headers: headers("admin") });
+      const users = pageItems(page);
+      renderUserRows(users);
+      setStatus("userStatus", `Loaded ${pageCount(page, users)} user(s)`);
+    }
+
+    async function createManagedUser() {
+      requireToken("admin");
+      const user = await api("/users", {
+        method: "POST",
+        headers: headers("admin"),
+        body: JSON.stringify({
+          email: $("managedEmail").value.trim(),
+          password: $("managedPassword").value,
+          display_name: $("managedDisplayName").value.trim(),
+          role: $("managedRole").value,
+          enabled: $("managedEnabled").value === "true",
+        }),
+      });
+      selectManagedUser(user);
+      setStatus("userStatus", `Created ${user.email}`);
+      await loadUsers();
+      await loadUserDetail();
+    }
+
+    async function loadUserDetail() {
+      requireToken("admin");
+      const userId = $("managedUserId").value.trim();
+      const detail = await api(`/users/${encodeURIComponent(userId)}`, { headers: headers("admin") });
+      setLinkedUserInputs(detail.user.user_id);
+      $("managedEmail").value = detail.user.email;
+      $("managedDisplayName").value = detail.user.display_name;
+      $("managedRole").value = detail.user.role;
+      $("managedEnabled").value = detail.user.enabled ? "true" : "false";
+      fillPlan(detail.plan);
+      renderUserDetail(detail);
+      setStatus(
+        "userStatus",
+        `${detail.user.email} / ${detail.user.role} / ${detail.user.enabled ? "enabled" : "disabled"}`
+      );
+      setStatus("planStatus", `Loaded ${detail.user.email}`);
+    }
+
+    async function updateManagedUserStatus(enabled) {
+      requireToken("admin");
+      const userId = $("managedUserId").value.trim();
+      const user = await api(`/users/${encodeURIComponent(userId)}/status`, {
+        method: "POST",
+        headers: headers("admin"),
+        body: JSON.stringify({ enabled }),
+      });
+      $("managedEnabled").value = user.enabled ? "true" : "false";
+      selectManagedUser(user);
+      setStatus("userStatus", `${user.email} ${user.enabled ? "enabled" : "disabled"}`);
+      await loadUsers();
+      await loadUserDetail();
+    }
+
+    async function updateManagedUserRole() {
+      requireToken("admin");
+      const userId = $("managedUserId").value.trim();
+      const user = await api(`/users/${encodeURIComponent(userId)}/role`, {
+        method: "POST",
+        headers: headers("admin"),
+        body: JSON.stringify({ role: $("managedRole").value }),
+      });
+      selectManagedUser(user);
+      setStatus("userStatus", `${user.email} role ${user.role}`);
+      await loadUsers();
+      await loadUserDetail();
+    }
+
+    async function loadAuditLogs() {
+      requireToken("admin");
+      const page = await api(listPath("/audit-logs"), { headers: headers("admin") });
+      const logs = pageItems(page);
+      renderRows("auditLogsTable", logs, [
+        (row) => row.created_epoch_sec,
+        (row) => `${row.actor_subject} (${row.actor_role})`,
+        (row) => row.action,
+        (row) => `${row.target_type}:${row.target_id}`,
+        (row) => row.message,
+      ]);
+      setStatus("auditStatus", `Loaded ${pageCount(page, logs)} audit log(s)`);
+    }
+
+    async function loadUsage() {
+      requireToken("admin");
+      const page = await api(usagePath(), { headers: headers("admin") });
+      const summaries = pageItems(page);
+      renderRows("usageTable", summaries, [
+        (row) => row.user_id,
+        (row) => row.email,
+        (row) => row.plan_id,
+        (row) => row.current_period_started_epoch_sec || "",
+        (row) => `${row.controller_count}/${row.max_controller_devices}`,
+        (row) => row.device_count,
+        (row) => row.session_count,
+        (row) => row.pending_sessions,
+        (row) => row.bound_sessions,
+        (row) => row.relay_quota_granted_bytes,
+        (row) => row.actual_uplink_bytes,
+        (row) => row.actual_downlink_bytes,
+        (row) => row.actual_total_bytes,
+      ]);
+      setStatus("usageStatus", `Loaded ${pageCount(page, summaries)} user usage row(s)`);
+    }
+
+    async function resetUsagePeriod() {
+      requireToken("admin");
+      const userId = $("usageResetUserId").value.trim();
+      const period = await api(`/usage/users/${encodeURIComponent(userId)}/reset`, {
+        method: "POST",
+        headers: headers("admin"),
+      });
+      setStatus("usageStatus", `Reset ${period.user_id} at ${period.current_period_started_epoch_sec}`);
+      await loadUsage();
+    }
+
+    async function loadSessions() {
+      requireToken("admin");
+      const page = await api(listPath("/sessions"), { headers: headers("admin") });
+      const sessions = pageItems(page);
+      renderRows("sessionsTable", sessions, [
+        (row) => row.session_id,
+        (row) => row.status,
+        (row) => `${row.user_email || row.user_id}`,
+        (row) => `${row.device_name || row.device_id}`,
+        (row) => `${row.service_name || row.service_id}`,
+        (row) => row.client_id,
+        (row) => row.relay_addr,
+        (row) => row.expire_at,
+      ]);
+      setStatus("sessionStatus", `Loaded ${pageCount(page, sessions)} session(s)`);
+    }
+
+    async function closeAdminSession() {
+      requireToken("admin");
+      const sessionId = $("adminSessionId").value.trim();
+      await api(`/sessions/${encodeURIComponent(sessionId)}/close`, {
+        method: "POST",
+        headers: headers("admin"),
+      });
+      setStatus("sessionStatus", `Closed ${sessionId}`);
+      await loadSessions();
+    }
+
+    function usagePath() {
+      const params = new URLSearchParams();
+      const q = $("listQuery").value.trim();
+      const sort = $("usageSort").value.trim();
+      const limit = $("usageLimit").value.trim();
+      const offset = $("usageOffset").value.trim();
+      if (q) params.set("q", q);
+      if (sort) params.set("sort", sort);
+      if (limit) params.set("limit", limit);
+      if (offset && offset !== "0") params.set("offset", offset);
+      const query = params.toString();
+      return query ? `/usage/users?${query}` : "/usage/users";
+    }
+
+    async function loadControllers() {
+      const page = await api(listPath("/controllers"), { headers: headers("user") });
+      const controllers = pageItems(page);
+      renderRows("controllersTable", controllers, [
+        (row) => row.client_id,
+        (row) => row.name,
+        (row) => row.user_id,
+      ]);
+      setStatus("controllerStatus", `Loaded ${pageCount(page, controllers)} controller(s)`);
+    }
+
+    async function registerController() {
+      await api("/controllers/register", {
+        method: "POST",
+        headers: headers("user"),
+        body: JSON.stringify({
+          client_id: $("controllerClientId").value.trim(),
+          name: $("controllerName").value.trim(),
+        }),
+      });
+      setStatus("controllerStatus", "Controller saved");
+      await loadControllers();
+    }
+
+    async function removeController() {
+      const clientId = $("controllerClientId").value.trim();
+      await api(`/controllers/${encodeURIComponent(clientId)}`, {
+        method: "DELETE",
+        headers: headers("user"),
+      });
+      setStatus("controllerStatus", "Controller removed");
+      await loadControllers();
+    }
+
+    async function loadRelays() {
+      requireToken("admin");
+      const page = await api(listPath("/relays"), { headers: headers("admin") });
+      const relays = pageItems(page);
+      renderRelayRows(relays);
+      setStatus("relayStatus", `Loaded ${pageCount(page, relays)} relay(s)`);
+    }
+
+    async function loadRelaySessions() {
+      requireToken("admin");
+      const relayId = $("relayId").value.trim();
+      if (!relayId) throw new Error("relay id is required");
+      const page = await api(listPath(`/relays/${encodeURIComponent(relayId)}/sessions`), { headers: headers("admin") });
+      const sessions = pageItems(page);
+      renderRelaySessionRows(sessions);
+      setStatus("relayStatus", `Loaded ${pageCount(page, sessions)} relay session(s)`);
+    }
+
+    async function disconnectRelaySession(sessionId) {
+      requireToken("admin");
+      const relayId = $("relayId").value.trim();
+      if (!relayId) throw new Error("relay id is required");
+      await api(`/relays/${encodeURIComponent(relayId)}/sessions/${encodeURIComponent(sessionId)}/disconnect`, {
+        method: "POST",
+        headers: headers("admin"),
+      });
+      setStatus("relayStatus", `Queued disconnect for relay session ${sessionId}`);
+      await loadRelaySessions();
+      await loadRelays();
+    }
+
+    function relayPayload(includeHealthy) {
+      const payload = {
+        relay_addr: $("relayAddr").value.trim(),
+        admin_addr: "",
+        capacity_streams: numberValue("relayCapacity"),
+      };
+      if (includeHealthy) payload.healthy = $("relayHealthy").value === "true";
+      return payload;
+    }
+
+    async function registerRelay() {
+      requireToken("admin");
+      const relay = await api("/relays/register", {
+        method: "POST",
+        headers: headers("admin"),
+        body: JSON.stringify({
+          relay_id: $("relayId").value.trim(),
+          ...relayPayload(false),
+        }),
+      });
+      selectRelay(relay);
+      setStatus("relayStatus", "Relay registered");
+      await loadRelays();
+    }
+
+    async function updateRelay() {
+      requireToken("admin");
+      const relayId = $("relayId").value.trim();
+      const relay = await api(`/relays/${encodeURIComponent(relayId)}`, {
+        method: "POST",
+        headers: headers("admin"),
+        body: JSON.stringify(relayPayload(true)),
+      });
+      selectRelay(relay);
+      setStatus("relayStatus", "Relay updated");
+      await loadRelays();
+    }
+
+    async function deleteRelay() {
+      requireToken("admin");
+      const relayId = $("relayId").value.trim();
+      await api(`/relays/${encodeURIComponent(relayId)}`, {
+        method: "DELETE",
+        headers: headers("admin"),
+      });
+      setStatus("relayStatus", "Relay removed");
+      await loadRelays();
+    }
+
+    function fillRelayCredential(credential) {
+      $("relayCredentialId").value = credential.relay_id;
+      $("relayCredentialEnabled").value = credential.enabled ? "true" : "false";
+    }
+
+    async function loadRelayCredentials() {
+      requireToken("admin");
+      const page = await api(listPath("/relay-credentials"), { headers: headers("admin") });
+      const credentials = pageItems(page);
+      renderRelayCredentialRows(credentials);
+      setStatus("relayStatus", `Loaded ${pageCount(page, credentials)} relay credential(s)`);
+    }
+
+    async function createRelayCredential() {
+      requireToken("admin");
+      const credential = await api("/relay-credentials", {
+        method: "POST",
+        headers: headers("admin"),
+        body: JSON.stringify({
+          relay_id: $("relayCredentialId").value.trim(),
+          enabled: $("relayCredentialEnabled").value === "true",
+        }),
+      });
+      selectRelayCredential(credential);
+      setStatus("relayStatus", `Created credential ${credential.relay_id} v${credential.token_version}`);
+      await loadRelayCredentials();
+    }
+
+    async function loadRelayCredential() {
+      requireToken("admin");
+      const relayId = $("relayCredentialId").value.trim();
+      const credential = await api(`/relay-credentials/${encodeURIComponent(relayId)}`, {
+        headers: headers("admin"),
+      });
+      selectRelayCredential(credential);
+      setStatus("relayStatus", `Loaded credential ${credential.relay_id} v${credential.token_version}`);
+    }
+
+    async function updateRelayCredentialStatus() {
+      requireToken("admin");
+      const relayId = $("relayCredentialId").value.trim();
+      const credential = await api(`/relay-credentials/${encodeURIComponent(relayId)}/status`, {
+        method: "POST",
+        headers: headers("admin"),
+        body: JSON.stringify({ enabled: $("relayCredentialEnabled").value === "true" }),
+      });
+      selectRelayCredential(credential);
+      setStatus("relayStatus", `${credential.relay_id} ${credential.enabled ? "enabled" : "disabled"}`);
+      await loadRelayCredentials();
+    }
+
+    async function rotateRelayCredential() {
+      requireToken("admin");
+      const relayId = $("relayCredentialId").value.trim();
+      const credential = await api(`/relay-credentials/${encodeURIComponent(relayId)}/rotate`, {
+        method: "POST",
+        headers: headers("admin"),
+      });
+      selectRelayCredential(credential);
+      setStatus("relayStatus", `Rotated ${credential.relay_id} to v${credential.token_version}`);
+      await loadRelayCredentials();
+    }
+
+    async function loadDevices() {
+      const page = await api(listPath("/devices"), { headers: headers("user") });
+      const devices = pageItems(page);
+      renderDeviceRows(devices);
+      setStatus("deviceStatus", `Loaded ${pageCount(page, devices)} device(s)`);
+    }
+
+    async function loadDeviceAccessGrants() {
+      requireToken("admin");
+      const deviceId = $("deviceId").value.trim();
+      const page = await api(listPath(`/devices/${encodeURIComponent(deviceId)}/access`), {
+        headers: headers("admin"),
+      });
+      const grants = pageItems(page);
+      renderDeviceAccessRows(grants);
+      setStatus("deviceStatus", `Loaded ${pageCount(page, grants)} access grant(s)`);
+    }
+
+    async function grantDeviceAccess() {
+      requireToken("admin");
+      const deviceId = $("deviceId").value.trim();
+      const userId = $("deviceAccessUserId").value.trim();
+      await api(`/devices/${encodeURIComponent(deviceId)}/access`, {
+        method: "POST",
+        headers: headers("admin"),
+        body: JSON.stringify({ user_id: userId }),
+      });
+      setStatus("deviceStatus", `Granted ${userId}`);
+      await loadDeviceAccessGrants();
+    }
+
+    async function revokeDeviceAccess() {
+      requireToken("admin");
+      const deviceId = $("deviceId").value.trim();
+      const userId = $("deviceAccessUserId").value.trim();
+      await api(`/devices/${encodeURIComponent(deviceId)}/access/${encodeURIComponent(userId)}`, {
+        method: "DELETE",
+        headers: headers("admin"),
+      });
+      setStatus("deviceStatus", `Revoked ${userId}`);
+      await loadDeviceAccessGrants();
+    }
+
+    async function loadServices() {
+      const deviceId = $("deviceId").value.trim();
+      const services = await api(`/mobile/devices/${encodeURIComponent(deviceId)}/services`, {
+        headers: headers("user"),
+      });
+      renderRows("servicesTable", services, [
+        (row) => row.service_id,
+        (row) => row.protocol,
+        (row) => `${row.target_host}:${row.target_port}`,
+        (row) => row.device_id,
+      ]);
+      setStatus("deviceStatus", `Loaded ${services.length} service(s)`);
+    }
+
+    async function loadSelectedDeviceContext() {
+      await loadServices();
+      if (token("admin") && controlTokenRole(token("admin")) === "admin") {
+        await loadDeviceAccessGrants();
+      }
+    }
+
+    async function removeDevice() {
+      const deviceId = $("deviceId").value.trim();
+      await api(`/devices/${encodeURIComponent(deviceId)}`, {
+        method: "DELETE",
+        headers: headers("user"),
+      });
+      setStatus("deviceStatus", "Device removed");
+      renderRows("deviceDetailTable", [], []);
+      renderDeviceAccessRows([]);
+      renderRows("servicesTable", [], []);
+      await loadDevices();
+    }
+
+    async function refreshAdminOverview() {
+      try {
+        requireToken("admin");
+      } catch (error) {
+        return `overview refresh skipped: ${error.message}`;
+      }
+      const results = await Promise.allSettled([loadDashboard(), loadAuditLogs()]);
+      const failed = results.find((result) => result.status === "rejected");
+      if (failed) {
+        return `overview refresh failed: ${failed.reason?.message || failed.reason}`;
+      }
+      return "dashboard and audit refreshed";
+    }
+
+    async function run(action, statusId, options = {}) {
+      const name = options.name || action.name || statusId;
+      saveTokens();
+      setStatus(statusId, "Working...");
+      try {
+        await action();
+        let message = "completed";
+        if (options.refreshAdminOverview) {
+          message = await refreshAdminOverview();
+        }
+        recordOperation(name, statusId, true, message);
+      } catch (error) {
+        setStatus(statusId, error.message, false);
+        setStatus("globalStatus", error.message, false);
+        recordOperation(name, statusId, false, error.message);
+      }
+      updateHeader();
+    }
+
+    function runAdminMutation(action, statusId, name) {
+      return run(action, statusId, { name, refreshAdminOverview: true });
+    }
+
+    $("loginUser").addEventListener("click", () => run(login, "authStatus"));
+    $("registerUser").addEventListener("click", () => run(register, "authStatus"));
+    $("loadCurrentPlan").addEventListener("click", () => run(loadCurrentPlan, "planStatus"));
+    $("loadUserPlan").addEventListener("click", () => run(loadUserPlan, "planStatus"));
+    $("saveUserPlan").addEventListener("click", () => runAdminMutation(saveUserPlan, "planStatus", "save user plan"));
+    $("loadPlanCatalog").addEventListener("click", () => run(loadPlanCatalog, "catalogStatus"));
+    $("loadCatalogPlan").addEventListener("click", () => run(loadCatalogPlan, "catalogStatus"));
+    $("saveCatalogPlan").addEventListener("click", () => runAdminMutation(saveCatalogPlan, "catalogStatus", "save plan template"));
+    $("assignCatalogPlan").addEventListener("click", () => runAdminMutation(assignCatalogPlan, "catalogStatus", "assign plan"));
+    $("planCatalogTable").addEventListener("click", (event) => {
+      const button = event.target.closest?.("[data-select-plan-id]");
+      if (!button) return;
+      const plan = plansById.get(button.dataset.selectPlanId);
+      if (!plan) return;
+      selectCatalogPlan(plan);
+    });
+    $("loadDashboard").addEventListener("click", () => run(loadDashboard, "dashboardStatus"));
+    $("loadUsers").addEventListener("click", () => run(loadUsers, "userStatus"));
+    $("createManagedUser").addEventListener("click", () => runAdminMutation(createManagedUser, "userStatus", "create user"));
+    $("loadUserDetail").addEventListener("click", () => run(loadUserDetail, "userStatus"));
+    $("updateUserRole").addEventListener("click", () => runAdminMutation(updateManagedUserRole, "userStatus", "update user role"));
+    $("enableUser").addEventListener("click", () => runAdminMutation(() => updateManagedUserStatus(true), "userStatus", "enable user"));
+    $("disableUser").addEventListener("click", () => runAdminMutation(() => updateManagedUserStatus(false), "userStatus", "disable user"));
+    $("usersTable").addEventListener("click", (event) => {
+      const button = event.target.closest?.("[data-select-user-id]");
+      if (!button) return;
+      const user = usersById.get(button.dataset.selectUserId);
+      if (!user) return;
+      selectManagedUser(user);
+      run(loadUserDetail, "userStatus");
+    });
+    $("loadUsage").addEventListener("click", () => run(loadUsage, "usageStatus"));
+    $("resetUsagePeriod").addEventListener("click", () => runAdminMutation(resetUsagePeriod, "usageStatus", "reset usage"));
+    $("loadSessions").addEventListener("click", () => run(loadSessions, "sessionStatus"));
+    $("closeAdminSession").addEventListener("click", () => runAdminMutation(closeAdminSession, "sessionStatus", "close session"));
+    $("loadAuditLogs").addEventListener("click", () => run(loadAuditLogs, "auditStatus"));
+    $("loadControllers").addEventListener("click", () => run(loadControllers, "controllerStatus"));
+    $("registerController").addEventListener("click", () => runAdminMutation(registerController, "controllerStatus", "register controller"));
+    $("removeController").addEventListener("click", () => runAdminMutation(removeController, "controllerStatus", "remove controller"));
+    $("loadRelays").addEventListener("click", () => run(loadRelays, "relayStatus"));
+    $("loadRelaySessions").addEventListener("click", () => run(loadRelaySessions, "relayStatus"));
+    $("registerRelay").addEventListener("click", () => runAdminMutation(registerRelay, "relayStatus", "register relay"));
+    $("updateRelay").addEventListener("click", () => runAdminMutation(updateRelay, "relayStatus", "update relay"));
+    $("deleteRelay").addEventListener("click", () => runAdminMutation(deleteRelay, "relayStatus", "delete relay"));
+    $("relaysTable").addEventListener("click", (event) => {
+      const button = event.target.closest?.("[data-select-relay-id]");
+      if (!button) return;
+      const relay = relaysById.get(button.dataset.selectRelayId);
+      if (!relay) return;
+      selectRelay(relay);
+    });
+    $("relaySessionsTable").addEventListener("click", (event) => {
+      const button = event.target.closest?.("[data-disconnect-relay-session-id]");
+      if (!button) return;
+      runAdminMutation(
+        () => disconnectRelaySession(button.dataset.disconnectRelaySessionId),
+        "relayStatus",
+        "disconnect relay session",
+      );
+    });
+    $("loadRelayCredentials").addEventListener("click", () => run(loadRelayCredentials, "relayStatus"));
+    $("createRelayCredential").addEventListener("click", () => runAdminMutation(createRelayCredential, "relayStatus", "create relay credential"));
+    $("loadRelayCredential").addEventListener("click", () => run(loadRelayCredential, "relayStatus"));
+    $("updateRelayCredentialStatus").addEventListener("click", () => runAdminMutation(updateRelayCredentialStatus, "relayStatus", "update relay credential"));
+    $("rotateRelayCredential").addEventListener("click", () => runAdminMutation(rotateRelayCredential, "relayStatus", "rotate relay credential"));
+    $("relayCredentialsTable").addEventListener("click", (event) => {
+      const button = event.target.closest?.("[data-select-relay-credential-id]");
+      if (!button) return;
+      const credential = relayCredentialsById.get(button.dataset.selectRelayCredentialId);
+      if (!credential) return;
+      selectRelayCredential(credential);
+    });
+    $("loadDevices").addEventListener("click", () => run(loadDevices, "deviceStatus"));
+    $("devicesTable").addEventListener("click", (event) => {
+      const button = event.target.closest?.("[data-select-device-id]");
+      if (!button) return;
+      const device = devicesById.get(button.dataset.selectDeviceId);
+      if (!device) return;
+      selectControlledDevice(device);
+      run(loadSelectedDeviceContext, "deviceStatus", { name: "load device context" });
+    });
+    $("loadDeviceAccessGrants").addEventListener("click", () => run(loadDeviceAccessGrants, "deviceStatus"));
+    $("grantDeviceAccess").addEventListener("click", () => runAdminMutation(grantDeviceAccess, "deviceStatus", "grant device access"));
+    $("revokeDeviceAccess").addEventListener("click", () => runAdminMutation(revokeDeviceAccess, "deviceStatus", "revoke device access"));
+    $("deviceAccessTable").addEventListener("click", (event) => {
+      const button = event.target.closest?.("[data-select-device-access-user-id]");
+      if (!button) return;
+      selectDeviceAccessGrant({
+        device_id: button.dataset.selectDeviceAccessDeviceId,
+        user_id: button.dataset.selectDeviceAccessUserId,
+      });
+    });
+    $("loadServices").addEventListener("click", () => run(loadServices, "deviceStatus"));
+    $("removeDevice").addEventListener("click", () => runAdminMutation(removeDevice, "deviceStatus", "remove device"));
+    $("refreshAll").addEventListener("click", () => run(async () => {
+      const tasks = [loadCurrentPlan(), loadControllers(), loadDevices()];
+      try {
+        requireToken("admin");
+        tasks.push(loadDashboard(), loadUsers(), loadUsage(), loadSessions(), loadAuditLogs(), loadPlanCatalog(), loadRelays(), loadRelayCredentials());
+      } catch (error) {
+        for (const statusId of ["dashboardStatus", "userStatus", "usageStatus", "sessionStatus", "auditStatus", "catalogStatus", "relayStatus"]) {
+          setStatus(statusId, error.message, false);
+        }
+      }
+      await Promise.allSettled(tasks);
+      setStatus("globalStatus", "Refreshed");
+    }, "globalStatus"));
+    $("clearOperationLog").addEventListener("click", clearOperationLog);
+    $("copyUserToAdmin").addEventListener("click", () => run(copyUserTokenToAdmin, "adminStatus"));
+    $("clearUserToken").addEventListener("click", () => clearToken("user"));
+    $("clearAdminToken").addEventListener("click", () => clearToken("admin"));
+    $("clearTokens").addEventListener("click", () => {
+      $("userToken").value = "";
+      $("adminToken").value = "";
+      saveTokens();
+      setStatus("globalStatus", "Tokens cleared");
+    });
+    $("userToken").addEventListener("change", saveTokens);
+    $("adminToken").addEventListener("change", saveTokens);
+    renderOperationLog();
+    updateHeader();
+  </script>
+</body>
+</html>

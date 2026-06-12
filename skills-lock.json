@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "shadcn-vue": {
+      "source": "renatomonteiro/shadcn-vue-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "5b9a55c9775c8945c3212375589b3137fd9739985d4fd016071455729806f527"
+    }
+  }
+}

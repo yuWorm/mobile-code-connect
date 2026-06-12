@@ -1,0 +1,4 @@
+-keep class com.sun.jna.** { *; }
+-keep class dev.quictunnel.mobile.** { *; }
+-keep class uniffi.quic_tunnel_mobile_core.** { *; }
+-dontwarn com.sun.jna.**

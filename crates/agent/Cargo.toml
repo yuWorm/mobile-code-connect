@@ -1,0 +1,23 @@
+[package]
+name = "quic_tunnel_agent"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[dependencies]
+quinn.workspace = true
+quic_tunnel_control_client = { path = "../control-client" }
+quic_tunnel_punch = { path = "../punch" }
+quic_tunnel_tunnel = { path = "../tunnel" }
+quic_tunnel_protocol = { path = "../protocol" }
+libc = "0.2"
+rustls.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+axum.workspace = true
+quic_tunnel_control = { path = "../control" }

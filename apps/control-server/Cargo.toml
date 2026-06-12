@@ -1,0 +1,15 @@
+[package]
+name = "control-server"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+axum.workspace = true
+clap.workspace = true
+quic_tunnel_control = { path = "../../crates/control" }
+quic_tunnel_control_client = { path = "../../crates/control-client" }
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true

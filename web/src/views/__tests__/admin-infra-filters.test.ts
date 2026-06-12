@@ -1,0 +1,500 @@
+import { readFileSync } from 'node:fs'
+
+import { describe, expect, test } from 'bun:test'
+
+describe('admin infrastructure filters', () => {
+  test('devices view filters by device status', () => {
+    const source = readFileSync(new URL('../admin/AdminDevicesView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain("const status = ref('')")
+    expect(source).toContain("const userId = ref('')")
+    expect(source).toContain("const sort = ref('device_id')")
+    expect(source).toContain('status: status.value')
+    expect(source).toContain('user_id: userId.value.trim()')
+    expect(source).toContain('sort: sort.value')
+    expect(source).toContain('watch([q, status, userId, sort], () => devices.refresh())')
+    expect(source).toContain('<Select :model-value="selectFilterValue(status)" @update:model-value="status = normalizeSelectFilterValue($event)">')
+    expect(source).toContain('<SelectTrigger :aria-label="t(\'device.filterStatus\')"><SelectValue :placeholder="t(\'common.allStatus\')" /></SelectTrigger>')
+    expect(source).toContain('<SelectItem :value="ALL_SELECT_VALUE">{{ t(\'common.allStatus\') }}</SelectItem>')
+    expect(source).toContain('<SelectItem value="online">{{ formatDeviceStatus(\'online\', t) }}</SelectItem>')
+    expect(source).toContain('<SelectItem value="offline">{{ formatDeviceStatus(\'offline\', t) }}</SelectItem>')
+    expect(source).toContain('<Input v-model="userId"')
+    expect(source).toContain('<Input v-model="userId" :placeholder="t(\'common.exactUserId\')" :aria-label="t(\'common.exactUserId\')" />')
+    expect(source).toContain('<Select v-model="sort">')
+    expect(source).toContain('<SelectTrigger :aria-label="t(\'device.sortLabel\')"><SelectValue :placeholder="t(\'common.sort\')" /></SelectTrigger>')
+    expect(source).toContain('<SelectItem value="name">{{ t(\'common.deviceName\') }}</SelectItem>')
+    expect(source).toContain('<SelectItem value="status">{{ t(\'common.status\') }}</SelectItem>')
+    expect(source).toContain('devices.data.value?.total')
+  })
+
+  test('devices view shows localized status labels', () => {
+    const source = readFileSync(new URL('../admin/AdminDevicesView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain("import { formatDeviceStatus } from '@/lib/control/labels'")
+    expect(source).toContain('formatDeviceStatus(device.status, t)')
+    expect(source).not.toContain('{{ device.status }}')
+  })
+
+  test('devices view can reset list filters back to defaults', () => {
+    const source = readFileSync(new URL('../admin/AdminDevicesView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain('const hasDeviceFilters = computed(() =>')
+    expect(source).toContain("sort.value !== 'device_id'")
+    expect(source).toContain('function resetDeviceFilters()')
+    expect(source).toContain("q.value = ''")
+    expect(source).toContain("status.value = ''")
+    expect(source).toContain("userId.value = ''")
+    expect(source).toContain("sort.value = 'device_id'")
+    expect(source).toContain(':disabled="!hasDeviceFilters"')
+    expect(source).toContain('@click="resetDeviceFilters"')
+  })
+
+  test('device access grants can be searched inside the access dialog', () => {
+    const source = readFileSync(new URL('../admin/AdminDevicesView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain("const accessQ = ref('')")
+    expect(source).toContain('const accessTotal = ref(0)')
+    expect(source).toContain('q: accessQ.value.trim()')
+    expect(source).toContain("sort: 'user_id'")
+    expect(source).toContain('watch(accessQ, () => refreshAccess())')
+    expect(source).toContain('<SearchToolbar v-model="accessQ"')
+    expect(source).toContain('accessTotal')
+  })
+
+  test('device access grant search can be reset inside the access dialog', () => {
+    const source = readFileSync(new URL('../admin/AdminDevicesView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain('const hasAccessFilters = computed(() =>')
+    expect(source).toContain("accessQ.value.trim() !== ''")
+    expect(source).toContain('function resetAccessFilters()')
+    expect(source).toContain("accessQ.value = ''")
+    expect(source).toContain(':disabled="!hasAccessFilters"')
+    expect(source).toContain('@click="resetAccessFilters"')
+  })
+
+  test('device access grant form can be reset before submitting', () => {
+    const source = readFileSync(new URL('../admin/AdminDevicesView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain('function resetGrantForm()')
+    expect(source).toContain("grantForm.user_id = ''")
+    expect(source).toContain('resetGrantForm()')
+    expect(source).toContain('type="button"')
+    expect(source).toContain(':disabled="granting || !grantForm.user_id.trim()"')
+    expect(source).toContain('@click="resetGrantForm"')
+  })
+
+  test('device access dialog clears selected device and grants when closed', () => {
+    const source = readFileSync(new URL('../admin/AdminDevicesView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain('function resetAccessDialogState()')
+    expect(source).toContain('selectedDevice.value = null')
+    expect(source).toContain('grants.value = []')
+    expect(source).toContain('accessTotal.value = 0')
+    expect(source).toContain('function handleAccessOpenChange(nextOpen: boolean)')
+    expect(source).toContain('resetAccessDialogState()')
+    expect(source).toContain('<Dialog :open="accessOpen" @update:open="handleAccessOpenChange">')
+  })
+
+  test('device access dialog cannot be closed while granting access', () => {
+    const source = readFileSync(new URL('../admin/AdminDevicesView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain(`function handleAccessOpenChange(nextOpen: boolean) {
+  if (granting.value && !nextOpen) {
+    return
+  }
+  accessOpen.value = nextOpen`)
+  })
+
+  test('devices view visible copy is localized', () => {
+    const source = readFileSync(new URL('../admin/AdminDevicesView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain("success: t('device.toast.removed')")
+    expect(source).toContain("error: t('device.toast.removeFailed')")
+    expect(source).toContain("success: t('device.toast.granted')")
+    expect(source).toContain("error: t('device.toast.grantFailed')")
+    expect(source).toContain("success: t('device.toast.revoked')")
+    expect(source).toContain("error: t('device.toast.revokeFailed')")
+    expect(source).toContain('<SearchToolbar v-model="q" :placeholder="t(\'device.searchPlaceholder\')"')
+    expect(source).toContain("{{ t('device.total', { total: devices.data.value?.total ?? 0 }) }}")
+    expect(source).toContain(':empty-title="t(\'device.empty\')"')
+    expect(source).toContain('<TableHead>{{ t(\'common.device\') }}</TableHead>')
+    expect(source).toContain('<TableHead>{{ t(\'common.user\') }}</TableHead>')
+    expect(source).toContain('<TableHead>{{ t(\'device.agentVersion\') }}</TableHead>')
+    expect(source).toContain('<TableHead>{{ t(\'common.status\') }}</TableHead>')
+    expect(source).toContain('<TableHead class="text-right">{{ t(\'common.actions\') }}</TableHead>')
+    expect(source).toContain("{{ t('device.access') }}")
+    expect(source).toContain(":label=\"t('common.deviceId')\"")
+    expect(source).toContain(':title="t(\'device.removeTitle\')"')
+    expect(source).toContain(":description=\"t('device.removeDescription', { name: device.name })\"")
+    expect(source).toContain(':confirm-text="t(\'common.remove\')"')
+    expect(source).toContain('<DialogTitle>{{ t(\'device.accessTitle\') }}</DialogTitle>')
+    expect(source).toContain('<Label for="grant-user-id">{{ t(\'device.grantUserId\') }}</Label>')
+    expect(source).toContain("{{ t('device.grantUser') }}")
+    expect(source).toContain("{{ t('device.grantedUsers') }}")
+    expect(source).toContain('<SearchToolbar v-model="accessQ" :placeholder="t(\'device.accessSearchPlaceholder\')"')
+    expect(source).toContain("{{ t('device.accessTotal', { total: accessTotal }) }}")
+    expect(source).toContain("{{ t('device.accessLoading') }}")
+    expect(source).toContain("{{ t('device.accessEmpty') }}")
+    expect(source).toContain(':title="t(\'device.revokeTitle\')"')
+    expect(source).toContain(":description=\"t('device.revokeDescription', { user: grant.user_id })\"")
+    expect(source).toContain(':confirm-text="t(\'device.revoke\')"')
+    expect(source).not.toContain('设备已移除')
+    expect(source).not.toContain('搜索设备 ID、名称、用户或版本')
+    expect(source).not.toContain('移除设备')
+    expect(source).not.toContain('设备访问授权')
+  })
+
+  test('relays view filters by health state', () => {
+    const source = readFileSync(new URL('../admin/AdminRelaysView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain("const healthy = ref('')")
+    expect(source).toContain("const relaySort = ref('relay_id')")
+    expect(source).toContain("healthy: healthy.value === '' ? undefined : healthy.value === 'true'")
+    expect(source).toContain('sort: relaySort.value')
+    expect(source).toContain('watch([q, healthy, relaySort], () => relays.refresh())')
+    expect(source).toContain('<Select :model-value="selectFilterValue(healthy)" @update:model-value="healthy = normalizeSelectFilterValue($event)">')
+    expect(source).toContain('<SelectTrigger :aria-label="t(\'relay.filterHealth\')"><SelectValue :placeholder="t(\'relay.allHealth\')" /></SelectTrigger>')
+    expect(source).toContain('<SelectItem :value="ALL_SELECT_VALUE">{{ t(\'relay.allHealth\') }}</SelectItem>')
+    expect(source).toContain('<SelectItem value="true">{{ formatRelayHealth(true, t) }}</SelectItem>')
+    expect(source).toContain('<SelectItem value="false">{{ formatRelayHealth(false, t) }}</SelectItem>')
+    expect(source).toContain('<Select v-model="relaySort">')
+    expect(source).toContain('<SelectTrigger :aria-label="t(\'relay.sortLabel\')"><SelectValue :placeholder="t(\'common.sort\')" /></SelectTrigger>')
+    expect(source).toContain('<SelectItem value="-capacity_streams">{{ t(\'relay.capacity\') }}</SelectItem>')
+    expect(source).toContain('<SelectItem value="-last_seen_epoch_sec">{{ t(\'relay.lastSeen\') }}</SelectItem>')
+    expect(source).toContain('relays.data.value?.total')
+  })
+
+  test('relays view shows localized health and credential labels', () => {
+    const source = readFileSync(new URL('../admin/AdminRelaysView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain("import { formatCredentialStatus, formatRelayHealth } from '@/lib/control/labels'")
+    expect(source).toContain('formatRelayHealth(relay.healthy, t)')
+    expect(source).toContain('formatCredentialStatus(credential.enabled, t)')
+    expect(source).not.toContain("{{ relay.healthy ? 'healthy' : 'unhealthy' }}")
+    expect(source).not.toContain("{{ credential.enabled ? 'enabled' : 'disabled' }}")
+  })
+
+  test('relays view can reset relay node filters back to defaults', () => {
+    const source = readFileSync(new URL('../admin/AdminRelaysView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain('const hasRelayFilters = computed(() =>')
+    expect(source).toContain("relaySort.value !== 'relay_id'")
+    expect(source).toContain('function resetRelayFilters()')
+    expect(source).toContain("q.value = ''")
+    expect(source).toContain("healthy.value = ''")
+    expect(source).toContain("relaySort.value = 'relay_id'")
+    expect(source).toContain(':disabled="!hasRelayFilters"')
+    expect(source).toContain('@click="resetRelayFilters"')
+  })
+
+  test('relays view can edit an existing relay node', () => {
+    const source = readFileSync(new URL('../admin/AdminRelaysView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain("const editingRelayId = ref('')")
+    expect(source).toContain('function openRelayEditor(relay: RelayNode)')
+    expect(source).toContain('editingRelayId.value = relay.relay_id')
+    expect(source).toContain('async function saveRelay()')
+    expect(source).toContain('controlApi.updateRelay(editingRelayId.value, {')
+    expect(source).toContain('healthy: relayForm.healthy')
+    expect(source).toContain("@submit.prevent=\"saveRelay\"")
+    expect(source).toContain('relayForm.healthy')
+    expect(source).toContain('@click="openRelayEditor(relay)"')
+    expect(source).toContain("{{ editingRelayId ? t('common.save') : t('common.register') }}")
+  })
+
+  test('relays view opens a relay health detail dialog', () => {
+    const source = readFileSync(new URL('../admin/AdminRelaysView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain('const detailOpen = ref(false)')
+    expect(source).toContain('const selectedRelay = ref<RelayNode | null>(null)')
+    expect(source).toContain('function openRelayDetail(relay: RelayNode)')
+    expect(source).toContain('selectedRelay.value = relay')
+    expect(source).toContain('function handleDetailOpenChange(nextOpen: boolean)')
+    expect(source).toContain('selectedRelay.value = null')
+    expect(source).toContain('<Dialog :open="detailOpen" @update:open="handleDetailOpenChange">')
+    expect(source).toContain("<DialogTitle>{{ t('relay.detailTitle') }}</DialogTitle>")
+    expect(source).toContain("<DialogDescription>{{ t('relay.detailDescription') }}</DialogDescription>")
+    expect(source).toContain('@click="openRelayDetail(relay)"')
+    expect(source).toContain("{{ t('common.details') }}")
+    expect(source).toContain(":label=\"t('relay.healthStatus')\"")
+    expect(source).toContain(":label=\"t('relay.dataPlaneBound')\"")
+    expect(source).not.toContain(":label=\"t('relay.adminBound')\"")
+    expect(source).toContain(":label=\"t('relay.lastHealthReport')\"")
+    expect(source).toContain(":label=\"t('relay.uptime')\"")
+    expect(source).toContain(":label=\"t('relay.traffic')\"")
+    expect(source).toContain('async function loadRelaySessions(relayId: string)')
+    expect(source).toContain('controlApi.relaySessions(relayId')
+    expect(source).toContain('async function disconnectRelaySession(sessionId: string)')
+    expect(source).toContain('controlApi.disconnectRelaySession(relayId, sessionId)')
+    expect(source).toContain("<CardTitle>{{ t('relay.sessionsTitle') }}</CardTitle>")
+    expect(source).toContain('<TableHead>{{ t(\'relaySession.state\') }}</TableHead>')
+    expect(source).toContain('<TableHead>{{ t(\'relaySession.peers\') }}</TableHead>')
+    expect(source).toContain('<TableHead>{{ t(\'relaySession.activeStreams\') }}</TableHead>')
+    expect(source).toContain(':title="t(\'relaySession.disconnectTitle\')"')
+    expect(source).not.toContain('/admin/sessions')
+    expect(source).not.toContain('relay-admin')
+  })
+
+  test('relay node dialog exposes labelled form fields', () => {
+    const source = readFileSync(new URL('../admin/AdminRelaysView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain('const hasRelayForm = computed(() =>')
+    expect(source).toContain("relayForm.relay_id.trim() !== ''")
+    expect(source).toContain("relayForm.relay_addr.trim() !== ''")
+    expect(source).not.toContain("relayForm.admin_addr.trim() !== ''")
+    expect(source).toContain('for="relay-id"')
+    expect(source).toContain('id="relay-id"')
+    expect(source).toContain('for="relay-addr"')
+    expect(source).toContain('id="relay-addr"')
+    expect(source).not.toContain('for="relay-admin-addr"')
+    expect(source).not.toContain('id="relay-admin-addr"')
+    expect(source).toContain('for="relay-capacity-streams"')
+    expect(source).toContain('id="relay-capacity-streams"')
+    expect(source).toContain('for="relay-healthy"')
+    expect(source).toContain('id="relay-healthy"')
+    expect(source).toContain(':disabled="savingRelay || !hasRelayForm"')
+  })
+
+  test('relay credentials filter by search and enabled state independently', () => {
+    const source = readFileSync(new URL('../admin/AdminRelaysView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain("const credentialQ = ref('')")
+    expect(source).toContain("const credentialEnabled = ref('')")
+    expect(source).toContain("const credentialSort = ref('relay_id')")
+    expect(source).toContain('const credentialQuery = computed(() => ({')
+    expect(source).toContain('q: credentialQ.value.trim()')
+    expect(source).toContain("enabled: credentialEnabled.value === '' ? undefined : credentialEnabled.value === 'true'")
+    expect(source).toContain('sort: credentialSort.value')
+    expect(source).toContain('watch([credentialQ, credentialEnabled, credentialSort], () => credentials.refresh())')
+    expect(source).toContain('<SearchToolbar v-model="credentialQ"')
+    expect(source).toContain('<Select :model-value="selectFilterValue(credentialEnabled)" @update:model-value="credentialEnabled = normalizeSelectFilterValue($event)">')
+    expect(source).toContain('<SelectTrigger :aria-label="t(\'relayCredential.statusFilter\')"><SelectValue :placeholder="t(\'common.allStatus\')" /></SelectTrigger>')
+    expect(source).toContain('<SelectItem :value="ALL_SELECT_VALUE">{{ t(\'common.allStatus\') }}</SelectItem>')
+    expect(source).toContain('<Select v-model="credentialSort">')
+    expect(source).toContain('<SelectTrigger :aria-label="t(\'relayCredential.sortLabel\')"><SelectValue :placeholder="t(\'common.sort\')" /></SelectTrigger>')
+    expect(source).toContain('<SelectItem value="true">{{ formatCredentialStatus(true, t) }}</SelectItem>')
+    expect(source).toContain('<SelectItem value="false">{{ formatCredentialStatus(false, t) }}</SelectItem>')
+    expect(source).toContain('<SelectItem value="-token_version">{{ t(\'credential.tokenVersion\') }}</SelectItem>')
+    expect(source).toContain('credentials.data.value?.total')
+  })
+
+  test('relays view can reset relay credential filters back to defaults', () => {
+    const source = readFileSync(new URL('../admin/AdminRelaysView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain('const hasCredentialFilters = computed(() =>')
+    expect(source).toContain("credentialSort.value !== 'relay_id'")
+    expect(source).toContain('function resetCredentialFilters()')
+    expect(source).toContain("credentialQ.value = ''")
+    expect(source).toContain("credentialEnabled.value = ''")
+    expect(source).toContain("credentialSort.value = 'relay_id'")
+    expect(source).toContain(':disabled="!hasCredentialFilters"')
+    expect(source).toContain('@click="resetCredentialFilters"')
+  })
+
+  test('relays view can create one-time relay bootstrap tokens', () => {
+    const source = readFileSync(new URL('../admin/AdminRelaysView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain("const bootstrapOpen = ref(false)")
+    expect(source).toContain('const bootstrapResult = ref<RelayBootstrapResponse | null>(null)')
+    expect(source).toContain('const bootstrapForm = reactive({')
+    expect(source).toContain("control_url: defaultBootstrapControlUrl()")
+    expect(source).toContain('heartbeat_interval_sec: 30')
+    expect(source).toContain('ttl_sec: 900')
+    expect(source).toContain('function resetBootstrapForm()')
+    expect(source).toContain("bootstrapForm.relay_id = ''")
+    expect(source).toContain('function clearBootstrapResult()')
+    expect(source).toContain('bootstrapResult.value = null')
+    expect(source).toContain('async function createBootstrap()')
+    expect(source).toContain('controlApi.createRelayBootstrap({')
+    expect(source).toContain('bootstrapResult.value = result')
+    expect(source).toContain("success: t('relayBootstrap.toast.created')")
+    expect(source).toContain("error: t('relayBootstrap.toast.createFailed')")
+    expect(source).toContain('<Dialog :open="bootstrapOpen" @update:open="handleBootstrapOpenChange">')
+    expect(source).toContain('@submit.prevent="createBootstrap"')
+    expect(source).toContain('id="bootstrap-control-url"')
+    expect(source).toContain('id="bootstrap-heartbeat-interval"')
+    expect(source).toContain('id="bootstrap-ttl"')
+    expect(source).toContain(':disabled="savingBootstrap || !hasBootstrapForm"')
+  })
+
+  test('relays view exposes and clears sensitive relay bootstrap results', () => {
+    const source = readFileSync(new URL('../admin/AdminRelaysView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain('bootstrapResult?.bootstrap_token')
+    expect(source).toContain("const bootstrapInstallMode = ref<'service' | 'no-service'>('service')")
+    expect(source).toContain('const selectedBootstrapInstallCommand = computed(() => {')
+    expect(source).toContain("bootstrapInstallMode.value === 'no-service'")
+    expect(source).toContain('bootstrapResult.value?.no_service_install_command')
+    expect(source).toContain('bootstrapResult.value?.install_command')
+    expect(source).toContain('max-h-28 overflow-auto break-all rounded-md bg-muted p-3 font-mono text-xs')
+    expect(source).toContain("copyBootstrapField('token', bootstrapResult.bootstrap_token)")
+    expect(source).toContain("copyBootstrapField('install-command', selectedBootstrapInstallCommand)")
+    expect(source).toContain("copiedBootstrapField === 'token' ? t('common.copied') : t('relayBootstrap.copyToken')")
+    expect(source).toContain("copiedBootstrapField === 'install-command' ? t('common.copied') : t('relayBootstrap.copyInstallCommand')")
+    expect(source).toContain('<Tabs v-model="bootstrapInstallMode" class="grid gap-3">')
+    expect(source).toContain('<TabsTrigger value="service">{{ t(\'relayBootstrap.installModeService\') }}</TabsTrigger>')
+    expect(source).toContain('<TabsTrigger value="no-service">{{ t(\'relayBootstrap.installModeNoService\') }}</TabsTrigger>')
+    expect(source).toContain(':aria-label="t(\'relayBootstrap.closeResult\')"')
+    expect(source).toContain('@click="clearBootstrapResult"')
+  })
+
+  test('relays view can exchange a relay bootstrap token for long-lived config', () => {
+    const source = readFileSync(new URL('../admin/AdminRelaysView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain("const exchangeOpen = ref(false)")
+    expect(source).toContain('const exchangeResult = ref<RelayBootstrapExchangeResponse | null>(null)')
+    expect(source).toContain('const exchangeForm = reactive({')
+    expect(source).toContain("bootstrap_id: ''")
+    expect(source).toContain("bootstrap_token: ''")
+    expect(source).toContain('function resetExchangeForm()')
+    expect(source).toContain('function clearExchangeResult()')
+    expect(source).toContain('async function exchangeBootstrap()')
+    expect(source).toContain('controlApi.exchangeRelayBootstrap(exchangeForm.bootstrap_id.trim(), {')
+    expect(source).toContain("bootstrap_token: exchangeForm.bootstrap_token.trim()")
+    expect(source).toContain('exchangeResult.value = result')
+    expect(source).toContain('await credentials.refresh()')
+    expect(source).toContain('await relays.refresh()')
+    expect(source).toContain("success: t('relayBootstrap.toast.exchanged')")
+    expect(source).toContain("error: t('relayBootstrap.toast.exchangeFailed')")
+    expect(source).toContain('<Dialog :open="exchangeOpen" @update:open="handleExchangeOpenChange">')
+    expect(source).toContain('@submit.prevent="exchangeBootstrap"')
+    expect(source).toContain('id="exchange-bootstrap-id"')
+    expect(source).toContain('id="exchange-bootstrap-token"')
+    expect(source).toContain(':disabled="exchangingBootstrap || !hasExchangeForm"')
+    expect(source).toContain('exchangeResult.control_token')
+    expect(source).toContain('exchangeResult.token_secret')
+    expect(source).not.toContain('exchangeResult.admin_addr')
+    expect(source).toContain("copyExchangeField('control-token', exchangeResult.control_token)")
+    expect(source).toContain("copyExchangeField('token-secret', exchangeResult.token_secret)")
+  })
+
+  test('relay credential dialog resets stale form values before opening', () => {
+    const source = readFileSync(new URL('../admin/AdminRelaysView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain('function resetCredentialForm()')
+    expect(source).toContain("credentialForm.relay_id = ''")
+    expect(source).toContain('credentialForm.enabled = true')
+    expect(source).toContain('@click="resetCredentialForm"')
+  })
+
+  test('relay credential dialog exposes labelled fields and inline reset action', () => {
+    const source = readFileSync(new URL('../admin/AdminRelaysView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain('const hasCredentialForm = computed(() =>')
+    expect(source).toContain("credentialForm.relay_id.trim() !== ''")
+    expect(source).toContain('for="credential-relay-id"')
+    expect(source).toContain('id="credential-relay-id"')
+    expect(source).toContain('for="credential-enabled"')
+    expect(source).toContain('id="credential-enabled"')
+    expect(source).toContain('type="button"')
+    expect(source).toContain(':disabled="savingCredential"')
+    expect(source).toContain(':disabled="savingCredential || !hasCredentialForm"')
+    expect(source).toContain('@click="resetCredentialForm"')
+  })
+
+  test('relay dialogs clear stale form state when closed', () => {
+    const source = readFileSync(new URL('../admin/AdminRelaysView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain('function handleRelayOpenChange(nextOpen: boolean)')
+    expect(source).toContain('function handleCredentialOpenChange(nextOpen: boolean)')
+    expect(source).toContain('function handleBootstrapOpenChange(nextOpen: boolean)')
+    expect(source).toContain('function handleExchangeOpenChange(nextOpen: boolean)')
+    expect(source).toContain('relayOpen.value = nextOpen')
+    expect(source).toContain('credentialOpen.value = nextOpen')
+    expect(source).toContain('bootstrapOpen.value = nextOpen')
+    expect(source).toContain('exchangeOpen.value = nextOpen')
+    expect(source).toContain('resetRelayForm()')
+    expect(source).toContain('resetCredentialForm()')
+    expect(source).toContain('resetBootstrapForm()')
+    expect(source).toContain('resetExchangeForm()')
+    expect(source).toContain('<Dialog :open="relayOpen" @update:open="handleRelayOpenChange">')
+    expect(source).toContain('<Dialog :open="credentialOpen" @update:open="handleCredentialOpenChange">')
+  })
+
+  test('relay dialogs cannot be closed while saving', () => {
+    const source = readFileSync(new URL('../admin/AdminRelaysView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain(`function handleRelayOpenChange(nextOpen: boolean) {
+  if (savingRelay.value && !nextOpen) {
+    return
+  }
+  relayOpen.value = nextOpen`)
+    expect(source).toContain(`function handleCredentialOpenChange(nextOpen: boolean) {
+  if (savingCredential.value && !nextOpen) {
+    return
+  }
+  credentialOpen.value = nextOpen`)
+    expect(source).toContain(`function handleBootstrapOpenChange(nextOpen: boolean) {
+  if (savingBootstrap.value && !nextOpen) {
+    return
+  }
+  bootstrapOpen.value = nextOpen`)
+    expect(source).toContain(`function handleExchangeOpenChange(nextOpen: boolean) {
+  if (exchangingBootstrap.value && !nextOpen) {
+    return
+  }
+  exchangeOpen.value = nextOpen`)
+  })
+
+  test('relays view visible copy is localized', () => {
+    const source = readFileSync(new URL('../admin/AdminRelaysView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain("success: editingRelayId.value ? t('relay.toast.updated') : t('relay.toast.registered')")
+    expect(source).toContain("error: editingRelayId.value ? t('relay.toast.updateFailed') : t('relay.toast.registerFailed')")
+    expect(source).toContain("success: t('relay.toast.removed')")
+    expect(source).toContain("error: t('relay.toast.removeFailed')")
+    expect(source).toContain("success: t('relayCredential.toast.created')")
+    expect(source).toContain("error: t('relayCredential.toast.createFailed')")
+    expect(source).toContain("success: enabled ? t('relayCredential.toast.disabled') : t('relayCredential.toast.enabled')")
+    expect(source).toContain("error: t('relayCredential.toast.statusFailed')")
+    expect(source).toContain("success: t('relayCredential.toast.rotated')")
+    expect(source).toContain("error: t('relayCredential.toast.rotateFailed')")
+    expect(source).toContain("success: t('relayBootstrap.toast.created')")
+    expect(source).toContain("error: t('relayBootstrap.toast.createFailed')")
+    expect(source).toContain("success: t('relayBootstrap.toast.exchanged')")
+    expect(source).toContain("error: t('relayBootstrap.toast.exchangeFailed')")
+    expect(source).toContain("{{ t('relay.register') }}")
+    expect(source).toContain("<DialogTitle>{{ editingRelayId ? t('relay.edit') : t('relay.register') }}</DialogTitle>")
+    expect(source).toContain("<DialogDescription>{{ t('relay.dialogDescription') }}</DialogDescription>")
+    expect(source).toContain('<Label for="relay-addr">{{ t(\'relay.addr\') }}</Label>')
+    expect(source).not.toContain('<Label for="relay-admin-addr">{{ t(\'relay.adminAddr\') }}</Label>')
+    expect(source).toContain('<Label for="relay-capacity-streams">{{ t(\'relay.capacityStreams\') }}</Label>')
+    expect(source).toContain('<Label for="relay-healthy">{{ t(\'relay.healthy\') }}</Label>')
+    expect(source).toContain('<SearchToolbar v-model="q" :placeholder="t(\'relay.searchPlaceholder\')"')
+    expect(source).toContain("{{ t('relay.total', { total: relays.data.value?.total ?? 0 }) }}")
+    expect(source).toContain(':empty-title="t(\'relay.empty\')"')
+    expect(source).toContain('<TableHead>{{ t(\'relay.address\') }}</TableHead>')
+    expect(source).toContain('<TableHead>{{ t(\'relay.capacity\') }}</TableHead>')
+    expect(source).toContain('<TableHead>{{ t(\'relay.healthy\') }}</TableHead>')
+    expect(source).toContain('<TableHead>{{ t(\'relay.lastSeen\') }}</TableHead>')
+    expect(source).toContain("{{ t('common.details') }}")
+    expect(source).toContain("<DialogTitle>{{ t('relay.detailTitle') }}</DialogTitle>")
+    expect(source).toContain('{{ t(\'common.edit\') }}')
+    expect(source).toContain(':title="t(\'relay.removeTitle\')"')
+    expect(source).toContain(":description=\"t('relay.removeDescription', { id: relay.relay_id })\"")
+    expect(source).toContain("{{ t('relayCredential.create') }}")
+    expect(source).toContain("<DialogTitle>{{ t('relayCredential.dialogTitle') }}</DialogTitle>")
+    expect(source).toContain("<DialogDescription>{{ t('relayCredential.dialogDescription') }}</DialogDescription>")
+    expect(source).toContain('<Label for="credential-enabled">{{ t(\'common.enable\') }}</Label>')
+    expect(source).toContain('<SearchToolbar v-model="credentialQ" :placeholder="t(\'relayCredential.searchPlaceholder\')"')
+    expect(source).toContain("{{ t('relayCredential.total', { total: credentials.data.value?.total ?? 0 }) }}")
+    expect(source).toContain(':empty-title="t(\'relayCredential.empty\')"')
+    expect(source).toContain('{{ credential.enabled ? t(\'common.disable\') : t(\'common.enable\') }}')
+    expect(source).toContain(':title="t(\'relayCredential.rotateTitle\')"')
+    expect(source).toContain(":description=\"t('relayCredential.rotateDescription', { id: credential.relay_id })\"")
+    expect(source).toContain("{{ t('relayBootstrap.create') }}")
+    expect(source).toContain("{{ t('relayBootstrap.exchange') }}")
+    expect(source).toContain("<DialogTitle>{{ t('relayBootstrap.dialogTitle') }}</DialogTitle>")
+    expect(source).toContain("<DialogTitle>{{ t('relayBootstrap.exchangeTitle') }}</DialogTitle>")
+    expect(source).toContain('<Label for="bootstrap-control-url">{{ t(\'relayBootstrap.controlUrl\') }}</Label>')
+    expect(source).not.toContain('bootstrap-admin-addr')
+    expect(source).toContain('<Label for="exchange-bootstrap-token">{{ t(\'relayBootstrap.bootstrapToken\') }}</Label>')
+    expect(source).toContain("{{ t('relayBootstrap.resultTitle') }}")
+    expect(source).toContain("{{ t('relayBootstrap.exchangeResultTitle') }}")
+    expect(source).not.toContain('注册 Relay')
+    expect(source).not.toContain('筛选 Relay 健康状态')
+    expect(source).not.toContain('新建 Relay 凭据')
+    expect(source).not.toContain('轮换 Relay 凭据')
+    expect(source).not.toContain('创建 Bootstrap')
+  })
+})
