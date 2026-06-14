@@ -119,6 +119,10 @@ timeout and no retry; pass `HttpControlClientOptions` to the facade builder when
 an embedded app wants bounded requests and retry on transport failures,
 timeouts, 408, 429, or 5xx responses.
 
+For a focused Chinese guide covering Rust SDK, native mobile SDK, browser proxy,
+mobile grants, and server/agent integration, see
+[`docs/sdk-usage.md`](docs/sdk-usage.md).
+
 ```rust
 use std::time::Duration;
 use mobilecode_connect_sdk::{HttpControlClientOptions, MobileCodeConnectSdk};
