@@ -121,7 +121,7 @@ public final class MobileCodeConnectBrowserProxyController {
 
     public func closeBrowserProxy() throws {
         if let proxy = browserProxy, !proxy.isClosed() {
-            try proxy.close()
+            try proxy.shutdown()
         }
         browserProxy = nil
     }

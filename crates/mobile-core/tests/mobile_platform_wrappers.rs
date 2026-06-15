@@ -114,6 +114,7 @@ fn ios_browser_proxy_wrapper_documents_webview_lifecycle() {
             "WKWebViewConfiguration",
             "ProxyConfiguration",
             "closeBrowserProxy",
+            "try proxy.shutdown()",
             "shutdown",
         ],
     );
@@ -172,6 +173,7 @@ fn android_browser_proxy_wrapper_documents_webview_lifecycle() {
             "ProxyController.getInstance().setProxyOverride",
             "clearProxyOverride",
             "closeBrowserProxy",
+            "proxy.shutdown()",
             "shutdown",
         ],
     );

@@ -1143,7 +1143,7 @@ impl FfiMobileTunnel {
             std::mem::take(&mut *guard)
         };
         for proxy in proxies {
-            proxy.close()?;
+            proxy.shutdown()?;
         }
 
         let client = {
@@ -1183,7 +1183,7 @@ impl FfiBrowserProxy {
         self.stats.snapshot().into()
     }
 
-    pub fn close(&self) -> Result<(), FfiMobileError> {
+    pub fn shutdown(&self) -> Result<(), FfiMobileError> {
         let proxy = {
             let mut guard = self.proxy.write().map_err(|_| FfiMobileError::Runtime {
                 reason: "browser proxy lock poisoned".to_string(),
@@ -1574,7 +1574,7 @@ mod tests {
         assert_eq!(stats.direct_bytes_to_browser, 0);
         assert_eq!(stats.idle_timeout_closures, 0);
 
-        proxy.close().expect("close browser proxy");
+        proxy.shutdown().expect("close browser proxy");
         assert!(proxy.is_closed());
     }
 
@@ -1598,7 +1598,7 @@ mod tests {
         assert_eq!(proxy.host(), "127.0.0.1");
         assert!(proxy.port() > 0);
 
-        proxy.close().expect("close browser proxy");
+        proxy.shutdown().expect("close browser proxy");
     }
 
     #[test]

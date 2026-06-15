@@ -124,7 +124,7 @@ class MobileCodeConnectBrowserProxyController(
     fun closeBrowserProxy() {
         browserProxy?.let { proxy ->
             if (!proxy.isClosed()) {
-                proxy.close()
+                proxy.shutdown()
             }
         }
         browserProxy = null
