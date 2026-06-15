@@ -4,7 +4,15 @@ FROM oven/bun:1.2-alpine AS web
 WORKDIR /src/web
 COPY web/package.json web/bun.lock ./
 RUN bun install --frozen-lockfile
-COPY web/ ./
+COPY web/index.html \
+    web/tsconfig.json \
+    web/tsconfig.app.json \
+    web/tsconfig.node.json \
+    web/vite.config.ts \
+    web/components.json \
+    ./
+COPY web/public ./public
+COPY web/src ./src
 RUN bun run build
 
 FROM rust:1.95-alpine AS builder
@@ -18,4 +26,3 @@ FROM alpine:3.22
 RUN apk add --no-cache ca-certificates curl
 COPY --from=builder /src/target/release/control-server /usr/local/bin/control-server
 ENTRYPOINT ["/usr/local/bin/control-server"]
-

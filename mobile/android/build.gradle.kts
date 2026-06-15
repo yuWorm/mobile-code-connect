@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "dev.mobilecode.connect.mobile"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 23
