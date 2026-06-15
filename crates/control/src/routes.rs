@@ -1,6 +1,10 @@
 use axum::{
+    body::Body,
     extract::{Path, Query, State},
-    http::{header::LOCATION, HeaderMap, HeaderValue, StatusCode},
+    http::{
+        header::{CACHE_CONTROL, CONTENT_TYPE, LOCATION},
+        HeaderMap, HeaderValue, StatusCode,
+    },
     response::{Html, IntoResponse},
     routing::{delete, get, post},
     Json, Router,
@@ -41,10 +45,21 @@ use crate::{
 
 const RELAYD_INSTALLER_SCRIPT: &str = include_str!("../../../scripts/install-relayd.sh");
 
+include!(concat!(env!("OUT_DIR"), "/embedded_web.rs"));
+
 pub fn routes(state: ControlState) -> Router {
     Router::new()
+        .route("/", get(web_index_page))
         .route("/admin", get(control_admin_page))
         .route("/admin/", get(control_admin_page))
+        .route("/admin/{*path}", get(web_spa_page))
+        .route("/center", get(web_index_page))
+        .route("/center/", get(web_index_page))
+        .route("/center/{*path}", get(web_spa_page))
+        .route("/login", get(web_index_page))
+        .route("/login/", get(web_index_page))
+        .route("/login/{*path}", get(web_spa_page))
+        .route("/assets/{*path}", get(web_asset))
         .route("/install-relayd.sh", get(relayd_installer_script))
         .route("/relayd", get(relayd_binary))
         .route("/auth/register", post(register_user))
@@ -221,8 +236,44 @@ pub fn routes(state: ControlState) -> Router {
         .with_state(state)
 }
 
-async fn control_admin_page() -> Html<&'static str> {
-    Html(include_str!("../../../docs/control-admin.html"))
+async fn control_admin_page() -> impl IntoResponse {
+    web_index_response()
+}
+
+async fn web_index_page() -> impl IntoResponse {
+    web_index_response()
+}
+
+async fn web_spa_page(Path(path): Path<String>) -> impl IntoResponse {
+    if let Some(asset) = embedded_web_asset(&path) {
+        return embedded_web_response(asset);
+    }
+    web_index_response()
+}
+
+async fn web_asset(Path(path): Path<String>) -> impl IntoResponse {
+    let asset_path = format!("assets/{path}");
+    match embedded_web_asset(&asset_path) {
+        Some(asset) => embedded_web_response(asset),
+        None => StatusCode::NOT_FOUND.into_response(),
+    }
+}
+
+fn web_index_response() -> axum::response::Response {
+    if embedded_web_available() {
+        if let Some(asset) = embedded_web_asset("index.html") {
+            return embedded_web_response(asset);
+        }
+    }
+    Html(include_str!("../../../docs/control-admin.html")).into_response()
+}
+
+fn embedded_web_response(asset: EmbeddedWebAsset) -> axum::response::Response {
+    let mut response = Body::from(asset.bytes).into_response();
+    let headers = response.headers_mut();
+    headers.insert(CONTENT_TYPE, HeaderValue::from_static(asset.content_type));
+    headers.insert(CACHE_CONTROL, HeaderValue::from_static("no-cache"));
+    response
 }
 
 async fn relayd_installer_script() -> impl IntoResponse {

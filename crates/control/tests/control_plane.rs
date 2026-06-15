@@ -1687,9 +1687,24 @@ async fn control_admin_page_is_served_by_control_server() {
 
     assert_eq!(response.status(), StatusCode::OK);
     let body = text(response).await;
-    assert!(body.contains("Control Admin"));
-    assert!(body.contains("relayPool"));
-    assert!(body.contains("planEditor"));
+    assert!(
+        body.contains("Control Admin") || body.contains("id=\"app\""),
+        "admin route should serve either embedded web UI or legacy admin page"
+    );
+}
+
+#[tokio::test]
+async fn missing_embedded_web_asset_returns_not_found() {
+    let state = ControlState::new(
+        "dev-secret",
+        "relay.example.com:4443",
+        "punch.example.com:3478",
+    );
+    let app = routes(state);
+
+    let response = get_without_token(app, "/assets/missing-web-asset.js").await;
+
+    assert_eq!(response.status(), StatusCode::NOT_FOUND);
 }
 
 #[tokio::test]

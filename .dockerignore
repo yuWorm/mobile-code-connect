@@ -1,0 +1,11 @@
+.git
+.github
+.codegraph
+.worktrees
+target
+web/dist
+web/node_modules
+*.local.yaml
+*.local.toml
+.DS_Store
+

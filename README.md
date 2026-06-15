@@ -123,6 +123,9 @@ For a focused Chinese guide covering Rust SDK, native mobile SDK, browser proxy,
 mobile grants, and server/agent integration, see
 [`docs/sdk-usage.md`](docs/sdk-usage.md).
 
+For release automation, Linux musl binaries, Docker images, and embedded
+control-server web UI packaging, see [`docs/release.md`](docs/release.md).
+
 ```rust
 use std::time::Duration;
 use mobilecode_connect_sdk::{HttpControlClientOptions, MobileCodeConnectSdk};
