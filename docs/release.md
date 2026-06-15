@@ -1,7 +1,7 @@
 # Release and CI/CD
 
-This repository publishes Linux-only server artifacts for `control-server` and
-`relayd`.
+This repository publishes Linux server artifacts for `control-server` and
+`relayd`, plus mobile SDK package artifacts for Android and iOS.
 
 ## GitHub Actions
 
@@ -12,9 +12,10 @@ This repository publishes Linux-only server artifacts for `control-server` and
 - tags matching `v*`
 - manual `workflow_dispatch`
 
-PRs and `master` pushes run the web build, web tests, and Rust workspace tests.
-Tags matching `v*` additionally publish GitHub Release binaries. Pushes to
-`master` and release tags publish Docker images to GHCR.
+PRs and `master` pushes run the web build, web tests, Rust workspace tests, and
+mobile packaging dry-runs. Tags matching `v*` additionally publish GitHub
+Release binaries and mobile package assets. Pushes to `master` and release tags
+publish Docker images to GHCR.
 
 ## Release Binaries
 
@@ -29,6 +30,10 @@ Expected assets:
 - `control-server-aarch64-unknown-linux-musl.tar.gz`
 - `relayd-x86_64-unknown-linux-musl.tar.gz`
 - `relayd-aarch64-unknown-linux-musl.tar.gz`
+- `mobilecode-connect-mobile-android.aar`
+- `mobilecode-connect-mobile-android-manifest.json`
+- `mobilecode-connect-mobile-ios-xcframework.zip`
+- `mobilecode-connect-mobile-ios-manifest.json`
 - `sha256sums.txt`
 
 Create a release by pushing a tag:
@@ -49,6 +54,44 @@ ghcr.io/yuworm/mobile-code-connect/relayd
 
 Branch pushes produce branch tags and `latest` on the default branch. Release
 tags produce matching version tags.
+
+## Mobile Packages
+
+Release tags build Android and iOS SDK package assets with the existing scripts:
+
+```sh
+scripts/package-mobile-android.sh --gradle-task assembleRelease
+scripts/package-mobile-ios.sh
+```
+
+Android release builds run on Ubuntu and package the default ABI set:
+
+- `arm64-v8a`
+- `armeabi-v7a`
+- `x86_64`
+- `x86`
+
+The Android GitHub Release asset is:
+
+```text
+mobilecode-connect-mobile-android.aar
+```
+
+iOS release builds run on macOS and package:
+
+- `aarch64-apple-ios`
+- `aarch64-apple-ios-sim`
+- `x86_64-apple-ios`
+
+The iOS GitHub Release asset is:
+
+```text
+mobilecode-connect-mobile-ios-xcframework.zip
+```
+
+Each mobile package also uploads its generated `mobile-package-manifest.json`
+under a stable release name. `sha256sums.txt` includes server and mobile release
+assets.
 
 ## Embedded Web UI
 
@@ -87,4 +130,18 @@ cargo build --release --target x86_64-unknown-linux-musl -p control-server -p re
 The bare `control-server` binary uses the system `curl` executable for GitHub
 OAuth. The Docker image includes `curl`; non-container deployments should install
 it on the host.
+
+Validate mobile packaging scripts without local Android or Xcode toolchains:
+
+```sh
+scripts/package-mobile-ios.sh \
+  --dry-run \
+  --targets aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios \
+  --xcframework-output target/mobile-package-dry-run/ios/mobilecode_connect_mobile_coreFFI.xcframework
+
+scripts/package-mobile-android.sh \
+  --dry-run \
+  --gradle-task assembleRelease \
+  --aar-output-dir target/mobile-package-dry-run/android/aar
+```
 

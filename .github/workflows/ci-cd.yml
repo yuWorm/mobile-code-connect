@@ -48,6 +48,19 @@ jobs:
       - name: Test Rust workspace
         run: cargo test --workspace
 
+      - name: Validate mobile packaging scripts
+        run: |
+          bash -n scripts/package-mobile-ios.sh
+          bash -n scripts/package-mobile-android.sh
+          scripts/package-mobile-ios.sh \
+            --dry-run \
+            --targets aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios \
+            --xcframework-output target/mobile-package-dry-run/ios/mobilecode_connect_mobile_coreFFI.xcframework
+          scripts/package-mobile-android.sh \
+            --dry-run \
+            --gradle-task assembleRelease \
+            --aar-output-dir target/mobile-package-dry-run/android/aar
+
   release-binaries:
     name: Release binaries (${{ matrix.target }})
     needs: test
@@ -114,9 +127,151 @@ jobs:
             dist/*.tar.gz
             dist/sha256sums-${{ matrix.target }}.txt
 
+  mobile-android:
+    name: Android mobile package
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    env:
+      ANDROID_NDK_VERSION: 27.2.12479018
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: mobile-android
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: current
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: |
+          yes | sdkmanager --licenses || true
+          sdkmanager \
+            "platforms;android-37" \
+            "build-tools;37.0.0" \
+            "ndk;${ANDROID_NDK_VERSION}"
+
+      - name: Install Rust Android targets
+        run: |
+          rustup target add \
+            aarch64-linux-android \
+            armv7-linux-androideabi \
+            x86_64-linux-android \
+            i686-linux-android
+
+      - name: Install UniFFI bindgen
+        run: cargo install uniffi --version 0.31.1 --features cli --locked
+
+      - name: Build Android AAR
+        run: |
+          export ANDROID_NDK_HOME="${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}"
+          scripts/package-mobile-android.sh \
+            --gradle-task assembleRelease \
+            --aar-output-dir target/mobile-package/android/aar
+
+      - name: Package Android artifacts
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          shopt -s nullglob
+          aars=(target/mobile-package/android/aar/*.aar)
+          shopt -u nullglob
+          if [[ "${#aars[@]}" -ne 1 ]]; then
+            echo "expected exactly one Android AAR, found ${#aars[@]}" >&2
+            exit 1
+          fi
+          cp "${aars[0]}" dist/mobilecode-connect-mobile-android.aar
+          cp target/mobile-package/android/mobile-package-manifest.json \
+            dist/mobilecode-connect-mobile-android-manifest.json
+          cd dist
+          sha256sum \
+            mobilecode-connect-mobile-android.aar \
+            mobilecode-connect-mobile-android-manifest.json \
+            > sha256sums-mobile-android.txt
+
+      - name: Upload Android artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-mobile-android
+          path: dist/*
+
+  mobile-ios:
+    name: iOS mobile package
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: mobile-ios
+
+      - name: Install Rust iOS targets
+        run: |
+          rustup target add \
+            aarch64-apple-ios \
+            aarch64-apple-ios-sim \
+            x86_64-apple-ios
+
+      - name: Install UniFFI bindgen
+        run: cargo install uniffi --version 0.31.1 --features cli --locked
+
+      - name: Build iOS XCFramework
+        run: |
+          scripts/package-mobile-ios.sh \
+            --targets aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios \
+            --xcframework-output target/mobile-package/ios/mobilecode_connect_mobile_coreFFI.xcframework
+
+      - name: Package iOS artifacts
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          ditto -c -k --keepParent \
+            target/mobile-package/ios/mobilecode_connect_mobile_coreFFI.xcframework \
+            dist/mobilecode-connect-mobile-ios-xcframework.zip
+          cp target/mobile-package/ios/mobile-package-manifest.json \
+            dist/mobilecode-connect-mobile-ios-manifest.json
+          cd dist
+          shasum -a 256 \
+            mobilecode-connect-mobile-ios-xcframework.zip \
+            mobilecode-connect-mobile-ios-manifest.json \
+            > sha256sums-mobile-ios.txt
+
+      - name: Upload iOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-mobile-ios
+          path: dist/*
+
   publish-release:
     name: Publish GitHub Release
-    needs: release-binaries
+    needs:
+      - release-binaries
+      - mobile-android
+      - mobile-ios
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
