@@ -227,7 +227,6 @@ fn android_gradle_library_declares_webview_proxy_sdk_inputs() {
         &[
             "rootProject.name = \"MobileCodeConnectMobileSdk\"",
             "com.android.library",
-            "org.jetbrains.kotlin.android",
             "namespace = \"dev.mobilecode.connect.mobile\"",
             "compileSdk = 36",
             "minSdk = 23",
@@ -240,6 +239,10 @@ fn android_gradle_library_declares_webview_proxy_sdk_inputs() {
             "dev.mobilecode.connect.mobile",
             "<manifest",
         ],
+    );
+    assert!(
+        !combined.contains("org.jetbrains.kotlin.android"),
+        "AGP 9 provides Kotlin support without the deprecated Kotlin Android plugin"
     );
 }
 
