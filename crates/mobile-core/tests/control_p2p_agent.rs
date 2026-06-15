@@ -25,9 +25,8 @@ use mobilecode_connect_mobile_core::{
     },
 };
 use mobilecode_connect_protocol::{
-    derive_mobile_grant_secret, mobile_grant_certificate_fingerprint, ClientId, DeviceId,
-    MobileGrantCredential, MobilePairingRequest, PeerRole, PendingPairingStatus, ServiceId,
-    ServiceProtocol, SessionId,
+    mobile_grant_certificate_fingerprint, ClientId, DeviceId, MobilePairingRequest, PeerRole,
+    ServiceId, ServiceProtocol, SessionId,
 };
 use mobilecode_connect_punch::{
     probe::{establish_p2p_path, P2pPathConfig},
@@ -305,6 +304,7 @@ async fn mobile_grant_browser_proxy_reaches_agent_service_over_p2p_or_relay() {
 
     let http = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let http_port = http.local_addr().unwrap().port();
+    let (http_seen_tx, mut http_seen_rx) = oneshot::channel();
     let http_task = tokio::spawn(async move {
         let (mut stream, _) = http.accept().await.unwrap();
         let mut request = Vec::new();
@@ -319,10 +319,12 @@ async fn mobile_grant_browser_proxy_reaches_agent_service_over_p2p_or_relay() {
                 break;
             }
         }
+        let _ = http_seen_tx.send(());
         stream
             .write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nok")
             .await
             .unwrap();
+        stream.shutdown().await.unwrap();
     });
 
     let control = TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -338,6 +340,8 @@ async fn mobile_grant_browser_proxy_reaches_agent_service_over_p2p_or_relay() {
     let p2p_identity = generate_self_signed_server_identity().unwrap();
     let p2p_cert = p2p_identity.certificate_der().clone();
     let p2p_fingerprint = mobile_grant_certificate_fingerprint(p2p_cert.as_ref());
+    // Grant sessions poll at a 1s cadence; keep probing above that boundary.
+    let grant_p2p_timeout = Duration::from_secs(2);
     Agent::register_with_control(AgentConfig {
         device_id: DeviceId::new("pc_001"),
         control_server: control_url.clone(),
@@ -362,6 +366,30 @@ async fn mobile_grant_browser_proxy_reaches_agent_service_over_p2p_or_relay() {
             1_000,
         )
         .unwrap();
+    let client_id = ClientId::new("mobile_001");
+    let proof = MobilePairingRequest::proof_for(
+        DeviceId::new("pc_001"),
+        invite.invite_id.clone(),
+        client_id.clone(),
+        vec![service_id.clone()],
+        "pairing-nonce".to_string(),
+        &invite.invite_secret,
+    )
+    .unwrap();
+    let grant = grants
+        .approve_pairing(
+            &MobilePairingRequest {
+                device_id: DeviceId::new("pc_001"),
+                invite_id: invite.invite_id,
+                client_id: client_id.clone(),
+                requested_services: vec![service_id.clone()],
+                nonce: "pairing-nonce".to_string(),
+                proof,
+            },
+            1_001,
+        )
+        .unwrap();
+
     let registry = ServiceRegistry::new(vec![service]).unwrap();
     let agent = AgentControlRuntime::new(AgentControlRuntimeConfig {
         control_server_url: control_url.clone(),
@@ -372,8 +400,8 @@ async fn mobile_grant_browser_proxy_reaches_agent_service_over_p2p_or_relay() {
         poll_interval: Duration::from_millis(10),
         p2p: Some(AgentP2pRuntimeConfig {
             bind_addr: local_addr(0),
-            candidate_timeout: Duration::from_secs(1),
-            probe_timeout: Duration::from_secs(1),
+            candidate_timeout: grant_p2p_timeout,
+            probe_timeout: grant_p2p_timeout,
             interval: Duration::from_millis(10),
             server_identity: Some(p2p_identity),
         }),
@@ -385,77 +413,36 @@ async fn mobile_grant_browser_proxy_reaches_agent_service_over_p2p_or_relay() {
         let _ = agent_shutdown_rx.await;
     }));
 
-    let control_client = HttpControlClient::new(control_url.clone()).unwrap();
-    let client_id = ClientId::new("mobile_001");
-    let proof = MobilePairingRequest::proof_for(
-        DeviceId::new("pc_001"),
-        invite.invite_id.clone(),
-        client_id.clone(),
-        vec![service_id.clone()],
-        "pairing-nonce".to_string(),
-        &invite.invite_secret,
-    )
-    .unwrap();
-    let pairing = control_client
-        .start_mobile_pairing(MobilePairingRequest {
-            device_id: DeviceId::new("pc_001"),
-            invite_id: invite.invite_id.clone(),
-            client_id: client_id.clone(),
-            requested_services: vec![service_id.clone()],
-            nonce: "pairing-nonce".to_string(),
-            proof,
-        })
-        .await
-        .unwrap();
-    let metadata = loop {
-        let result = control_client
-            .mobile_pairing_result(&pairing.pending_pairing_id)
-            .await
-            .unwrap();
-        if result.status == PendingPairingStatus::Approved {
-            break result.grant.unwrap();
-        }
-        tokio::time::sleep(Duration::from_millis(20)).await;
-    };
-    let grant = MobileGrantCredential {
-        version: metadata.version,
-        control_url: control_url.clone(),
-        device_id: metadata.device_id,
-        grant_id: metadata.grant_id.clone(),
-        client_id: metadata.client_id,
-        allowed_services: metadata.allowed_services,
-        grant_secret: derive_mobile_grant_secret(
-            &invite.invite_secret,
-            metadata.grant_id,
-            &client_id,
-        )
-        .unwrap(),
-        revocation_version: metadata.revocation_version,
-        agent_p2p_cert_fingerprint: Some(p2p_fingerprint),
-    };
-    let client = TunnelClient::start_with_control_p2p_or_relay_mobile_grant(
-        TunnelConfig {
-            user_token: String::new(),
-            control_server_url: control_url,
-            client_id,
-            control_client_options: HttpControlClientOptions::default(),
-        },
-        grant,
-        mobilecode_connect_mobile_core::client::ControlP2pOrRelayClientConfig {
-            relay_server_cert: CertificateDer::from(vec![1, 2, 3]),
-            bind_addr: local_addr(0),
-            candidate_timeout: Duration::from_secs(1),
-            probe_timeout: Duration::from_secs(1),
-            interval: Duration::from_millis(10),
-            relay_fallback_delay: Duration::from_millis(50),
-        },
+    let client = tokio::time::timeout(
+        Duration::from_secs(5),
+        TunnelClient::start_with_control_p2p_or_relay_mobile_grant(
+            TunnelConfig {
+                user_token: String::new(),
+                control_server_url: control_url,
+                client_id,
+                control_client_options: HttpControlClientOptions::default(),
+            },
+            grant,
+            mobilecode_connect_mobile_core::client::ControlP2pOrRelayClientConfig {
+                relay_server_cert: CertificateDer::from(vec![1, 2, 3]),
+                bind_addr: local_addr(0),
+                candidate_timeout: grant_p2p_timeout,
+                probe_timeout: grant_p2p_timeout,
+                interval: Duration::from_millis(10),
+                relay_fallback_delay: Duration::from_millis(50),
+            },
+        ),
     )
     .await
+    .expect("mobile grant p2p-or-relay client start timed out")
     .unwrap();
-    let proxy = client
-        .start_browser_proxy(Default::default())
-        .await
-        .unwrap();
+    let proxy = tokio::time::timeout(
+        Duration::from_secs(2),
+        client.start_browser_proxy(Default::default()),
+    )
+    .await
+    .expect("browser proxy start timed out")
+    .unwrap();
     let host = browser_proxy_host(
         &BrowserProxyTarget {
             device_id: DeviceId::new("pc_001"),
@@ -465,9 +452,13 @@ async fn mobile_grant_browser_proxy_reaches_agent_service_over_p2p_or_relay() {
     )
     .unwrap();
     let proxy_handle = proxy.handle();
-    let mut browser = TcpStream::connect((proxy_handle.host(), proxy_handle.local_port()))
-        .await
-        .unwrap();
+    let mut browser = tokio::time::timeout(
+        Duration::from_secs(2),
+        TcpStream::connect((proxy_handle.host(), proxy_handle.local_port())),
+    )
+    .await
+    .expect("browser proxy TCP connect timed out")
+    .unwrap();
     browser
         .write_all(
             format!("GET http://{host}/ HTTP/1.1\r\nHost: {host}\r\nConnection: close\r\n\r\n")
@@ -475,10 +466,23 @@ async fn mobile_grant_browser_proxy_reaches_agent_service_over_p2p_or_relay() {
         )
         .await
         .unwrap();
-    let mut response = Vec::new();
-    browser.read_to_end(&mut response).await.unwrap();
-    assert!(String::from_utf8_lossy(&response).contains("200 OK"));
-    assert!(String::from_utf8_lossy(&response).contains("ok"));
+    let mut response = vec![0_u8; 128];
+    let read = tokio::time::timeout(Duration::from_secs(10), browser.read(&mut response))
+        .await
+        .unwrap()
+        .unwrap();
+    let response = String::from_utf8_lossy(&response[..read]);
+    let http_seen = http_seen_rx.try_recv().is_ok();
+    let browser_stats = proxy.stats();
+    let client_status = client.status();
+    assert!(
+        response.contains("200 OK"),
+        "response was: {response}; http_seen={http_seen}; browser_stats={browser_stats:?}; client_status={client_status:?}"
+    );
+    assert!(
+        response.contains("ok"),
+        "response was: {response}; http_seen={http_seen}; browser_stats={browser_stats:?}; client_status={client_status:?}"
+    );
 
     drop(proxy);
     client.shutdown().await.unwrap();
@@ -638,20 +642,9 @@ async fn mobile_grant_connector_rejects_agent_p2p_fingerprint_mismatch() {
         )
         .unwrap();
 
-    let registry = ServiceRegistry::new(vec![service]).unwrap();
-    let mut agent = AgentControlRuntime::new(AgentControlRuntimeConfig {
-        control_server_url: control_url.clone(),
-        auth_token: "agent-token".to_string(),
-        device_id: DeviceId::new("pc_001"),
-        relay_server_cert: CertificateDer::from(vec![1, 2, 3]),
-        registry,
-        poll_interval: Duration::from_millis(10),
-        p2p: None,
-        mobile_grants: Some(grants),
-    })
-    .unwrap();
+    let control_client = HttpControlClient::new(control_url.clone()).unwrap();
     let connector = ControlP2pOrRelayStreamConnector::new(ControlP2pOrRelayConnectorConfig {
-        control_server_url: control_url,
+        control_server_url: control_url.clone(),
         control_token: None,
         client_id,
         control_client_options: HttpControlClientOptions::default(),
@@ -674,13 +667,24 @@ async fn mobile_grant_connector_rejects_agent_p2p_fingerprint_mismatch() {
             .await
     });
 
-    for _ in 0..5 {
-        let _ = agent.poll_once().await.unwrap();
-        if open_task.is_finished() {
-            break;
+    let pending_session_id = tokio::time::timeout(Duration::from_secs(2), async {
+        loop {
+            let pending = control_client
+                .list_grant_session_requests(&DeviceId::new("pc_001"))
+                .await
+                .unwrap();
+            if let Some(request) = pending.first() {
+                break request.pending_session_id.clone();
+            }
+            tokio::time::sleep(Duration::from_millis(20)).await;
         }
-        tokio::time::sleep(Duration::from_millis(20)).await;
-    }
+    })
+    .await
+    .unwrap();
+    control_client
+        .approve_grant_session(&pending_session_id)
+        .await
+        .unwrap();
 
     let result = tokio::time::timeout(Duration::from_secs(2), open_task)
         .await
@@ -695,7 +699,6 @@ async fn mobile_grant_connector_rejects_agent_p2p_fingerprint_mismatch() {
         "expected fingerprint error, got {error}"
     );
 
-    agent.shutdown().await;
     control_task.abort();
 }
 
