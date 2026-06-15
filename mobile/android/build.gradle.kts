@@ -13,7 +13,7 @@ android {
 
     sourceSets {
         named("main") {
-            java.srcDirs("src/main/java", "src/main/uniffi/kotlin")
+            java.srcDirs("src/main/java")
             jniLibs.srcDirs("src/main/jniLibs")
         }
     }

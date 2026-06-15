@@ -311,7 +311,7 @@ else
     --no-build
 fi
 
-KOTLIN_DEST="$ANDROID_DIR/src/main/uniffi/kotlin"
+KOTLIN_DEST="$ANDROID_DIR/src/main/java"
 JNILIBS_DEST="$ANDROID_DIR/src/main/jniLibs"
 if [[ "$DRY_RUN" -eq 1 ]]; then
   log "dry-run: mkdir -p $KOTLIN_DEST $JNILIBS_DEST"
@@ -324,6 +324,7 @@ else
   rm -rf "$JNILIBS_DEST"
   mkdir -p "$JNILIBS_DEST"
   cp -R "$STAGING_DIR/uniffi/kotlin/." "$KOTLIN_DEST/"
+  [[ -d "$KOTLIN_DEST/uniffi" ]] || die "generated UniFFI Kotlin bindings not found under $KOTLIN_DEST/uniffi"
 fi
 
 for target in "${ANDROID_TARGETS[@]}"; do

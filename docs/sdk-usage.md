@@ -176,7 +176,7 @@ iOS 包布局：
 
 Android 包布局：
 
-- `src/main/uniffi/kotlin/uniffi/mobilecode_connect_mobile_core/...`
+- `src/main/java/uniffi/mobilecode_connect_mobile_core/...`
 - `src/main/jniLibs/<abi>/libmobilecode_connect_mobile_core.so`
 - `MobileCodeConnectBrowserProxyController.kt`
 - `MobileCodeConnectMobileGrantPairingController.kt`

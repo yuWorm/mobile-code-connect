@@ -312,7 +312,7 @@ For an iOS release, place the generated
 Swift package exports `MobileCodeConnectMobileSdk`, includes the generated UniFFI Swift
 source under `Sources/MobileCodeConnectMobileSdk/Generated`, and depends on the
 `mobilecode_connect_mobile_coreFFI` binary target. For an Android release, copy
-generated UniFFI Kotlin bindings into `mobile/android/src/main/uniffi/kotlin`
+generated UniFFI Kotlin bindings into `mobile/android/src/main/java/uniffi`
 and native `.so` libraries into `mobile/android/src/main/jniLibs/<abi>/`, then
 assemble the AAR from `mobile/android`.
 

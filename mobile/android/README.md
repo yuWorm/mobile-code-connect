@@ -8,7 +8,7 @@ Expected release layout:
 - `src/main/java/dev/mobilecode/connect/mobile/MobileCodeConnectBrowserProxyController.kt`
 - `src/main/java/dev/mobilecode/connect/mobile/MobileCodeConnectMobileGrantPairingController.kt`
 - `src/main/java/dev/mobilecode/connect/mobile/MobileCodeConnectMobileGrantSecureStore.kt`
-- `src/main/uniffi/kotlin/uniffi/mobilecode_connect_mobile_core/...`
+- `src/main/java/uniffi/mobilecode_connect_mobile_core/...`
 - `src/main/jniLibs/<abi>/libmobilecode_connect_mobile_core.so`
 
 Run `scripts/package-mobile-android.sh` from the repository root to build the
