@@ -18,6 +18,7 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    timeout-minutes: 75
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -45,8 +46,43 @@ jobs:
         working-directory: web
         run: bun test
 
-      - name: Test Rust workspace
-        run: cargo test --workspace
+      - name: Test Rust core crates
+        timeout-minutes: 20
+        run: |
+          cargo test \
+            -p mobilecode_connect_protocol \
+            -p mobilecode_connect_auth \
+            -p mobilecode_connect_control_client \
+            -p mobilecode_connect_punch
+
+      - name: Test Rust networking crates
+        timeout-minutes: 20
+        run: |
+          cargo test \
+            -p mobilecode_connect_tunnel \
+            -p mobilecode_connect_agent
+
+      - name: Test Rust control crate
+        timeout-minutes: 20
+        run: cargo test -p mobilecode_connect_control
+
+      - name: Test Rust mobile and SDK crates
+        timeout-minutes: 20
+        run: |
+          cargo test \
+            -p mobilecode_connect_relay \
+            -p mobilecode_connect_mobile_core \
+            -p mobilecode_connect_sdk
+
+      - name: Test Rust app crates
+        timeout-minutes: 15
+        run: |
+          cargo test \
+            -p agentd \
+            -p mobile-cli \
+            -p relayd \
+            -p control-server \
+            -p punch-server
 
       - name: Validate mobile packaging scripts
         run: |
