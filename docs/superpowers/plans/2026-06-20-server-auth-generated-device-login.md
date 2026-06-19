@@ -19,7 +19,7 @@
 - Modify: `crates/control/src/state.rs`
 - Modify: `crates/control/tests/control_plane.rs`
 
-- [ ] **Step 1: Write failing backend tests for omitted and explicit device ids**
+- [x] **Step 1: Write failing backend tests for omitted and explicit device ids**
 
 Add coverage to `crates/control/tests/control_plane.rs`:
 
@@ -73,13 +73,13 @@ async fn browser_server_auth_generates_device_id_when_omitted() {
 
 Also extend existing explicit-id browser/device-code tests to assert `pc_001`-style ids are still preserved.
 
-- [ ] **Step 2: Run backend test and verify it fails**
+- [x] **Step 2: Run backend test and verify it fails**
 
 Run: `cargo test -p mobilecode_connect_control --test control_plane browser_server_auth_generates_device_id_when_omitted`
 
 Expected: fail to deserialize/start because `device_id` is required.
 
-- [ ] **Step 3: Update request type and generation helper**
+- [x] **Step 3: Update request type and generation helper**
 
 In `crates/control-client/src/lib.rs`, change:
 
@@ -111,13 +111,13 @@ if device_id.as_str().trim().is_empty() { return Err(ControlPlaneError::InvalidI
 
 Store `device_id` in `ServerAuthSession`.
 
-- [ ] **Step 4: Run backend tests for generated and explicit ids**
+- [x] **Step 4: Run backend tests for generated and explicit ids**
 
 Run: `cargo test -p mobilecode_connect_control --test control_plane server_auth`
 
 Expected: pass.
 
-- [ ] **Step 5: Mark Task 1 complete in this plan**
+- [x] **Step 5: Mark Task 1 complete in this plan**
 
 Update this task's checkboxes to `[x]`.
 
@@ -129,7 +129,7 @@ Update this task's checkboxes to `[x]`.
 - Modify: `crates/control/src/routes.rs`
 - Modify: `crates/control/tests/control_plane.rs`
 
-- [ ] **Step 1: Write failing tests for detail endpoints**
+- [x] **Step 1: Write failing tests for detail endpoints**
 
 Add tests covering:
 
@@ -139,13 +139,13 @@ Add tests covering:
 
 Use expected fingerprint `sha256:<hex-or-base64url>` according to the implementation helper chosen in Step 3.
 
-- [ ] **Step 2: Run detail endpoint tests and verify they fail**
+- [x] **Step 2: Run detail endpoint tests and verify they fail**
 
 Run: `cargo test -p mobilecode_connect_control --test control_plane server_auth_session_detail`
 
 Expected: fail because routes/types do not exist.
 
-- [ ] **Step 3: Add detail response types and state methods**
+- [x] **Step 3: Add detail response types and state methods**
 
 In `crates/control-client/src/lib.rs`, add:
 
@@ -178,7 +178,7 @@ fn server_public_key_fingerprint(value: &str) -> String {
 }
 ```
 
-- [ ] **Step 4: Add routes and client methods**
+- [x] **Step 4: Add routes and client methods**
 
 In `crates/control/src/routes.rs`, add routes before mutating approval routes:
 
@@ -191,13 +191,13 @@ Handlers must use `logged_in_user_id_from_headers` or `logged_in_human_claims_fr
 
 In `crates/control-client/src/lib.rs`, add `browser_server_auth_session_detail` and `device_server_auth_session_detail`.
 
-- [ ] **Step 5: Run detail tests**
+- [x] **Step 5: Run detail tests**
 
 Run: `cargo test -p mobilecode_connect_control --test control_plane server_auth_session_detail`
 
 Expected: pass.
 
-- [ ] **Step 6: Mark Task 2 complete in this plan**
+- [x] **Step 6: Mark Task 2 complete in this plan**
 
 Update this task's checkboxes to `[x]`.
 
@@ -207,7 +207,7 @@ Update this task's checkboxes to `[x]`.
 - Modify: `crates/control/src/routes.rs`
 - Modify: `crates/control/tests/control_plane.rs`
 
-- [ ] **Step 1: Write failing routing tests**
+- [x] **Step 1: Write failing routing tests**
 
 Add tests showing:
 
@@ -215,13 +215,13 @@ Add tests showing:
 - `GET /server-auth/device?user_code=...` with `Accept: text/html` and no `Authorization` returns HTML/SP⁠A fallback.
 - Existing JSON approval with `Authorization` still returns JSON.
 
-- [ ] **Step 2: Run routing tests and verify they fail**
+- [x] **Step 2: Run routing tests and verify they fail**
 
 Run: `cargo test -p mobilecode_connect_control --test control_plane server_auth_browser_navigation_returns_spa`
 
 Expected: fail because current handlers return `401`.
 
-- [ ] **Step 3: Implement HTML navigation detection**
+- [x] **Step 3: Implement HTML navigation detection**
 
 In `crates/control/src/routes.rs`, add:
 
@@ -240,13 +240,13 @@ Change browser/device approval handlers to return `axum::response::Response`.
 If there is no `Authorization` header and `accepts_html(headers)` is true, return `web_index_response()`.
 Otherwise preserve the existing JSON approval behavior.
 
-- [ ] **Step 4: Run routing tests**
+- [x] **Step 4: Run routing tests**
 
 Run: `cargo test -p mobilecode_connect_control --test control_plane server_auth_browser_navigation_returns_spa`
 
 Expected: pass.
 
-- [ ] **Step 5: Mark Task 3 complete in this plan**
+- [x] **Step 5: Mark Task 3 complete in this plan**
 
 Update this task's checkboxes to `[x]`.
 

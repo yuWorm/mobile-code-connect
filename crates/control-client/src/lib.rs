@@ -185,7 +185,8 @@ pub enum ServerAuthStatus {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct StartServerAuthRequest {
-    pub device_id: DeviceId,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub device_id: Option<DeviceId>,
     pub device_name: String,
     pub server_public_key: String,
 }
@@ -225,6 +226,17 @@ pub struct DeviceServerAuthStartResponse {
 pub struct DeviceServerAuthApprovalResponse {
     pub user_code: String,
     pub status: ServerAuthStatus,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ServerAuthSessionDetail {
+    pub session_id: String,
+    pub mode: ServerAuthMode,
+    pub status: ServerAuthStatus,
+    pub device_id: DeviceId,
+    pub device_name: String,
+    pub server_public_key_fingerprint: String,
+    pub expires_epoch_sec: u64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -919,6 +931,17 @@ impl HttpControlClient {
         self.post_json("/server-auth/browser/start", &request).await
     }
 
+    pub async fn browser_server_auth_session_detail(
+        &self,
+        session_id: &str,
+    ) -> Result<ServerAuthSessionDetail, ControlClientError> {
+        self.get_json(&format!(
+            "/server-auth/browser/session?session_id={}",
+            encode_query_value(session_id)
+        ))
+        .await
+    }
+
     pub async fn approve_browser_server_auth(
         &self,
         session_id: &str,
@@ -943,6 +966,17 @@ impl HttpControlClient {
         request: StartServerAuthRequest,
     ) -> Result<DeviceServerAuthStartResponse, ControlClientError> {
         self.post_json("/server-auth/device/start", &request).await
+    }
+
+    pub async fn device_server_auth_session_detail(
+        &self,
+        user_code: &str,
+    ) -> Result<ServerAuthSessionDetail, ControlClientError> {
+        self.get_json(&format!(
+            "/server-auth/device/session?user_code={}",
+            encode_query_value(user_code)
+        ))
+        .await
     }
 
     pub async fn approve_device_server_auth(
@@ -2265,7 +2299,7 @@ mod tests {
     fn http_client_exposes_browser_server_auth_methods() {
         let client = HttpControlClient::new("http://127.0.0.1:1").unwrap();
         let start = StartServerAuthRequest {
-            device_id: DeviceId::new("pc_001"),
+            device_id: Some(DeviceId::new("pc_001")),
             device_name: "Office PC".to_string(),
             server_public_key: "base64url-public-key".to_string(),
         };
@@ -2294,7 +2328,7 @@ mod tests {
     fn http_client_exposes_device_code_server_auth_methods() {
         let client = HttpControlClient::new("http://127.0.0.1:1").unwrap();
         let start = StartServerAuthRequest {
-            device_id: DeviceId::new("pc_001"),
+            device_id: Some(DeviceId::new("pc_001")),
             device_name: "Office PC".to_string(),
             server_public_key: "base64url-public-key".to_string(),
         };
@@ -2362,7 +2396,7 @@ mod tests {
         );
 
         let start = StartServerAuthRequest {
-            device_id: DeviceId::new("pc_001"),
+            device_id: Some(DeviceId::new("pc_001")),
             device_name: "Office PC".to_string(),
             server_public_key: "base64url-public-key".to_string(),
         };

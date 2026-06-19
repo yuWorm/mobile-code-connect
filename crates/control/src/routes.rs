@@ -2,7 +2,7 @@ use axum::{
     body::Body,
     extract::{Path, Query, State},
     http::{
-        header::{CACHE_CONTROL, CONTENT_TYPE, LOCATION},
+        header::{ACCEPT, AUTHORIZATION, CACHE_CONTROL, CONTENT_TYPE, LOCATION},
         HeaderMap, HeaderValue, StatusCode,
     },
     response::{Html, IntoResponse},
@@ -12,22 +12,22 @@ use axum::{
 use mobilecode_connect_auth::{ControlRole, ControlTokenClaims};
 use mobilecode_connect_control_client::{
     AdminListQuery, AdminSessionSummary, ApproveMobilePairingRequest, AssignUserPlanRequest,
-    AuditLogEntry, AuthResponse, BrowserServerAuthApprovalResponse,
-    BrowserServerAuthExchangeRequest, BrowserServerAuthStartResponse, ControllerDevice,
-    CreateRelayBootstrapRequest, CreateRelayCredentialRequest, DashboardSummary,
-    DenyMobileGrantRequest, DeviceAccessGrant, DeviceServerAuthApprovalResponse,
-    DeviceServerAuthPollResponse, DeviceServerAuthStartResponse, GrantDeviceAccessRequest,
-    GrantSessionPollResponse, LoginRequest, MobilePairingPollResponse, OAuthIdentity,
-    OAuthProvider, Page, PendingGrantSessionRequest, PendingMobilePairingRequest, Plan,
-    PollServerAuthRequest, RegisterControllerDeviceRequest, RegisterRelayRequest,
-    RegisterUserRequest, RelayBootstrapExchangeRequest, RelayBootstrapExchangeResponse,
-    RelayBootstrapResponse, RelayCommand, RelayCredential, RelayNode, RelaySessionSnapshot,
+    AuditLogEntry, AuthResponse, BrowserServerAuthExchangeRequest, BrowserServerAuthStartResponse,
+    ControllerDevice, CreateRelayBootstrapRequest, CreateRelayCredentialRequest, DashboardSummary,
+    DenyMobileGrantRequest, DeviceAccessGrant, DeviceServerAuthPollResponse,
+    DeviceServerAuthStartResponse, GrantDeviceAccessRequest, GrantSessionPollResponse,
+    LoginRequest, MobilePairingPollResponse, OAuthIdentity, OAuthProvider, Page,
+    PendingGrantSessionRequest, PendingMobilePairingRequest, Plan, PollServerAuthRequest,
+    RegisterControllerDeviceRequest, RegisterRelayRequest, RegisterUserRequest,
+    RelayBootstrapExchangeRequest, RelayBootstrapExchangeResponse, RelayBootstrapResponse,
+    RelayCommand, RelayCredential, RelayNode, RelaySessionSnapshot,
     ReportRelayCommandResultRequest, ReportRelayHealthRequest, ReportRelaySessionUsageRequest,
-    ServerCredentialResponse, ServerCredentialSummary, StartGrantSessionResponse,
-    StartMobilePairingResponse, StartServerAuthRequest, UpdatePasswordRequest,
-    UpdatePlanCatalogRequest, UpdateRelayCredentialStatusRequest, UpdateRelayRequest,
-    UpdateServerCredentialStatusRequest, UpdateUserPlanRequest, UpdateUserRoleRequest,
-    UpdateUserStatusRequest, UserDetail, UserSummary, UserUsagePeriod, UserUsageSummary,
+    ServerAuthSessionDetail, ServerCredentialResponse, ServerCredentialSummary,
+    StartGrantSessionResponse, StartMobilePairingResponse, StartServerAuthRequest,
+    UpdatePasswordRequest, UpdatePlanCatalogRequest, UpdateRelayCredentialStatusRequest,
+    UpdateRelayRequest, UpdateServerCredentialStatusRequest, UpdateUserPlanRequest,
+    UpdateUserRoleRequest, UpdateUserStatusRequest, UserDetail, UserSummary, UserUsagePeriod,
+    UserUsageSummary,
 };
 use mobilecode_connect_protocol::{
     Device, DeviceId, GrantSessionRequest, MobilePairingRequest, Service, SessionId, UserId,
@@ -77,6 +77,10 @@ pub fn routes(state: ControlState) -> Router {
             post(start_browser_server_auth),
         )
         .route(
+            "/server-auth/browser/session",
+            get(browser_server_auth_session_detail),
+        )
+        .route(
             "/server-auth/browser/approve",
             get(approve_browser_server_auth),
         )
@@ -85,6 +89,10 @@ pub fn routes(state: ControlState) -> Router {
             post(exchange_browser_server_auth),
         )
         .route("/server-auth/device/start", post(start_device_server_auth))
+        .route(
+            "/server-auth/device/session",
+            get(device_server_auth_session_detail),
+        )
         .route("/server-auth/device", get(approve_device_server_auth))
         .route("/server-auth/device/poll", post(poll_device_server_auth))
         .route("/server-credentials", get(list_server_credentials))
@@ -266,6 +274,18 @@ fn web_index_response() -> axum::response::Response {
         }
     }
     Html(include_str!("../../../docs/control-admin.html")).into_response()
+}
+
+fn is_html_navigation_without_auth(headers: &HeaderMap) -> bool {
+    !headers.contains_key(AUTHORIZATION) && accepts_html(headers)
+}
+
+fn accepts_html(headers: &HeaderMap) -> bool {
+    headers
+        .get(ACCEPT)
+        .and_then(|value| value.to_str().ok())
+        .map(|value| value.contains("text/html"))
+        .unwrap_or(false)
 }
 
 fn embedded_web_response(asset: EmbeddedWebAsset) -> axum::response::Response {
@@ -468,16 +488,34 @@ async fn start_browser_server_auth(
         .map_err(control_plane_error_status)
 }
 
+async fn browser_server_auth_session_detail(
+    State(state): State<ControlState>,
+    headers: HeaderMap,
+    Query(query): Query<BrowserServerAuthApproveQuery>,
+) -> Result<Json<ServerAuthSessionDetail>, StatusCode> {
+    let _user_id = logged_in_user_id_from_headers(&state, &headers)?;
+    state
+        .browser_server_auth_session_detail(&query.session_id)
+        .map(Json)
+        .map_err(control_plane_error_status)
+}
+
 async fn approve_browser_server_auth(
     State(state): State<ControlState>,
     headers: HeaderMap,
     Query(query): Query<BrowserServerAuthApproveQuery>,
-) -> Result<Json<BrowserServerAuthApprovalResponse>, StatusCode> {
-    let user_id = logged_in_user_id_from_headers(&state, &headers)?;
-    state
-        .approve_browser_server_auth(&query.session_id, &user_id)
-        .map(Json)
-        .map_err(control_plane_error_status)
+) -> axum::response::Response {
+    if is_html_navigation_without_auth(&headers) {
+        return web_index_response();
+    }
+    let user_id = match logged_in_user_id_from_headers(&state, &headers) {
+        Ok(user_id) => user_id,
+        Err(status) => return status.into_response(),
+    };
+    match state.approve_browser_server_auth(&query.session_id, &user_id) {
+        Ok(response) => Json(response).into_response(),
+        Err(error) => control_plane_error_status(error).into_response(),
+    }
 }
 
 async fn exchange_browser_server_auth(
@@ -500,21 +538,39 @@ async fn start_device_server_auth(
         .map_err(control_plane_error_status)
 }
 
+async fn device_server_auth_session_detail(
+    State(state): State<ControlState>,
+    headers: HeaderMap,
+    Query(query): Query<DeviceServerAuthApproveQuery>,
+) -> Result<Json<ServerAuthSessionDetail>, StatusCode> {
+    let _user_id = logged_in_user_id_from_headers(&state, &headers)?;
+    state
+        .device_server_auth_session_detail(&query.user_code)
+        .map(Json)
+        .map_err(control_plane_error_status)
+}
+
 async fn approve_device_server_auth(
     State(state): State<ControlState>,
     headers: HeaderMap,
     Query(query): Query<DeviceServerAuthApproveQuery>,
-) -> Result<Json<DeviceServerAuthApprovalResponse>, StatusCode> {
-    let user_id = logged_in_user_id_from_headers(&state, &headers)?;
+) -> axum::response::Response {
+    if is_html_navigation_without_auth(&headers) {
+        return web_index_response();
+    }
+    let user_id = match logged_in_user_id_from_headers(&state, &headers) {
+        Ok(user_id) => user_id,
+        Err(status) => return status.into_response(),
+    };
     let deny = query
         .decision
         .as_deref()
         .map(|decision| matches!(decision.trim(), "deny" | "denied"))
         .unwrap_or(false);
-    state
-        .approve_device_server_auth(&query.user_code, &user_id, deny)
-        .map(Json)
-        .map_err(control_plane_error_status)
+    match state.approve_device_server_auth(&query.user_code, &user_id, deny) {
+        Ok(response) => Json(response).into_response(),
+        Err(error) => control_plane_error_status(error).into_response(),
+    }
 }
 
 async fn poll_device_server_auth(

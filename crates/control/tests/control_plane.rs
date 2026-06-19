@@ -144,6 +144,19 @@ async fn get_without_token(app: axum::Router, uri: &str) -> axum::response::Resp
     .unwrap()
 }
 
+async fn get_html_without_token(app: axum::Router, uri: &str) -> axum::response::Response {
+    app.oneshot(
+        Request::builder()
+            .method(Method::GET)
+            .uri(uri)
+            .header("accept", "text/html")
+            .body(Body::empty())
+            .unwrap(),
+    )
+    .await
+    .unwrap()
+}
+
 async fn delete(app: axum::Router, uri: &str, token: &str) -> axum::response::Response {
     app.oneshot(
         Request::builder()
@@ -250,7 +263,7 @@ async fn start_device_server_auth(
         "/server-auth/device/start",
         None,
         &StartServerAuthRequest {
-            device_id: DeviceId::new(device_id),
+            device_id: Some(DeviceId::new(device_id)),
             device_name: "Device Code Server".to_string(),
             server_public_key: "server-public-key-device".to_string(),
         },
@@ -293,7 +306,7 @@ async fn issue_browser_server_credential(
         "/server-auth/browser/start",
         None,
         &StartServerAuthRequest {
-            device_id: DeviceId::new(device_id),
+            device_id: Some(DeviceId::new(device_id)),
             device_name: device_name.to_string(),
             server_public_key: server_public_key.to_string(),
         },
@@ -808,7 +821,7 @@ async fn browser_server_auth_issues_agent_credential_once() {
         "/server-auth/browser/start",
         None,
         &StartServerAuthRequest {
-            device_id: DeviceId::new("server_browser_001"),
+            device_id: Some(DeviceId::new("server_browser_001")),
             device_name: "Browser Login Server".to_string(),
             server_public_key: "server-public-key-001".to_string(),
         },
@@ -876,6 +889,236 @@ async fn browser_server_auth_issues_agent_credential_once() {
     )
     .await;
     assert_eq!(replay.status(), StatusCode::CONFLICT);
+}
+
+#[tokio::test]
+async fn browser_server_auth_generates_device_id_when_omitted() {
+    let state = ControlState::new(
+        "dev-secret",
+        "relay.example.com:4443",
+        "punch.example.com:3478",
+    );
+    let app = routes(state);
+    let user_auth = register_user(app.clone(), "generated-browser-owner@example.com").await;
+
+    let start = request_json(
+        app.clone(),
+        Method::POST,
+        "/server-auth/browser/start",
+        None,
+        &serde_json::json!({
+            "device_name": "Generated Browser Server",
+            "server_public_key": "server-public-key-generated-browser"
+        }),
+    )
+    .await;
+    assert_eq!(start.status(), StatusCode::OK);
+    let start: BrowserServerAuthStartResponse = json(start).await;
+
+    let approval = get(
+        app.clone(),
+        &format!(
+            "/server-auth/browser/approve?session_id={}",
+            start.session_id
+        ),
+        &user_auth.access_token,
+    )
+    .await;
+    assert_eq!(approval.status(), StatusCode::OK);
+    let approval: BrowserServerAuthApprovalResponse = json(approval).await;
+
+    let exchange = request_json(
+        app,
+        Method::POST,
+        "/server-auth/browser/exchange",
+        None,
+        &BrowserServerAuthExchangeRequest {
+            session_id: start.session_id,
+            server_auth_code: approval.server_auth_code,
+            server_public_key: "server-public-key-generated-browser".to_string(),
+        },
+    )
+    .await;
+    assert_eq!(exchange.status(), StatusCode::OK);
+    let credential: ServerCredentialResponse = json(exchange).await;
+    assert!(credential.device_id.as_str().starts_with("srv_dev_"));
+}
+
+#[tokio::test]
+async fn device_code_server_auth_generates_device_id_when_omitted() {
+    let state = ControlState::new(
+        "dev-secret",
+        "relay.example.com:4443",
+        "punch.example.com:3478",
+    );
+    let app = routes(state);
+    let user_auth = register_user(app.clone(), "generated-device-owner@example.com").await;
+
+    let start = request_json(
+        app.clone(),
+        Method::POST,
+        "/server-auth/device/start",
+        None,
+        &serde_json::json!({
+            "device_name": "Generated Device Server",
+            "server_public_key": "server-public-key-generated-device"
+        }),
+    )
+    .await;
+    assert_eq!(start.status(), StatusCode::OK);
+    let start: DeviceServerAuthStartResponse = json(start).await;
+
+    let approval = get(
+        app.clone(),
+        &format!("/server-auth/device?user_code={}", start.user_code),
+        &user_auth.access_token,
+    )
+    .await;
+    assert_eq!(approval.status(), StatusCode::OK);
+
+    let approved = poll_device_server_auth(app, &start, "server-public-key-generated-device").await;
+    assert_eq!(approved.status, ServerAuthStatus::Approved);
+    let credential = approved.credential.unwrap();
+    assert!(credential.device_id.as_str().starts_with("srv_dev_"));
+}
+
+#[tokio::test]
+async fn server_auth_session_detail_requires_login_and_describes_browser_session() {
+    let state = ControlState::new(
+        "dev-secret",
+        "relay.example.com:4443",
+        "punch.example.com:3478",
+    );
+    let app = routes(state);
+    let user_auth = register_user(app.clone(), "browser-detail-owner@example.com").await;
+
+    let start = request_json(
+        app.clone(),
+        Method::POST,
+        "/server-auth/browser/start",
+        None,
+        &serde_json::json!({
+            "device_name": "Browser Detail Server",
+            "server_public_key": "browser-detail-public-key"
+        }),
+    )
+    .await;
+    assert_eq!(start.status(), StatusCode::OK);
+    let start: BrowserServerAuthStartResponse = json(start).await;
+    let detail_path = format!(
+        "/server-auth/browser/session?session_id={}",
+        start.session_id
+    );
+
+    let anonymous = get_without_token(app.clone(), &detail_path).await;
+    assert_eq!(anonymous.status(), StatusCode::UNAUTHORIZED);
+
+    let detail = get(app, &detail_path, &user_auth.access_token).await;
+    assert_eq!(detail.status(), StatusCode::OK);
+    let detail: serde_json::Value = json(detail).await;
+    assert_eq!(detail["session_id"], start.session_id);
+    assert_eq!(detail["mode"], "browser");
+    assert_eq!(detail["status"], "pending");
+    assert_eq!(detail["device_name"], "Browser Detail Server");
+    assert!(detail["device_id"]
+        .as_str()
+        .unwrap()
+        .starts_with("srv_dev_"));
+    assert!(detail["server_public_key_fingerprint"]
+        .as_str()
+        .unwrap()
+        .starts_with("sha256:"));
+    assert!(detail["expires_epoch_sec"].as_u64().unwrap() > 0);
+}
+
+#[tokio::test]
+async fn server_auth_session_detail_describes_device_code_session() {
+    let state = ControlState::new(
+        "dev-secret",
+        "relay.example.com:4443",
+        "punch.example.com:3478",
+    );
+    let app = routes(state);
+    let user_auth = register_user(app.clone(), "device-detail-owner@example.com").await;
+    let start = start_device_server_auth(app.clone(), "device_detail_server").await;
+    let detail_path = format!("/server-auth/device/session?user_code={}", start.user_code);
+
+    let anonymous = get_without_token(app.clone(), &detail_path).await;
+    assert_eq!(anonymous.status(), StatusCode::UNAUTHORIZED);
+
+    let detail = get(app, &detail_path, &user_auth.access_token).await;
+    assert_eq!(detail.status(), StatusCode::OK);
+    let detail: serde_json::Value = json(detail).await;
+    assert_eq!(detail["mode"], "device_code");
+    assert_eq!(detail["status"], "pending");
+    assert_eq!(detail["device_id"], "device_detail_server");
+    assert_eq!(detail["device_name"], "Device Code Server");
+    assert!(detail["server_public_key_fingerprint"]
+        .as_str()
+        .unwrap()
+        .starts_with("sha256:"));
+    assert!(detail["expires_epoch_sec"].as_u64().unwrap() > 0);
+}
+
+#[tokio::test]
+async fn server_auth_browser_navigation_returns_spa_without_breaking_json_approval() {
+    let state = ControlState::new(
+        "dev-secret",
+        "relay.example.com:4443",
+        "punch.example.com:3478",
+    );
+    let app = routes(state);
+    let user_auth = register_user(app.clone(), "html-browser-owner@example.com").await;
+
+    let start = request_json(
+        app.clone(),
+        Method::POST,
+        "/server-auth/browser/start",
+        None,
+        &serde_json::json!({
+            "device_name": "HTML Browser Server",
+            "server_public_key": "html-browser-public-key"
+        }),
+    )
+    .await;
+    assert_eq!(start.status(), StatusCode::OK);
+    let start: BrowserServerAuthStartResponse = json(start).await;
+    let approve_path = format!(
+        "/server-auth/browser/approve?session_id={}",
+        start.session_id
+    );
+
+    let html = get_html_without_token(app.clone(), &approve_path).await;
+    assert_eq!(html.status(), StatusCode::OK);
+    assert!(text(html).await.contains("<html"));
+
+    let approval = get(app, &approve_path, &user_auth.access_token).await;
+    assert_eq!(approval.status(), StatusCode::OK);
+    let approval: BrowserServerAuthApprovalResponse = json(approval).await;
+    assert_eq!(approval.session_id, start.session_id);
+    assert_eq!(approval.status, ServerAuthStatus::Approved);
+}
+
+#[tokio::test]
+async fn server_auth_device_navigation_returns_spa_without_breaking_json_approval() {
+    let state = ControlState::new(
+        "dev-secret",
+        "relay.example.com:4443",
+        "punch.example.com:3478",
+    );
+    let app = routes(state);
+    let user_auth = register_user(app.clone(), "html-device-owner@example.com").await;
+    let start = start_device_server_auth(app.clone(), "html_device_server").await;
+    let approve_path = format!("/server-auth/device?user_code={}", start.user_code);
+
+    let html = get_html_without_token(app.clone(), &approve_path).await;
+    assert_eq!(html.status(), StatusCode::OK);
+    assert!(text(html).await.contains("<html"));
+
+    let approval = get(app, &approve_path, &user_auth.access_token).await;
+    assert_eq!(approval.status(), StatusCode::OK);
+    let approval: DeviceServerAuthApprovalResponse = json(approval).await;
+    assert_eq!(approval.status, ServerAuthStatus::Approved);
 }
 
 #[tokio::test]
@@ -978,7 +1221,7 @@ async fn server_credentials_can_be_disabled() {
         "/server-auth/browser/start",
         None,
         &StartServerAuthRequest {
-            device_id: DeviceId::new("server_credential_001"),
+            device_id: Some(DeviceId::new("server_credential_001")),
             device_name: "Credential Server".to_string(),
             server_public_key: "server-public-key-credential".to_string(),
         },
@@ -1281,7 +1524,7 @@ async fn agent_credential_authorizes_only_own_device() {
         "/server-auth/browser/start",
         None,
         &StartServerAuthRequest {
-            device_id: DeviceId::new("agent_owned"),
+            device_id: Some(DeviceId::new("agent_owned")),
             device_name: "Agent Owned Server".to_string(),
             server_public_key: "agent-owned-public-key".to_string(),
         },

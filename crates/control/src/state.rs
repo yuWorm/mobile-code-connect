@@ -22,12 +22,13 @@ use mobilecode_connect_control_client::{
     RelayBootstrapExchangeRequest, RelayBootstrapExchangeResponse, RelayBootstrapResponse,
     RelayCommand, RelayCommandKind, RelayCommandStatus, RelayCredential, RelayHealthReport,
     RelayHealthStatus, RelayNode, RelaySessionSnapshot, ReportRelayCommandResultRequest,
-    ReportRelayHealthRequest, ReportRelaySessionUsageRequest, ServerAuthMode, ServerAuthStatus,
-    ServerCredentialResponse, ServerCredentialSummary, StartGrantSessionResponse,
-    StartMobilePairingResponse, StartServerAuthRequest, UpdatePasswordRequest,
-    UpdatePlanCatalogRequest, UpdateRelayCredentialStatusRequest, UpdateRelayRequest,
-    UpdateServerCredentialStatusRequest, UpdateUserPlanRequest, UpdateUserRoleRequest,
-    UpdateUserStatusRequest, UserDetail, UserSummary, UserUsagePeriod, UserUsageSummary,
+    ReportRelayHealthRequest, ReportRelaySessionUsageRequest, ServerAuthMode,
+    ServerAuthSessionDetail, ServerAuthStatus, ServerCredentialResponse, ServerCredentialSummary,
+    StartGrantSessionResponse, StartMobilePairingResponse, StartServerAuthRequest,
+    UpdatePasswordRequest, UpdatePlanCatalogRequest, UpdateRelayCredentialStatusRequest,
+    UpdateRelayRequest, UpdateServerCredentialStatusRequest, UpdateUserPlanRequest,
+    UpdateUserRoleRequest, UpdateUserStatusRequest, UserDetail, UserSummary, UserUsagePeriod,
+    UserUsageSummary,
 };
 use mobilecode_connect_protocol::{
     ClientId, Device, DeviceId, DeviceStatus, GrantSessionRequest, MobilePairingRequest,
@@ -775,7 +776,8 @@ impl ControlState {
         &self,
         request: StartServerAuthRequest,
     ) -> Result<BrowserServerAuthStartResponse, ControlPlaneError> {
-        if request.device_id.as_str().trim().is_empty()
+        let device_id = request.device_id.unwrap_or_else(new_server_device_id);
+        if device_id.as_str().trim().is_empty()
             || request.device_name.trim().is_empty()
             || request.server_public_key.trim().is_empty()
         {
@@ -788,7 +790,7 @@ impl ControlState {
             session_id: session_id.clone(),
             mode: ServerAuthMode::Browser,
             status: ServerAuthStatus::Pending,
-            device_id: request.device_id,
+            device_id,
             device_name: request.device_name,
             server_public_key: request.server_public_key,
             user_code_hash: None,
@@ -951,11 +953,39 @@ impl ControlState {
         })
     }
 
+    pub fn browser_server_auth_session_detail(
+        &self,
+        session_id: &str,
+    ) -> Result<ServerAuthSessionDetail, ControlPlaneError> {
+        if session_id.trim().is_empty() {
+            return Err(ControlPlaneError::InvalidInput);
+        }
+        let now = self.server_auth_now_epoch_sec();
+        let (detail, expired) = {
+            let mut inner = self.store.write();
+            let session = inner
+                .server_auth_sessions
+                .get_mut(session_id)
+                .ok_or(ControlPlaneError::ServerAuthSessionNotFound)?;
+            if session.mode != ServerAuthMode::Browser {
+                return Err(ControlPlaneError::InvalidInput);
+            }
+            let expired = expire_server_auth_session_if_needed(session, now);
+            (server_auth_session_detail(session), expired)
+        };
+        if expired {
+            self.persist()
+                .map_err(|_| ControlPlaneError::PersistenceFailed)?;
+        }
+        Ok(detail)
+    }
+
     pub fn start_device_server_auth(
         &self,
         request: StartServerAuthRequest,
     ) -> Result<DeviceServerAuthStartResponse, ControlPlaneError> {
-        if request.device_id.as_str().trim().is_empty()
+        let device_id = request.device_id.unwrap_or_else(new_server_device_id);
+        if device_id.as_str().trim().is_empty()
             || request.device_name.trim().is_empty()
             || request.server_public_key.trim().is_empty()
         {
@@ -970,7 +1000,7 @@ impl ControlState {
             session_id,
             mode: ServerAuthMode::DeviceCode,
             status: ServerAuthStatus::Pending,
-            device_id: request.device_id,
+            device_id,
             device_name: request.device_name,
             server_public_key: request.server_public_key,
             user_code_hash: Some(secret_hash(&normalized_user_code(&user_code))),
@@ -1048,6 +1078,36 @@ impl ControlState {
             .map_err(|_| ControlPlaneError::PersistenceFailed)?;
 
         Ok(DeviceServerAuthApprovalResponse { user_code, status })
+    }
+
+    pub fn device_server_auth_session_detail(
+        &self,
+        user_code: &str,
+    ) -> Result<ServerAuthSessionDetail, ControlPlaneError> {
+        let user_code = normalized_user_code(user_code);
+        if user_code.is_empty() {
+            return Err(ControlPlaneError::InvalidInput);
+        }
+        let user_code_hash = secret_hash(&user_code);
+        let now = self.server_auth_now_epoch_sec();
+        let (detail, expired) = {
+            let mut inner = self.store.write();
+            let session = inner
+                .server_auth_sessions
+                .values_mut()
+                .find(|session| {
+                    session.mode == ServerAuthMode::DeviceCode
+                        && session.user_code_hash.as_deref() == Some(user_code_hash.as_str())
+                })
+                .ok_or(ControlPlaneError::ServerAuthSessionNotFound)?;
+            let expired = expire_server_auth_session_if_needed(session, now);
+            (server_auth_session_detail(session), expired)
+        };
+        if expired {
+            self.persist()
+                .map_err(|_| ControlPlaneError::PersistenceFailed)?;
+        }
+        Ok(detail)
     }
 
     pub fn poll_device_server_auth(
@@ -4034,6 +4094,35 @@ fn new_device_user_code() -> String {
         .to_string()
         .to_ascii_uppercase();
     format!("{}-{}", &raw[..4], &raw[4..8])
+}
+
+fn new_server_device_id() -> DeviceId {
+    DeviceId::new(format!("srv_dev_{}", uuid::Uuid::new_v4().simple()))
+}
+
+fn expire_server_auth_session_if_needed(session: &mut ServerAuthSession, now: u64) -> bool {
+    if session.expires_epoch_sec > now || session.status == ServerAuthStatus::Expired {
+        return false;
+    }
+    session.status = ServerAuthStatus::Expired;
+    session.updated_epoch_sec = now;
+    true
+}
+
+fn server_auth_session_detail(session: &ServerAuthSession) -> ServerAuthSessionDetail {
+    ServerAuthSessionDetail {
+        session_id: session.session_id.clone(),
+        mode: session.mode,
+        status: session.status,
+        device_id: session.device_id.clone(),
+        device_name: session.device_name.clone(),
+        server_public_key_fingerprint: server_public_key_fingerprint(&session.server_public_key),
+        expires_epoch_sec: session.expires_epoch_sec,
+    }
+}
+
+fn server_public_key_fingerprint(value: &str) -> String {
+    format!("sha256:{}", secret_hash(value))
 }
 
 fn oauth_error_to_auth_error(error: OAuthError) -> ControlAuthError {
