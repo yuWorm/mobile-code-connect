@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 import { Github, Languages, Loader2, LockKeyhole, Network, ShieldCheck } from 'lucide-vue-next'
 
 import { Button } from '@/components/ui/button'
@@ -14,6 +14,7 @@ import { buildGithubOAuthStartPath, githubOAuthCallbackUrl } from '@/lib/control
 
 const { state, login, register } = useAuth()
 const { locale, locales, setLocale, t } = useI18n()
+const route = useRoute()
 const mode = ref('login')
 const oauthLoading = ref(false)
 const form = reactive({
@@ -42,7 +43,8 @@ function resetLoginForm() {
 
 function startGithubOAuth() {
   oauthLoading.value = true
-  const redirectUri = githubOAuthCallbackUrl(window.location.href)
+  const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : undefined
+  const redirectUri = githubOAuthCallbackUrl(window.location.href, redirect)
   window.location.href = buildGithubOAuthStartPath(redirectUri)
 }
 

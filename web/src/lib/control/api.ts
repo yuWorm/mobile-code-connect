@@ -4,6 +4,7 @@ import type {
   AssignUserPlanRequest,
   AuditLogEntry,
   AuthResponse,
+  BrowserServerAuthApprovalResponse,
   CreateRelayCredentialRequest,
   CreateRelayBootstrapRequest,
   CreateSessionRequest,
@@ -34,6 +35,7 @@ import type {
   ReportRelayHealthRequest,
   ServerCredentialResponse,
   ServerCredentialSummary,
+  ServerAuthSessionDetail,
   PollServerAuthRequest,
   StartServerAuthRequest,
   UpdatePasswordRequest,
@@ -367,6 +369,21 @@ export class ControlApi {
     return this.deleteEmpty(
       `/oauth/identities/${provider}/${encodeURIComponent(providerUserId)}`,
     )
+  }
+
+  browserServerAuthSessionDetail(sessionId: string) {
+    const params = new URLSearchParams({ session_id: sessionId })
+    return this.get<ServerAuthSessionDetail>(`/server-auth/browser/session?${params.toString()}`)
+  }
+
+  approveBrowserServerAuth(sessionId: string) {
+    const params = new URLSearchParams({ session_id: sessionId })
+    return this.get<BrowserServerAuthApprovalResponse>(`/server-auth/browser/approve?${params.toString()}`)
+  }
+
+  deviceServerAuthSessionDetail(userCode: string) {
+    const params = new URLSearchParams({ user_code: userCode })
+    return this.get<ServerAuthSessionDetail>(`/server-auth/device/session?${params.toString()}`)
   }
 
   startDeviceServerAuth(request: StartServerAuthRequest) {

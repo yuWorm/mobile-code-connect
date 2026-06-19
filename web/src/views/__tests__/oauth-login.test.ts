@@ -6,11 +6,15 @@ describe('OAuth login views', () => {
   test('login page links GitHub OAuth through the start helper', () => {
     const source = readFileSync(new URL('../LoginView.vue', import.meta.url), 'utf8')
 
+    expect(source).toContain("import { RouterLink, useRoute } from 'vue-router'")
     expect(source).toContain("import { useI18n } from '@/composables/useI18n'")
     expect(source).toContain('const { locale, locales, setLocale, t } = useI18n()')
+    expect(source).toContain('const route = useRoute()')
     expect(source).toContain('startGithubOAuth')
     expect(source).toContain('buildGithubOAuthStartPath')
     expect(source).toContain('githubOAuthCallbackUrl')
+    expect(source).toContain("const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : undefined")
+    expect(source).toContain('const redirectUri = githubOAuthCallbackUrl(window.location.href, redirect)')
     expect(source).toContain("const title = computed(() => (mode.value === 'login' ? t('auth.loginTitle') : t('auth.registerTitle')))")
     expect(source).toContain("{{ mode === 'login' ? t('auth.login') : t('auth.registerAndEnter') }}")
     expect(source).toContain('<Select :model-value="locale" @update:model-value="setLocale(String($event))">')

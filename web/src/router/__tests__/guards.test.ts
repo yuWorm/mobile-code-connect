@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { readFileSync } from 'node:fs'
 
 import type { AuthSession } from '@/lib/control/types'
 import { resolveHomeRedirect, resolveRouteGuard, type GuardRouteTarget } from '../guards'
@@ -34,6 +35,51 @@ describe('router guard helpers', () => {
       path: '/login',
       query: { redirect: '/center/devices?status=online' },
     })
+  })
+
+  test('preserves server-auth approval routes when login is required', () => {
+    expect(
+      resolveRouteGuard(
+        route({
+          path: '/server-auth/browser/approve',
+          fullPath: '/server-auth/browser/approve?session_id=sess_001',
+          meta: { requiresAuth: true },
+        }),
+        null,
+        { nowSeconds: 1_700_000_000 },
+      ),
+    ).toEqual({
+      path: '/login',
+      query: { redirect: '/server-auth/browser/approve?session_id=sess_001' },
+    })
+
+    expect(
+      resolveRouteGuard(
+        route({
+          path: '/server-auth/device',
+          fullPath: '/server-auth/device?user_code=ABCD-EFGH',
+          meta: { requiresAuth: true },
+        }),
+        null,
+        { nowSeconds: 1_700_000_000 },
+      ),
+    ).toEqual({
+      path: '/login',
+      query: { redirect: '/server-auth/device?user_code=ABCD-EFGH' },
+    })
+  })
+
+  test('registers protected server-auth approval routes', () => {
+    const source = readFileSync(new URL('../index.ts', import.meta.url), 'utf8')
+
+    expect(source).toContain("path: '/server-auth/browser/approve'")
+    expect(source).toContain("name: 'server-auth-browser-approve'")
+    expect(source).toContain("component: () => import('@/views/ServerAuthBrowserApproveView.vue')")
+    expect(source).toContain("meta: { requiresAuth: true, title: 'Server Login Approval'")
+    expect(source).toContain("path: '/server-auth/device'")
+    expect(source).toContain("name: 'server-auth-device'")
+    expect(source).toContain("component: () => import('@/views/ServerAuthDeviceApproveView.vue')")
+    expect(source).toContain("meta: { requiresAuth: true, title: 'Device Code Approval'")
   })
 
   test('clears expired sessions before redirecting protected routes to login', () => {

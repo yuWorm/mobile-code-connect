@@ -21,11 +21,9 @@ describe('UserCredentialsView', () => {
     const source = readFileSync(new URL('../UserCredentialsView.vue', import.meta.url), 'utf8')
 
     expect(source).toContain('const hasDeviceAuthForm = computed(() =>')
-    expect(source).toContain("authForm.device_id.trim() !== ''")
     expect(source).toContain("authForm.device_name.trim() !== ''")
     expect(source).toContain("authForm.server_public_key.trim() !== ''")
     expect(source).toContain('function resetDeviceAuthForm()')
-    expect(source).toContain("authForm.device_id = ''")
     expect(source).toContain("authForm.device_name = ''")
     expect(source).toContain("authForm.server_public_key = ''")
     expect(source).toContain('deviceAuth.value = null')
@@ -33,6 +31,26 @@ describe('UserCredentialsView', () => {
     expect(source).toContain(':disabled="deviceAuthBusy"')
     expect(source).toContain(':disabled="deviceAuthBusy || !hasDeviceAuthForm"')
     expect(source).toContain('@click="resetDeviceAuthForm"')
+    expect(source).not.toContain('authForm.device_id')
+    expect(source).not.toContain('id="auth-device-id"')
+    expect(source).not.toContain("device_id: authForm.device_id.trim()")
+  })
+
+  test('device-code auth start omits device id so Control Server generates it', () => {
+    const source = readFileSync(new URL('../UserCredentialsView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain(`deviceAuth.value = await controlApi.startDeviceServerAuth({
+          device_name: authForm.device_name.trim(),
+          server_public_key: authForm.server_public_key.trim(),
+        })`)
+    expect(source).not.toContain("device_id: authForm.device_id.trim()")
+  })
+
+  test('polling displays the generated device id from the issued credential', () => {
+    const source = readFileSync(new URL('../UserCredentialsView.vue', import.meta.url), 'utf8')
+
+    expect(source).toContain('rotated.value = poll.credential')
+    expect(source).toContain('<Badge variant="outline">{{ rotated.device_id }}</Badge>')
   })
 
   test('device-code auth actions share a busy guard to avoid duplicate submissions', () => {

@@ -410,10 +410,12 @@ export interface UpdateServerCredentialStatusRequest {
 }
 
 export interface StartServerAuthRequest {
-  device_id: string
+  device_id?: string
   device_name: string
   server_public_key: string
 }
+
+export type ServerAuthMode = 'browser' | 'device_code'
 
 export type ServerAuthStatus =
   | 'pending'
@@ -424,6 +426,22 @@ export type ServerAuthStatus =
   | 'authorization_pending'
   | 'slow_down'
   | 'access_denied'
+
+export interface ServerAuthSessionDetail {
+  session_id: string
+  mode: ServerAuthMode
+  status: ServerAuthStatus
+  device_id: string
+  device_name: string
+  server_public_key_fingerprint: string
+  expires_epoch_sec: number
+}
+
+export interface BrowserServerAuthApprovalResponse {
+  session_id: string
+  server_auth_code: string
+  status: ServerAuthStatus
+}
 
 export interface DeviceServerAuthStartResponse {
   device_code: string

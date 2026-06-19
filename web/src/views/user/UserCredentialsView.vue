@@ -56,12 +56,10 @@ const deviceAuth = ref<DeviceServerAuthStartResponse | null>(null)
 const deviceAuthStatus = ref('')
 const { hasBusyAction, isBusy, runBusyAction } = useBusyAction()
 const authForm = reactive({
-  device_id: '',
   device_name: '',
   server_public_key: '',
 })
 const hasDeviceAuthForm = computed(() =>
-  authForm.device_id.trim() !== '' &&
   authForm.device_name.trim() !== '' &&
   authForm.server_public_key.trim() !== '',
 )
@@ -84,7 +82,6 @@ function resetCredentialFilters() {
 }
 
 function resetDeviceAuthForm() {
-  authForm.device_id = ''
   authForm.device_name = ''
   authForm.server_public_key = ''
   deviceAuth.value = null
@@ -135,7 +132,6 @@ async function startDeviceAuth() {
     await runWithToast(
       async () => {
         deviceAuth.value = await controlApi.startDeviceServerAuth({
-          device_id: authForm.device_id.trim(),
           device_name: authForm.device_name.trim(),
           server_public_key: authForm.server_public_key.trim(),
         })
@@ -291,10 +287,6 @@ function dismissDeviceAuth() {
     <PageSection :title="t('section.user.credentials.authTitle')" :description="t('section.user.credentials.authDescription')">
       <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)]">
         <form class="grid gap-4 rounded-md border p-4" @submit.prevent="startDeviceAuth">
-          <div class="grid gap-2">
-            <Label for="auth-device-id">{{ t('common.deviceId') }}</Label>
-            <Input id="auth-device-id" v-model="authForm.device_id" required placeholder="pc_001" />
-          </div>
           <div class="grid gap-2">
             <Label for="auth-device-name">{{ t('common.deviceName') }}</Label>
             <Input id="auth-device-name" v-model="authForm.device_name" required placeholder="Office PC" />

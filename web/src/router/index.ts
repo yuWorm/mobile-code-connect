@@ -33,6 +33,18 @@ const router = createRouter({
       },
     },
     {
+      path: '/server-auth/browser/approve',
+      name: 'server-auth-browser-approve',
+      component: () => import('@/views/ServerAuthBrowserApproveView.vue'),
+      meta: { requiresAuth: true, title: 'Server Login Approval', titleKey: 'route.serverAuth.browser.title' },
+    },
+    {
+      path: '/server-auth/device',
+      name: 'server-auth-device',
+      component: () => import('@/views/ServerAuthDeviceApproveView.vue'),
+      meta: { requiresAuth: true, title: 'Device Code Approval', titleKey: 'route.serverAuth.device.title' },
+    },
+    {
       path: '/admin',
       component: () => import('@/components/layout/AppShell.vue'),
       meta: {

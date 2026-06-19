@@ -94,6 +94,13 @@ describe('relay legacy admin fields', () => {
 })
 
 describe('server auth API paths', () => {
+  test('models generated server auth start device ids as optional', () => {
+    const source = readFileSync(new URL('../types.ts', import.meta.url), 'utf8')
+
+    expect(source).toContain('export interface StartServerAuthRequest {\n  device_id?: string')
+    expect(source).not.toContain('export interface StartServerAuthRequest {\n  device_id: string')
+  })
+
   test('posts device-code start and poll requests', async () => {
     const paths: string[] = []
     const originalFetch = globalThis.fetch
@@ -161,6 +168,39 @@ describe('server auth API paths', () => {
     expect(paths).toEqual([
       'GET /server-auth/device?user_code=ABCD+EFGH',
       'GET /server-auth/device?user_code=ABCD+EFGH&decision=deny',
+    ])
+  })
+
+  test('reads browser and device-code server auth session details', async () => {
+    const paths: string[] = []
+    const originalFetch = globalThis.fetch
+    globalThis.fetch = (async (input, init) => {
+      paths.push(`${init?.method} ${String(input).replace('https://control.test', '')}`)
+      return new Response(
+        JSON.stringify({
+          session_id: 'sess_001',
+          mode: paths.length === 1 ? 'browser' : 'device_code',
+          status: 'pending',
+          device_id: 'srv_dev_001',
+          device_name: 'Server Agent',
+          server_public_key_fingerprint: 'sha256:fingerprint',
+          expires_epoch_sec: 1_760_000_000,
+        }),
+        { status: 200 },
+      )
+    }) as typeof fetch
+
+    try {
+      const api = new ControlApi({ baseUrl: 'https://control.test' })
+      await api.browserServerAuthSessionDetail('sess 001')
+      await api.deviceServerAuthSessionDetail('ABCD EFGH')
+    } finally {
+      globalThis.fetch = originalFetch
+    }
+
+    expect(paths).toEqual([
+      'GET /server-auth/browser/session?session_id=sess+001',
+      'GET /server-auth/device/session?user_code=ABCD+EFGH',
     ])
   })
 })

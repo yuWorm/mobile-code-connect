@@ -387,7 +387,7 @@ Update this task's checkboxes to `[x]`.
 - Modify: `web/src/lib/control/__tests__/oauth.test.ts`
 - Modify: `web/src/views/__tests__/oauth-login.test.ts`
 
-- [ ] **Step 1: Write failing frontend API/guard tests**
+- [x] **Step 1: Write failing frontend API/guard tests**
 
 Add tests for:
 
@@ -397,13 +397,13 @@ Add tests for:
 - anonymous approval routes redirect to `/login?redirect=<fullPath>`.
 - LoginView passes `route.query.redirect` into `githubOAuthCallbackUrl`.
 
-- [ ] **Step 2: Run frontend targeted tests and verify they fail**
+- [x] **Step 2: Run frontend targeted tests and verify they fail**
 
 Run: `pnpm --dir web test --run src/lib/control/__tests__/api.test.ts src/router/__tests__/guards.test.ts src/lib/control/__tests__/oauth.test.ts src/views/__tests__/oauth-login.test.ts`
 
 Expected: fail on missing methods/routes/redirect preservation.
 
-- [ ] **Step 3: Implement frontend API/types/routes**
+- [x] **Step 3: Implement frontend API/types/routes**
 
 Add `ServerAuthSessionDetail` type and API methods.
 
@@ -431,13 +431,13 @@ const redirect = typeof route.query.redirect === 'string' ? route.query.redirect
 const redirectUri = githubOAuthCallbackUrl(window.location.href, redirect)
 ```
 
-- [ ] **Step 4: Run frontend API/guard tests**
+- [x] **Step 4: Run frontend API/guard tests**
 
 Run: `pnpm --dir web test --run src/lib/control/__tests__/api.test.ts src/router/__tests__/guards.test.ts src/lib/control/__tests__/oauth.test.ts src/views/__tests__/oauth-login.test.ts`
 
 Expected: pass.
 
-- [ ] **Step 5: Mark Task 6 complete in this plan**
+- [x] **Step 5: Mark Task 6 complete in this plan**
 
 Update this task's checkboxes to `[x]`.
 
@@ -449,7 +449,7 @@ Update this task's checkboxes to `[x]`.
 - Create: `web/src/views/__tests__/server-auth-approval.test.ts`
 - Modify: `web/src/lib/i18n/messages.ts`
 
-- [ ] **Step 1: Write failing approval-view tests**
+- [x] **Step 1: Write failing approval-view tests**
 
 Create tests that source-check for:
 
@@ -460,13 +460,13 @@ Create tests that source-check for:
 - both views display generated `device_id` and `server_public_key_fingerprint`;
 - all visible strings use i18n keys.
 
-- [ ] **Step 2: Run approval-view tests and verify they fail**
+- [x] **Step 2: Run approval-view tests and verify they fail**
 
 Run: `pnpm --dir web test --run src/views/__tests__/server-auth-approval.test.ts`
 
 Expected: fail because views do not exist.
 
-- [ ] **Step 3: Implement approval views**
+- [x] **Step 3: Implement approval views**
 
 Use existing UI primitives: `Card`, `Button`, `Input`, `Label`, `Badge`, `InfoRow`, loading/error states, and lucide icons.
 
@@ -484,17 +484,17 @@ Device view:
 - after detail loads, show request summary;
 - approve/deny with existing APIs.
 
-- [ ] **Step 4: Add i18n messages**
+- [x] **Step 4: Add i18n messages**
 
 Add Chinese and English keys under `serverAuthApproval.*` for titles, descriptions, labels, buttons, and error text.
 
-- [ ] **Step 5: Run approval-view tests**
+- [x] **Step 5: Run approval-view tests**
 
 Run: `pnpm --dir web test --run src/views/__tests__/server-auth-approval.test.ts src/views/__tests__/all-pages-i18n.test.ts`
 
 Expected: pass.
 
-- [ ] **Step 6: Mark Task 7 complete in this plan**
+- [x] **Step 6: Mark Task 7 complete in this plan**
 
 Update this task's checkboxes to `[x]`.
 
@@ -505,7 +505,7 @@ Update this task's checkboxes to `[x]`.
 - Modify: `web/src/views/user/__tests__/user-credentials.test.ts`
 - Modify: `web/src/lib/i18n/messages.ts`
 
-- [ ] **Step 1: Write failing credentials-page tests**
+- [x] **Step 1: Write failing credentials-page tests**
 
 Update tests to require:
 
@@ -513,13 +513,13 @@ Update tests to require:
 - request sent to `startDeviceServerAuth` omits `device_id`;
 - generated credential device id is displayed after polling returns a credential.
 
-- [ ] **Step 2: Run credentials-page tests and verify they fail**
+- [x] **Step 2: Run credentials-page tests and verify they fail**
 
 Run: `pnpm --dir web test --run src/views/user/__tests__/user-credentials.test.ts`
 
 Expected: fail because device id is currently required.
 
-- [ ] **Step 3: Update credentials page**
+- [x] **Step 3: Update credentials page**
 
 Remove the device id input from the start-auth form. Change `hasDeviceAuthForm` to require only `device_name` and `server_public_key`. Submit:
 
@@ -532,13 +532,13 @@ Remove the device id input from the start-auth form. Change `hasDeviceAuthForm` 
 
 Keep filter device id field for the credentials table.
 
-- [ ] **Step 4: Run credentials-page tests**
+- [x] **Step 4: Run credentials-page tests**
 
 Run: `pnpm --dir web test --run src/views/user/__tests__/user-credentials.test.ts`
 
 Expected: pass.
 
-- [ ] **Step 5: Mark Task 8 complete in this plan**
+- [x] **Step 5: Mark Task 8 complete in this plan**
 
 Update this task's checkboxes to `[x]`.
 
@@ -552,43 +552,43 @@ Update this task's checkboxes to `[x]`.
 - Modify as needed based on compiler/test failures.
 - Update this plan as each verification step completes.
 
-- [ ] **Step 1: Format Rust code**
+- [x] **Step 1: Format Rust code**
 
 Run: `cargo fmt`
 
 Expected: no formatting diff remains.
 
-- [ ] **Step 2: Run Rust test suite for touched crates**
+- [x] **Step 2: Run Rust test suite for touched crates**
 
 Run: `cargo test -p mobilecode_connect_control_client -p mobilecode_connect_control -p mobilecode_connect_sdk -p agentd`
 
 Expected: pass.
 
-- [ ] **Step 3: Run web test suite**
+- [x] **Step 3: Run web test suite**
 
 Run: `pnpm --dir web test --run`
 
 Expected: pass.
 
-- [ ] **Step 4: Build web**
+- [x] **Step 4: Build web**
 
 Run: `pnpm --dir web build`
 
 Expected: pass.
 
-- [ ] **Step 5: Build Rust workspace targets touched by the feature**
+- [x] **Step 5: Build Rust workspace targets touched by the feature**
 
 Run: `cargo build -p mobilecode_connect_control -p mobilecode_connect_sdk -p agentd`
 
 Expected: pass.
 
-- [ ] **Step 6: Inspect git diff**
+- [x] **Step 6: Inspect git diff**
 
 Run: `git diff --stat` and `git diff --check`
 
 Expected: changes are scoped to this feature and no whitespace errors.
 
-- [ ] **Step 7: Mark Task 9 complete in this plan**
+- [x] **Step 7: Mark Task 9 complete in this plan**
 
 Update this task's checkboxes to `[x]`.
 
@@ -597,13 +597,13 @@ Update this task's checkboxes to `[x]`.
 **Files:**
 - Modify: this plan file to mark all completed tasks.
 
-- [ ] **Step 1: Confirm all plan checkboxes are complete**
+- [x] **Step 1: Confirm all plan checkboxes are complete**
 
 Run: `rg -n "^- \\[ \\]" docs/superpowers/plans/2026-06-20-server-auth-generated-device-login.md`
 
 Expected: no output.
 
-- [ ] **Step 2: Commit implementation**
+- [x] **Step 2: Commit implementation**
 
 Run:
 
@@ -614,12 +614,12 @@ git commit -m "feat: support generated server auth device login"
 
 Expected: commit succeeds.
 
-- [ ] **Step 3: Final status**
+- [x] **Step 3: Final status**
 
 Run: `git status --short`
 
 Expected: clean worktree or only intentionally ignored local files.
 
-- [ ] **Step 4: Mark Task 10 complete in this plan**
+- [x] **Step 4: Mark Task 10 complete in this plan**
 
 Update this task's checkboxes to `[x]` before the final implementation commit if the plan file is included in that commit.
