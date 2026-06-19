@@ -90,8 +90,8 @@ struct LoginArgs {
     device_code: bool,
     #[arg(long = "control")]
     control_server: String,
-    #[arg(long = "device", value_parser = parse_device_id, default_value = "pc_001")]
-    device_id: DeviceId,
+    #[arg(long = "device", value_parser = parse_device_id)]
+    device_id: Option<DeviceId>,
     #[arg(long = "name")]
     device_name: String,
     #[arg(long = "credential-file", default_value = "agentd-credential.json")]
@@ -416,19 +416,25 @@ fn mobile_grant_manager_from_file(path: &Path) -> Result<MobileGrantManager> {
 }
 
 async fn login_agent(args: LoginArgs) -> Result<()> {
-    let server_public_key = args
-        .server_public_key
-        .clone()
-        .unwrap_or_else(|| format!("agentd-public-key-{}", args.device_id));
+    let server_public_key =
+        args.server_public_key
+            .clone()
+            .unwrap_or_else(|| match &args.device_id {
+                Some(device_id) => format!("agentd-public-key-{device_id}"),
+                None => format!("agentd-public-key-{}", uuid::Uuid::new_v4().simple()),
+            });
     let sdk = ServerAuthSdk::with_http_client(
         &args.control_server,
         FileServerCredentialStore::new(args.credential_file.clone()),
     )
     .context("build server auth sdk")?;
-    let input = ServerLoginInput {
-        device_id: args.device_id.clone(),
-        device_name: args.device_name.clone(),
-        server_public_key,
+    let input = match args.device_id.clone() {
+        Some(device_id) => ServerLoginInput::existing_device(
+            device_id,
+            args.device_name.clone(),
+            server_public_key,
+        ),
+        None => ServerLoginInput::generated_device(args.device_name.clone(), server_public_key),
     };
 
     if args.device_code {
@@ -742,8 +748,6 @@ mod tests {
             "login",
             "--control",
             "http://127.0.0.1:4242",
-            "--device",
-            "pc_001",
             "--name",
             "Office PC",
             "--credential-file",
@@ -754,7 +758,7 @@ mod tests {
             AgentdCommand::Login(args) => {
                 assert!(!args.device_code);
                 assert_eq!(args.control_server, "http://127.0.0.1:4242");
-                assert_eq!(args.device_id.as_str(), "pc_001");
+                assert!(args.device_id.is_none());
                 assert_eq!(args.device_name, "Office PC");
                 assert_eq!(
                     args.credential_file.to_string_lossy(),
@@ -770,8 +774,6 @@ mod tests {
             "--device-code",
             "--control",
             "http://127.0.0.1:4242",
-            "--device",
-            "pc_002",
             "--name",
             "Headless PC",
         ])
@@ -779,8 +781,27 @@ mod tests {
         match device_code.command.unwrap() {
             AgentdCommand::Login(args) => {
                 assert!(args.device_code);
-                assert_eq!(args.device_id.as_str(), "pc_002");
+                assert!(args.device_id.is_none());
                 assert_eq!(args.device_name, "Headless PC");
+            }
+            _ => panic!("expected login command"),
+        }
+
+        let explicit_device = Cli::try_parse_from([
+            "agentd",
+            "login",
+            "--control",
+            "http://127.0.0.1:4242",
+            "--device",
+            "pc_002",
+            "--name",
+            "Explicit PC",
+        ])
+        .unwrap();
+        match explicit_device.command.unwrap() {
+            AgentdCommand::Login(args) => {
+                assert_eq!(args.device_id, Some(DeviceId::new("pc_002")));
+                assert_eq!(args.device_name, "Explicit PC");
             }
             _ => panic!("expected login command"),
         }

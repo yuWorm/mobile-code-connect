@@ -73,12 +73,35 @@ impl ServerAuthApi for HttpControlClient {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ServerLoginInput {
-    pub device_id: DeviceId,
+    pub device_id: Option<DeviceId>,
     pub device_name: String,
     pub server_public_key: String,
 }
 
 impl ServerLoginInput {
+    pub fn generated_device(
+        device_name: impl Into<String>,
+        server_public_key: impl Into<String>,
+    ) -> Self {
+        Self {
+            device_id: None,
+            device_name: device_name.into(),
+            server_public_key: server_public_key.into(),
+        }
+    }
+
+    pub fn existing_device(
+        device_id: DeviceId,
+        device_name: impl Into<String>,
+        server_public_key: impl Into<String>,
+    ) -> Self {
+        Self {
+            device_id: Some(device_id),
+            device_name: device_name.into(),
+            server_public_key: server_public_key.into(),
+        }
+    }
+
     fn start_request(&self) -> StartServerAuthRequest {
         StartServerAuthRequest {
             device_id: self.device_id.clone(),

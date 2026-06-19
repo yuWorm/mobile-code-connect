@@ -156,14 +156,14 @@ async fn ensure_server_credential(
     device_id: DeviceId,
     device_name: String,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let input = ServerLoginInput {
+    let input = ServerLoginInput::existing_device(
         device_id,
         device_name,
-        server_public_key: env_or(
+        env_or(
             "MOBILECODE_CONNECT_SDK_SERVER_PUBLIC_KEY",
             "sdk-live-workflow-public-key".to_string(),
         ),
-    };
+    );
     let server_auth = sdk.server_auth()?;
 
     if env_flag("MOBILECODE_CONNECT_SDK_BROWSER_SERVER_LOGIN") == Some(true) {

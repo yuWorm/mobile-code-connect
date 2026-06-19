@@ -289,11 +289,11 @@ fn auth_response() -> AuthResponse {
 }
 
 fn server_login_input() -> ServerLoginInput {
-    ServerLoginInput {
-        device_id: DeviceId::new("pc_001"),
-        device_name: "Office PC".to_string(),
-        server_public_key: "mock-server-public-key".to_string(),
-    }
+    ServerLoginInput::existing_device(
+        DeviceId::new("pc_001"),
+        "Office PC",
+        "mock-server-public-key",
+    )
 }
 
 fn server_credential_response() -> ServerCredentialResponse {

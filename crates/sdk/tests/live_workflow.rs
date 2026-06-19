@@ -90,11 +90,11 @@ async fn sdk_facade_runs_full_live_workflow_against_in_process_control_routes() 
         sdk.server_credential_store(),
     );
     let pending = server_auth
-        .start_browser_login(ServerLoginInput {
-            device_id: DeviceId::new("pc_001"),
-            device_name: "Office PC".to_string(),
-            server_public_key: "sdk-live-server-public-key".to_string(),
-        })
+        .start_browser_login(ServerLoginInput::existing_device(
+            DeviceId::new("pc_001"),
+            "Office PC",
+            "sdk-live-server-public-key",
+        ))
         .await
         .unwrap();
     let approval =

@@ -265,7 +265,7 @@ Update this task's checkboxes to `[x]`.
 - Modify: `crates/sdk/examples/sdk_live_workflow.rs`
 - Modify: `crates/sdk/examples/sdk_mock_workflow.rs`
 
-- [ ] **Step 1: Write failing SDK tests**
+- [x] **Step 1: Write failing SDK tests**
 
 In `crates/sdk/tests/server_auth_sdk.rs`, add/adjust tests proving:
 
@@ -273,13 +273,13 @@ In `crates/sdk/tests/server_auth_sdk.rs`, add/adjust tests proving:
 - `ServerLoginInput::existing_device(...)` sends `Some(DeviceId::new("pc_001"))`.
 - persisted credential uses the response `device_id`.
 
-- [ ] **Step 2: Run SDK tests and verify they fail**
+- [x] **Step 2: Run SDK tests and verify they fail**
 
 Run: `cargo test -p mobilecode_connect_sdk --test server_auth_sdk generated_device`
 
 Expected: fail because helpers/optional request do not exist.
 
-- [ ] **Step 3: Implement SDK input helpers**
+- [x] **Step 3: Implement SDK input helpers**
 
 Change `ServerLoginInput`:
 
@@ -300,13 +300,13 @@ pub fn existing_device(device_id: DeviceId, device_name: impl Into<String>, serv
 
 Update `start_request()` to copy the optional id.
 
-- [ ] **Step 4: Update SDK call sites**
+- [x] **Step 4: Update SDK call sites**
 
 Use `ServerLoginInput::existing_device(...)` anywhere tests/examples intentionally expect a fixed `pc_001`.
 
 Use `ServerLoginInput::generated_device(...)` in new generated-device tests.
 
-- [ ] **Step 5: Run SDK tests**
+- [x] **Step 5: Run SDK tests**
 
 Run:
 
@@ -318,7 +318,7 @@ cargo test -p mobilecode_connect_sdk --test live_workflow
 
 Expected: pass.
 
-- [ ] **Step 6: Mark Task 4 complete in this plan**
+- [x] **Step 6: Mark Task 4 complete in this plan**
 
 Update this task's checkboxes to `[x]`.
 
@@ -327,7 +327,7 @@ Update this task's checkboxes to `[x]`.
 **Files:**
 - Modify: `apps/agentd/src/main.rs`
 
-- [ ] **Step 1: Write failing CLI tests**
+- [x] **Step 1: Write failing CLI tests**
 
 Update `apps/agentd/src/main.rs` tests:
 
@@ -336,13 +336,13 @@ Update `apps/agentd/src/main.rs` tests:
 - `--device-code` works without `--device`.
 - explicit `--device pc_002` still parses as `Some(DeviceId::new("pc_002"))`.
 
-- [ ] **Step 2: Run agentd tests and verify they fail**
+- [x] **Step 2: Run agentd tests and verify they fail**
 
 Run: `cargo test -p agentd login_args_accept_browser_and_device_code_modes`
 
 Expected: fail because `device_id` is required/defaulted.
 
-- [ ] **Step 3: Update CLI args and login input construction**
+- [x] **Step 3: Update CLI args and login input construction**
 
 Change:
 
@@ -361,13 +361,13 @@ match args.device_id {
 }
 ```
 
-- [ ] **Step 4: Run agentd tests**
+- [x] **Step 4: Run agentd tests**
 
 Run: `cargo test -p agentd login_args_accept_browser_and_device_code_modes`
 
 Expected: pass.
 
-- [ ] **Step 5: Mark Task 5 complete in this plan**
+- [x] **Step 5: Mark Task 5 complete in this plan**
 
 Update this task's checkboxes to `[x]`.
 

@@ -24,6 +24,7 @@ struct FakeServerAuthApi {
 struct FakeServerAuthState {
     browser_start_requests: Vec<StartServerAuthRequest>,
     browser_exchange_requests: Vec<BrowserServerAuthExchangeRequest>,
+    browser_credential_device_id: DeviceId,
     device_start_requests: Vec<StartServerAuthRequest>,
     poll_requests: Vec<PollServerAuthRequest>,
     device_poll_responses: Vec<DeviceServerAuthPollResponse>,
@@ -35,11 +36,20 @@ impl FakeServerAuthApi {
             state: Arc::new(Mutex::new(FakeServerAuthState {
                 browser_start_requests: Vec::new(),
                 browser_exchange_requests: Vec::new(),
+                browser_credential_device_id: DeviceId::new("pc_001"),
                 device_start_requests: Vec::new(),
                 poll_requests: Vec::new(),
                 device_poll_responses,
             })),
         }
+    }
+
+    fn with_browser_credential_device_id(self, device_id: DeviceId) -> Self {
+        self.state
+            .lock()
+            .expect("fake server auth state poisoned")
+            .browser_credential_device_id = device_id;
+        self
     }
 }
 
@@ -66,14 +76,15 @@ impl ServerAuthApi for FakeServerAuthApi {
         &mut self,
         request: BrowserServerAuthExchangeRequest,
     ) -> Result<ServerCredentialResponse, ControlClientError> {
-        self.state
-            .lock()
-            .expect("fake server auth state poisoned")
-            .browser_exchange_requests
-            .push(request);
-        Ok(server_credential(
+        let device_id = {
+            let mut state = self.state.lock().expect("fake server auth state poisoned");
+            state.browser_exchange_requests.push(request);
+            state.browser_credential_device_id.clone()
+        };
+        Ok(server_credential_for_device(
             "srv_cred_browser",
             "server-token-browser",
+            device_id,
         ))
     }
 
@@ -105,6 +116,34 @@ impl ServerAuthApi for FakeServerAuthApi {
         state.poll_requests.push(request);
         Ok(state.device_poll_responses.remove(0))
     }
+}
+
+#[tokio::test]
+async fn generated_device_browser_login_omits_device_id_and_persists_response_device_id() {
+    let generated_device_id = DeviceId::new("srv_dev_generated_sdk");
+    let api = FakeServerAuthApi::new(Vec::new())
+        .with_browser_credential_device_id(generated_device_id.clone());
+    let store = MemoryServerCredentialStore::default();
+    let sdk = ServerAuthSdk::new("http://control.local", api.clone(), store.clone());
+
+    let pending = sdk
+        .start_browser_login(ServerLoginInput::generated_device(
+            "Generated SDK Server",
+            "server-public-key-generated-sdk",
+        ))
+        .await
+        .unwrap();
+    let credential = sdk
+        .complete_browser_login(pending, "auth-code-123")
+        .await
+        .unwrap();
+
+    assert_eq!(credential.device_id, generated_device_id);
+    assert_eq!(store.load_credential().await.unwrap(), Some(credential));
+
+    let state = api.state.lock().expect("fake server auth state poisoned");
+    assert_eq!(state.browser_start_requests.len(), 1);
+    assert_eq!(state.browser_start_requests[0].device_id, None);
 }
 
 #[tokio::test]
@@ -220,25 +259,29 @@ async fn file_server_credential_store_roundtrips_with_private_permissions() {
 }
 
 fn login_input() -> ServerLoginInput {
-    ServerLoginInput {
-        device_id: DeviceId::new("pc_001"),
-        device_name: "Office PC".to_string(),
-        server_public_key: "server-public-key".to_string(),
-    }
+    ServerLoginInput::existing_device(DeviceId::new("pc_001"), "Office PC", "server-public-key")
 }
 
 fn start_request() -> StartServerAuthRequest {
     StartServerAuthRequest {
-        device_id: DeviceId::new("pc_001"),
+        device_id: Some(DeviceId::new("pc_001")),
         device_name: "Office PC".to_string(),
         server_public_key: "server-public-key".to_string(),
     }
 }
 
 fn server_credential(credential_id: &str, server_token: &str) -> ServerCredentialResponse {
+    server_credential_for_device(credential_id, server_token, DeviceId::new("pc_001"))
+}
+
+fn server_credential_for_device(
+    credential_id: &str,
+    server_token: &str,
+    device_id: DeviceId,
+) -> ServerCredentialResponse {
     ServerCredentialResponse {
         credential_id: credential_id.to_string(),
-        device_id: DeviceId::new("pc_001"),
+        device_id,
         server_token: server_token.to_string(),
         token_type: "bearer".to_string(),
     }
