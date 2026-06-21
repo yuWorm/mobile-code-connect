@@ -272,42 +272,74 @@ http://s-svc-5fweb.d-pc-5f001.mobilecode-connect.local/
 
 ### 1. 获取 server credential
 
-`ServerAuthSdk` 支持 browser login 和 device-code login。
+`ServerAuthSdk` 支持 browser login 和 device-code login。新接入推荐不要在
+server/agent 启动认证时手动分配长期 `device_id`，而是使用
+`ServerLoginInput::generated_device(...)`，让 Control Server 在短时
+server-auth session 内生成最终 `srv_dev_*` 设备 ID。显式固定 ID 的旧接入仍然可用，
+适合迁移既有设备或需要保持历史 ID 的场景。
 
 ```rust
 use mobilecode_connect_sdk::{
     ServerAuthSdk, FileServerCredentialStore, ServerLoginInput,
 };
-use mobilecode_connect_protocol::DeviceId;
 
 let server_auth = ServerAuthSdk::with_http_client(
     "https://control.example.com",
     FileServerCredentialStore::new("agentd-credential.json"),
 )?;
 
-let pending = server_auth.start_device_code_login(ServerLoginInput {
-    device_id: DeviceId::new("pc_001"),
-    device_name: "Office PC".to_string(),
-    server_public_key: "agent-public-key".to_string(),
-}).await?;
+let login_input = ServerLoginInput::generated_device(
+    "Office PC",
+    "agent-public-key",
+);
+
+let pending = server_auth.start_device_code_login(login_input).await?;
 
 println!("Open: {}", pending.verification_uri);
 println!("Code: {}", pending.user_code);
+println!("Complete URL: {}", pending.verification_uri_complete);
 
 let credential = server_auth
     .complete_device_code_login(pending, std::time::Duration::from_secs(1))
     .await?;
+
+println!("Control generated device id: {}", credential.device_id);
 ```
+
+用户打开 `verification_uri_complete` 后，如果尚未登录 Control Web，会先进入登录页；
+登录成功后会自动回到 device-code 审批页。审批页会展示 Control 生成的
+`device_id`、设备名和 server public key 指纹，用户确认后 server 端轮询得到并保存
+`StoredServerCredential`。
 
 Browser login 流程是：
 
 ```rust
-let pending = server_auth.start_browser_login(input).await?;
+let pending = server_auth
+    .start_browser_login(ServerLoginInput::generated_device(
+        "Office PC",
+        "agent-public-key",
+    ))
+    .await?;
 println!("Open: {}", pending.auth_url);
 let credential = server_auth.complete_browser_login(pending, server_auth_code).await?;
 ```
 
-保存后的 credential 包含 `control_server`、`credential_id`、`device_id`、`device_name`、`server_token` 和 `token_type`。
+用户打开 `auth_url` 后，如果尚未登录也会先走登录页；审批完成后页面显示一次性
+`server_auth_code`，server/agent 把该 code 传给 `complete_browser_login(...)` 完成交换。
+保存后的 credential 包含 `control_server`、`credential_id`、Control 最终分配的
+`device_id`、`device_name`、`server_token` 和 `token_type`。
+
+如果需要保留旧设备 ID，用 `existing_device(...)`：
+
+```rust
+use mobilecode_connect_protocol::DeviceId;
+
+let login_input = ServerLoginInput::existing_device(
+    DeviceId::new("pc_001"),
+    "Office PC",
+    "agent-public-key",
+);
+```
 
 ### 2. 注册 server 设备和服务
 
@@ -316,14 +348,19 @@ let credential = server_auth.complete_browser_login(pending, server_auth_code).a
 ```rust
 use mobilecode_connect_sdk::ServerRegistrationInput;
 use mobilecode_connect_protocol::{
-    Device, DeviceId, DeviceStatus, Service, ServiceId, ServiceProtocol, UserId,
+    Device, DeviceStatus, Service, ServiceId, ServiceProtocol, UserId,
 };
 
 let server = sdk.server()?;
+let credential = server_auth
+    .load_credential()
+    .await?
+    .expect("server credential must exist before registration");
+let device_id = credential.device_id.clone();
 
 server.register_server(ServerRegistrationInput {
     device: Device {
-        device_id: DeviceId::new("pc_001"),
+        device_id: device_id.clone(),
         user_id: UserId::new("user_001"),
         name: "Office PC".to_string(),
         status: DeviceStatus::Online,
@@ -331,7 +368,7 @@ server.register_server(ServerRegistrationInput {
     },
     services: vec![Service {
         service_id: ServiceId::new("svc_web"),
-        device_id: DeviceId::new("pc_001"),
+        device_id,
         name: "Web".to_string(),
         protocol: ServiceProtocol::Tcp,
         target_host: "127.0.0.1".to_string(),
@@ -361,7 +398,27 @@ server.register_server(ServerRegistrationInput {
 
 ```bash
 agentd login \
+  --control https://control.example.com \
+  --name "Office PC" \
+  --credential-file agentd-credential.json
+```
+
+默认是 browser login：命令会输出审批 URL，用户在默认浏览器或任意浏览器打开后登录并审批，
+再把页面展示的一次性 auth code 粘回终端。无头/SSH 环境使用 device-code 模式：
+
+```bash
+agentd login \
   --device-code \
+  --control https://control.example.com \
+  --name "Office PC" \
+  --credential-file agentd-credential.json
+```
+
+以上两种模式默认都不传 `--device`，Control Server 会生成最终 `srv_dev_*`
+设备 ID 并写入 `agentd-credential.json`。如果要复用已有设备 ID，可显式传入：
+
+```bash
+agentd login \
   --control https://control.example.com \
   --device pc_001 \
   --name "Office PC" \

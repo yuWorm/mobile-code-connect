@@ -27,9 +27,11 @@ GET  /oauth/identities
 GET  /oauth/identities/{provider}/{provider_user_id}
 DELETE /oauth/identities/{provider}/{provider_user_id}
 POST /server-auth/browser/start
+GET  /server-auth/browser/session
 GET  /server-auth/browser/approve
 POST /server-auth/browser/exchange
 POST /server-auth/device/start
+GET  /server-auth/device/session
 GET  /server-auth/device
 POST /server-auth/device/poll
 GET  /server-credentials
@@ -427,8 +429,8 @@ password must provide the current password. Server login uses Control-issued
 server credential tokens instead of GitHub tokens:
 
 ```bash
-agentd login --control https://control.example.com --device pc_001 --name "Office PC"
-agentd login --device-code --control https://control.example.com --device pc_001 --name "Office PC"
+agentd login --control https://control.example.com --name "Office PC"
+agentd login --device-code --control https://control.example.com --name "Office PC"
 agentd run --control https://control.example.com --credential-file agentd-credential.json --relay-cert relay.der --service svc_web=127.0.0.1:3000
 ```
 
@@ -436,9 +438,18 @@ Browser server login uses `/server-auth/browser/start`, user approval, and
 `/server-auth/browser/exchange`. Headless login uses `/server-auth/device/start`
 and `/server-auth/device/poll`. Rust applications should use
 `mobilecode_connect_sdk::ServerAuthSdk` with `FileServerCredentialStore` or a custom
-`ServerCredentialStore`; `agentd login` uses the same SDK flow. After login,
+`ServerCredentialStore`; `agentd login` uses the same SDK flow. New integrations
+should start with `ServerLoginInput::generated_device(...)` or omit `--device`
+in `agentd login`, so Control generates the final `srv_dev_*` device id during
+the short-lived server-auth session. Use
+`ServerLoginInput::existing_device(...)` or `agentd login --device pc_001` only
+when preserving a known legacy device id. Opening a browser or device-code
+approval URL without a user session routes through the normal login page and
+then back to the approval page; approval details are available through
+`/server-auth/browser/session` and `/server-auth/device/session`. After login,
 `mobilecode_connect_sdk::ServerSdk` can reuse that credential store for controlled
-server registration and session lifecycle calls. The resulting
+server registration and session lifecycle calls; register services with the
+`device_id` returned in the saved server credential. The resulting
 `ControlRole::Agent` credential is scoped to one controlled server device. An
 Agent credential can register and update only its own device/services/P2P
 certificate; users manage their server
